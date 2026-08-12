@@ -1,0 +1,10 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+
+Route::middleware(['auth'])
+    ->prefix('{locale}')
+    ->name('$LOWER_NAME$.')
+    ->group(function (): void {
+        Route::view('/$KEBAB_NAME$', '$LOWER_NAME$::index')->name('index');
+});
