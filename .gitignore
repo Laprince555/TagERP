@@ -25,10 +25,3 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
-
-# Local Claude Code + Codex orchestrator
-/orchestrator.py
-/tasks.json
-/AI_ORCHESTRATOR.md
-/run_orchestrator.cmd
-/.orchestrator/
