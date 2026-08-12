@@ -162,7 +162,6 @@ return [
     */
 
     'features' => [
-        // Registration disabled - create users via admin panel only.
         Features::resetPasswords(),
         // Features::emailVerification(),
         Features::updateProfileInformation(),
