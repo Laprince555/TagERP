@@ -1,0 +1,192 @@
+[
+  {
+    "id": "pkg_001_install_livewire",
+    "idea_description": "Install Livewire 3 and configure for TagERP. Execute: composer require livewire/livewire. Then run: php artisan livewire:install. Update app/Providers/AppServiceProvider.php or create new provider to register Livewire. Verify Livewire is working by checking command output and ensuring no errors. Acceptance: Livewire installed, php artisan tinker returns no Livewire errors.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "pkg_002_install_flux",
+    "idea_description": "Install Flux UI components library. Execute: composer require livewire/flux. Run: php artisan vendor:publish --provider='Livewire\\Flux\\FluxServiceProvider'. Publish Flux assets and configuration. Verify installation by checking config/flux.php exists. Acceptance: Flux installed, assets published, no configuration errors.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "pkg_003_install_fortify",
+    "idea_description": "Install Laravel Fortify for authentication. Execute: composer require laravel/fortify. Run: php artisan vendor:publish --provider='Laravel\\Fortify\\FortifyServiceProvider'. This creates FortifyServiceProvider in app/Providers. Verify Fortify configuration is published. Acceptance: Fortify installed, config/fortify.php exists, FortifyServiceProvider registered.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "pkg_004_install_spatie_permission",
+    "idea_description": "Install Spatie Permission for RBAC. Execute: composer require spatie/laravel-permission. Run: php artisan vendor:publish --provider='Spatie\\Permission\\PermissionServiceProvider'. Run: php artisan migrate to create permission tables. Verify permission tables are created (role_has_permissions, model_has_roles, etc). Acceptance: Spatie Permission installed, migration tables created in database, no errors.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "pkg_005_install_spatie_activity_log",
+    "idea_description": "Install Spatie Activity Log for audit trail. Execute: composer require spatie/laravel-activity-log. Run: php artisan vendor:publish --provider='Spatie\\Activitylog\\ActivitylogServiceProvider'. Run: php artisan migrate to create activity_log table. Verify config/activitylog.php is created. Acceptance: Activity Log installed, migration tables created, configuration available.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "pkg_006_install_spatie_settings",
+    "idea_description": "Install Spatie Settings for global app settings. Execute: composer require spatie/laravel-settings. Run: php artisan vendor:publish --provider='Spatie\\Settings\\SettingsServiceProvider'. Run: php artisan migrate to create settings table. Verify config/settings.php exists. Acceptance: Spatie Settings installed, migration tables created, configuration ready.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "pkg_007_install_spatie_tags",
+    "idea_description": "Install Spatie Tags for tagging functionality. Execute: composer require spatie/laravel-tags. Run: php artisan vendor:publish --provider='Spatie\\Tags\\TagsServiceProvider'. Run: php artisan migrate to create tags tables. Verify tag tables are created. Acceptance: Spatie Tags installed, migration tables created, ready for polymorphic tagging.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "pkg_008_install_spatie_sluggable",
+    "idea_description": "Install Spatie Sluggable for URL-friendly slugs. Execute: composer require spatie/laravel-sluggable. No migration needed. Verify package is autoloaded. Acceptance: Spatie Sluggable installed, no errors, ready for model usage.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "pkg_009_install_spatie_translatable",
+    "idea_description": "Install Spatie Translatable for multi-language support (Arabic + English). Execute: composer require spatie/laravel-translatable. No migration needed for base package. Verify package is installed. Acceptance: Spatie Translatable installed, can be used in models for i18n.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "pkg_010_install_spatie_medialibrary",
+    "idea_description": "Install Spatie Media Library for file uploads and media management. Execute: composer require 'spatie/laravel-medialibrary:^10'. Run: php artisan vendor:publish --provider='Spatie\\MediaLibrary\\MediaLibraryServiceProvider' --tag='migrations'. Run: php artisan migrate. Verify media tables are created and config is published. Acceptance: Media Library installed, migrations created, configuration available.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "pkg_011_install_spatie_pdf",
+    "idea_description": "Install Spatie Laravel PDF for PDF generation. Execute: composer require spatie/laravel-pdf. Verify package is installed. No migration needed. Acceptance: Spatie PDF installed, ready for generating reports and documents.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "pkg_012_install_laravel_excel",
+    "idea_description": "Install Laravel Excel (uses openspout under hood) for Excel import/export. Execute: composer require laravel-excel/laravel-excel. Run: php artisan vendor:publish --provider='Maatwebsite\\Excel\\ExcelServiceProvider'. Verify config/excel.php is created. Acceptance: Laravel Excel installed, configuration published, ready for Excel operations.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "pkg_013_install_meilisearch",
+    "idea_description": "Install Meilisearch Laravel for full-text search capabilities. Execute: composer require meilisearch/meilisearch-laravel. Verify package is installed. No migration needed at this stage. Acceptance: Meilisearch Laravel installed, ready for model integration.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "pkg_014_install_spatie_backup",
+    "idea_description": "Install Spatie Backup for automated database/file backups. Execute: composer require spatie/laravel-backup. Run: php artisan vendor:publish --provider='Spatie\\Backup\\BackupServiceProvider'. Verify config/backup.php is created. Acceptance: Spatie Backup installed, configuration published, backup commands available.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "pkg_015_install_nnjeim_world",
+    "idea_description": "Install nnjeim/world for countries, cities, states data. Execute: composer require nnjeim/laravel-world. Run: php artisan vendor:publish --provider='Nnjeim\\World\\WorldServiceProvider'. Run: php artisan migrate to populate world data. Verify world data tables are created and populated. Acceptance: World package installed, geographic data available, no errors.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "pkg_016_install_laravel_reverb",
+    "idea_description": "Install Laravel Reverb for WebSocket real-time functionality. Execute: composer require laravel/reverb. Run: php artisan reverb:install. This creates Reverb configuration. Configure REVERB_HOST, REVERB_PORT in .env. Verify reverb:install completes successfully. Acceptance: Reverb installed, configuration created, websocket setup ready.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "pkg_017_install_laravel_telescope",
+    "idea_description": "Install Laravel Telescope for development debugging (dev environment only). Execute: composer require --dev laravel/telescope. Run: php artisan telescope:install. Verify Telescope service provider is registered. Acceptance: Telescope installed, configuration ready, accessible in dev environment.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "pkg_018_install_pestphp",
+    "idea_description": "Install Pest PHP for modern testing framework. Execute: composer require pestphp/pest --dev. Run: php artisan pest:install. This creates pest.php configuration and test structure. Verify tests directory is configured for Pest. Acceptance: Pest installed, test configuration created, ready for writing tests.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "pkg_019_install_laravel_pint",
+    "idea_description": "Install Laravel Pint for code formatting and style. Execute: composer require laravel/pint --dev. Verify pint is available. Run: php artisan pint --test to verify no issues (initial run). Acceptance: Pint installed, code formatting tool available, configuration ready.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "pkg_020_install_laravel_modules",
+    "idea_description": "Install nwidart/laravel-modules for modular architecture. Execute: composer require nwidart/laravel-modules. Run: php artisan vendor:publish --provider='Nwidart\\Modules\\LaravelModulesServiceProvider'. Verify config/modules.php is created with module namespace and paths. Acceptance: Laravel Modules installed, configuration published, module commands available (php artisan module:list).",
+    "status": "pending_execution"
+  },
+  {
+    "id": "base_001_env_setup",
+    "idea_description": "Setup .env configuration file for TagERP. Copy .env.example to .env. Configure: APP_NAME='TagERP', APP_ENV='local', APP_DEBUG=true, DB_CONNECTION='mysql', DB_HOST='127.0.0.1', DB_PORT=3306, DB_DATABASE='tagerp_dev', DB_USERNAME='root', DB_PASSWORD=''. Generate APP_KEY by running: php artisan key:generate. Verify .env file contains APP_KEY value. Acceptance: .env configured with correct database settings and APP_KEY generated.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "base_002_database_config",
+    "idea_description": "Configure MySQL database connection in config/database.php. Ensure MySQL is default connection with charset='utf8mb4' and collation='utf8mb4_unicode_ci'. Verify database connection by running: php artisan tinker and then DB::connection()->getPDO(). Should return PDO object without errors. Acceptance: Database connection configured, MySQL accessible, no connection errors.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "base_003_livewire_config",
+    "idea_description": "Configure Livewire in blade layout. Update resources/views/app.blade.php (or main layout) to include @livewireStyles before closing head tag and @livewireScripts before closing body tag. Configure app.blade.php to load Flux styles if using Flux components. Verify Livewire can load components. Acceptance: Livewire styles and scripts loaded in layout, components can be rendered.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "base_004_fortify_setup",
+    "idea_description": "Configure Fortify authentication. Update app/Providers/FortifyServiceProvider.php to register Fortify routes with Livewire guard if desired. Configure FORTIFY_GUARD='web' in .env. Run: php artisan migrate to create users and sessions tables if not exists. Verify Fortify routes are available. Acceptance: Fortify configured, auth routes work, user registration/login functional.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "base_005_spatie_permissions_seed",
+    "idea_description": "Seed initial roles and permissions. Create database/seeders/PermissionSeeder.php to create initial roles: 'super_admin', 'admin', 'manager', 'user'. Create base permissions: 'view_dashboard', 'manage_users', 'manage_modules'. Assign permissions to super_admin role. Run: php artisan db:seed --class=PermissionSeeder. Verify roles and permissions are created in database. Acceptance: Roles and permissions seeded, super_admin has all permissions.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "base_006_translatable_setup",
+    "idea_description": "Configure Spatie Translatable for i18n (Arabic + English). Update config/app.php to set 'locale'=>'en', 'fallback_locale'=>'en'. Create resources/lang/en/messages.php and resources/lang/ar/messages.php with basic translations. Create middleware app/Http/Middleware/SetLocale.php to detect locale from query parameter or route. Register middleware in app/Http/Kernel.php. Verify translations work with __('messages.key'). Acceptance: i18n configured, translations accessible in both languages.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "base_007_telescope_config",
+    "idea_description": "Configure Telescope for development. Set TELESCOPE_ENABLED=true in .env.local (or local only). Update app/Providers/TelescopeServiceProvider.php to gate access behind auth() check. Verify Telescope is only available in local environment. Run: php artisan serve and access /telescope. Acceptance: Telescope configured, accessible in dev environment, not active in production.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "base_008_activity_log_config",
+    "idea_description": "Configure Spatie Activity Log. Update config/activitylog.php to set default_log_name='tagerp', log_name_resolver to use tenant context if available. Configure to log by default to 'tagerp' log. Verify activity_log table exists. Acceptance: Activity Log configured, table ready, logging system initialized.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "mod_001_create_general_module",
+    "idea_description": "Create General module scaffold using laravel-modules. Execute: php artisan module:make General. This creates Modules/General directory with standard structure (Controllers, Models, Migrations, Routes, Views, Providers). Verify Modules/General directory exists with all subdirectories. Run: php artisan module:list to confirm General module appears as active. Acceptance: General module created, directory structure in place, module recognized by system.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "mod_002_create_finance_module",
+    "idea_description": "Create Finance module scaffold. Execute: php artisan module:make Finance. Creates Modules/Finance directory with standard structure. Verify Modules/Finance exists with all subdirectories. Run: php artisan module:list to confirm Finance module active. Acceptance: Finance module created, structure ready, module recognized by system.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "mod_003_create_hr_module",
+    "idea_description": "Create HR module scaffold. Execute: php artisan module:make HR. Creates Modules/HR directory with standard structure. Verify Modules/HR exists. Run: php artisan module:list to confirm HR module active. Acceptance: HR module created, structure ready, module recognized by system.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "mod_004_create_crm_module",
+    "idea_description": "Create CRM module scaffold. Execute: php artisan module:make CRM. Creates Modules/CRM directory with standard structure. Verify Modules/CRM exists. Run: php artisan module:list to confirm CRM module active. Acceptance: CRM module created, structure ready, module recognized by system.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "mod_005_create_procurement_module",
+    "idea_description": "Create Procurement module scaffold. Execute: php artisan module:make Procurement. Creates Modules/Procurement directory with standard structure. Verify Modules/Procurement exists. Run: php artisan module:list to confirm Procurement module active. Acceptance: Procurement module created, structure ready, module recognized by system.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "mod_006_create_projects_module",
+    "idea_description": "Create Projects module scaffold. Execute: php artisan module:make Projects. Creates Modules/Projects directory with standard structure. Verify Modules/Projects exists. Run: php artisan module:list to confirm Projects module active. Acceptance: Projects module created, structure ready, module recognized by system.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "mod_007_modules_service_providers",
+    "idea_description": "Configure all module service providers. For each module (General, Finance, HR, CRM, Procurement, Projects), update Modules/{Module}/Providers/{Module}ServiceProvider.php to: 1) Load routes from Modules/{Module}/Routes/web.php 2) Load views with namespace 'modulename' 3) Publish module config if exists 4) Register any bindings. Verify all service providers are properly configured. Acceptance: All 6 module service providers configured, no registration errors.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "mod_008_modules_routes_setup",
+    "idea_description": "Setup routes structure for all 6 modules. For each module, create Modules/{Module}/Routes/web.php with: 1) Route::prefix('{locale}')->middleware(['web', 'auth']) group for i18n support 2) Resource routes for main entities (Route::resource('customers', CustomerController)) 3) Custom action routes as needed 4) Proper naming convention: 'modulename.resource.action'. Setup base route groups for all modules. Acceptance: Routes configured for all modules, no route conflicts, accessible via php artisan route:list.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "mod_009_modules_livewire_structure",
+    "idea_description": "Setup Livewire component directories for all 6 modules. For each module create Modules/{Module}/Livewire/Components directory. Create base Livewire component structure with proper namespace configuration in module service providers. Verify Livewire can discover components from module directories. Acceptance: Livewire directories created, components discoverable from all modules, namespace configuration working.",
+    "status": "pending_execution"
+  },
+  {
+    "id": "mod_010_modules_views_structure",
+    "idea_description": "Setup views directory structure for all 6 modules. For each module, verify Modules/{Module}/Resources/views/ exists. Create subdirectories for organization: layouts/, components/, crud/ (for create, read, update, delete views). Ensure service provider loads views with correct namespace. Acceptance: Views directory structure created for all modules, proper organization in place, views loadable by namespace.",
+    "status": "pending_execution"
+  }
+]
