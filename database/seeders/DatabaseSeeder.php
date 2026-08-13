@@ -16,6 +16,8 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
+            \Modules\General\Database\Seeders\System\ModulesSeeder::class,
+            \Modules\General\Database\Seeders\System\SubModulesSeeder::class,
             RoleSeeder::class,
             WorldSeeder::class,
         ]);

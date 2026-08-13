@@ -8,6 +8,7 @@ This file maps project rules by scope. All agents and teammates must read and fo
 |---|---|---|
 | `Modules/**` | [module-organization.md](module-organization.md) | Module structure, naming, file placement |
 | `app/**`, `Modules/**` | [performance-security.md](performance-security.md) | Performance optimization & security priorities |
+| `database/migrations`, `database/seeders` | [code-field-hierarchy.md](code-field-hierarchy.md) | Hierarchical code field for all records |
 
 ---
 
