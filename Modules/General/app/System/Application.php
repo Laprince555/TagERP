@@ -3,21 +3,19 @@
 namespace Modules\General\System;
 
 use App\Observers\NavigationObserver;
-use Illuminate\Database\Eloquent\Model as EloquentModel;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Translatable\Attributes\Translatable;
 use Spatie\Translatable\HasTranslations;
 
 #[Translatable('name', 'description')]
-class Module extends EloquentModel
+class Application extends Model
 {
     use HasTranslations;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
+    protected $touches = ['subModule'];
+
     protected $fillable = [
         'name',
         'description',
@@ -25,8 +23,10 @@ class Module extends EloquentModel
         'route',
         'icon',
         'sort_order',
+        'permission_name',
         'permission_group',
         'is_active',
+        'submodule_id',
     ];
 
     /**
@@ -44,13 +44,18 @@ class Module extends EloquentModel
         ];
     }
 
+    public function subModule(): BelongsTo
+    {
+        return $this->belongsTo(SubModule::class);
+    }
+
+    public function subApplications(): HasMany
+    {
+        return $this->hasMany(SubApplication::class, 'application_id');
+    }
+
     protected static function booted(): void
     {
         static::observe(NavigationObserver::class);
-    }
-
-    public function subModules(): HasMany
-    {
-        return $this->hasMany(SubModule::class, 'module_id');
     }
 }

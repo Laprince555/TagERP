@@ -2,6 +2,7 @@
 
 namespace Modules\General\System;
 
+use App\Observers\NavigationObserver;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -35,6 +36,11 @@ class SubModule extends Model
             'is_active' => 'boolean',
             'sort_order' => 'integer',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::observe(NavigationObserver::class);
     }
 
     public function module(): BelongsTo
