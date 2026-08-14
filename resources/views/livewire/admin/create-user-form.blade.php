@@ -26,9 +26,9 @@
             <flux:field>
                 <flux:label for="role">{{ __('Role') }}</flux:label>
                 <flux:select id="role" wire:model="role">
-                    <flux:option value="">{{ __('Select a role') }}</flux:option>
+                    <flux:select.option value="">{{ __('Select a role') }}</flux:select.option>
                     @foreach ($roles as $availableRole)
-                        <flux:option value="{{ $availableRole }}">{{ str($availableRole)->headline() }}</flux:option>
+                        <flux:select.option value="{{ $availableRole }}">{{ str($availableRole)->headline() }}</flux:select.option>
                     @endforeach
                 </flux:select>
                 <flux:error name="role" />

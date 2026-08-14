@@ -170,6 +170,7 @@
         </header>
 
         <livewire:system.command-palette />
+        <livewire:record-reference.preview-host />
 
         <main>
             {{ $slot ?? '' }}

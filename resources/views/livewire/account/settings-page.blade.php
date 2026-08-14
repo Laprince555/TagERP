@@ -43,7 +43,7 @@
                     <div class="flex w-full max-w-md flex-col gap-4">
                         <flux:select wire:model="locale" class="w-full">
                             @foreach ($availableLocales as $code => $meta)
-                                <flux:option value="{{ $code }}">{{ $meta['native'] }} - {{ $meta['label'] }}</flux:option>
+                                <flux:select.option value="{{ $code }}">{{ $meta['native'] }} - {{ $meta['label'] }}</flux:select.option>
                             @endforeach
                         </flux:select>
 

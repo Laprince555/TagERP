@@ -46,4 +46,19 @@ return [
         'applications_empty_title' => 'No applications yet',
         'applications_empty_description' => 'This sub module has no applications available to you yet. They will appear here as soon as they are enabled.',
     ],
+    'record_reference' => [
+        'preview_label' => 'Record Preview',
+        'preview_unavailable' => 'Preview unavailable',
+        'preview_error' => 'Error loading preview',
+        'preview_loading' => 'Loading preview...',
+        'open_preview' => 'Open preview',
+        'close_preview' => 'Close preview',
+        'context_menu_instructions' => 'Right-click or press Shift+F10 to open preview',
+        'facts' => [
+            'region' => 'Region',
+            'subregion' => 'Subregion',
+            'phone_code' => 'Phone Code',
+            'iso3' => 'ISO3',
+        ],
+    ],
 ];

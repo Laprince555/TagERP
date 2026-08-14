@@ -2,6 +2,7 @@
 
 namespace Modules\General\Database\Factories;
 
+use App\Support\RecordReference\ApplicationColor;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Modules\General\System\Application;
 use Modules\General\System\SubModule;
@@ -26,6 +27,7 @@ class ApplicationFactory extends Factory
             'code' => $slug,
             'route' => $slug.'.index',
             'icon' => 'squares-2x2',
+            'color' => fake()->randomElement(ApplicationColor::cases())->value,
             'sort_order' => 0,
             'permission_name' => null,
             'permission_group' => null,

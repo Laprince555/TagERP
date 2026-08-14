@@ -3,6 +3,7 @@
 namespace Modules\General\System;
 
 use App\Observers\NavigationObserver;
+use App\Support\RecordReference\ApplicationColor;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -24,6 +25,7 @@ class Application extends Model
         'code',
         'route',
         'icon',
+        'color',
         'sort_order',
         'permission_name',
         'permission_group',
@@ -43,6 +45,7 @@ class Application extends Model
             'description' => 'array',
             'is_active' => 'boolean',
             'sort_order' => 'integer',
+            'color' => ApplicationColor::class,
         ];
     }
 

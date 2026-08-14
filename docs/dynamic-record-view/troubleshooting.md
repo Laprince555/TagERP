@@ -1,0 +1,20 @@
+# Troubleshooting
+
+Status: **Implemented** — real exceptions this engine actually throws.
+
+| Symptom / Exception | Cause | Fix |
+| --- | --- | --- |
+| `UnknownRecordViewKeyException` | `RecordViewRegistry::resolve($key)` called with a key never `register()`-ed. | Register the view in the owning module's service provider `boot()` (see `Modules\General\Providers\GeneralServiceProvider`). |
+| 404 on a record you expect to see | `DynamicRecordView::query()` excludes the row (soft delete, tenant scope, explicit authorization `where()`). This is intentional fail-closed behavior — see [security.md](security.md) — not distinguishable from "doesn't exist". | Check the view's `query()` scopes match what the current user should see. |
+| `MultipleDefaultTabsException` | More than one `RecordTab::default()` in the same `RecordSection`. | Only one tab per section may call `->default()`. |
+| `NoAuthorizedDefaultTabException` | Every tab in a section is unauthorized for the resolved record. | At least one tab's `visible()` condition must pass, or the section shouldn't render for this record/user at all. |
+| `DuplicateTabKeyException` / `DuplicateContentKeyException` / `DuplicateFieldKeyException` | Two tabs/content blocks/fields in the same collection share a key. | Keys must be unique within their container. |
+| `UnknownTableException` | An embedded `Table`'s class doesn't match what the `TableContent` declared. | Check `TableContent::table()` matches the actual `embedTableClass` prop passed. |
+| `UnknownRelationException` | `SubApplication::relation('name')`/`TableContent::relation('name')` names a method that isn't a relation on the parent model. | Check the relation method name and that it returns a `Relation`. |
+| `UnsupportedRelationTypeException` | The named relation isn't `HasMany`, `BelongsToMany`, or `MorphMany`. | Only those three relation types are supported for embedding/Link/Unlink. |
+| `TableModelMismatchException` | The embedded `Table`'s base-query model doesn't match the relation's related model. | The `Table` subclass must query the same model the relation returns. |
+| **Unlink button missing / 422 on Unlink** | The relation's foreign key is `NOT NULL` (e.g. `Application.submodule_id`, `City.country_id`). Setting it to `null` to "unlink" would violate the schema — this is a real, permanent limitation, not a bug. | Don't call `->unlinkable()` for a non-nullable FK relation. Use `->allowReassignment()` with Link instead — re-pointing the FK to a different parent is the only valid "move" operation. See [security.md](security.md), [relationship-actions.md](relationship-actions.md). |
+| `HttpException(422, 'Unable to complete this action.')` from a Link/Unlink attempt | Generic, deliberately non-specific failure from `RelationshipMutator::safeAbortUnless()` — could be: parent/candidate no longer exists, `linkAuthorization()`/`unlinkAuthorization()` returned false, or the candidate is already linked to a different parent without `allowReassignment()`. | Check server logs / add a temporary non-generic check in a test if you need to pin down which guard failed — the generic message is intentional in production to prevent id-probing. |
+| A `LinkViewField` renders no link at all | The URL failed `LinkViewField::isSafeUrl()` — wrong scheme (not http/https/mailto/tel), contains control characters, or is empty. | Check what `linkUsing()` actually returns; this is fail-closed by design, not a bug. See [security.md](security.md). |
+| Lazy-loading violation / N+1 on a `RelationViewField` | The relation wasn't picked up by `DynamicRecordView::requiredEagerLoads()` — only relations named by a `RelationViewField` inside a `FieldsContent` on `tabs()` are auto-collected; Other Data section relations are loaded separately per embedded table. | See [performance.md](performance.md). If you hit this on a genuinely new pattern, extend `requiredEagerLoads()`. |
+| `MissingViewKeyException` | `DynamicRecordView::getViewKey()` called before `$viewKey` is set. | Set `protected string $viewKey = '...'` on the concrete class. |

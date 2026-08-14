@@ -1,5 +1,6 @@
 <?php
 
+use App\Support\RecordReference\ApplicationColor;
 use Modules\General\Database\Seeders\System\ModulesSeeder;
 use Modules\General\Database\Seeders\System\SubModulesSeeder;
 use Modules\General\Database\Seeders\World\WorldApplicationsSeeder;
@@ -75,6 +76,34 @@ it('applies the translated attributes and navigation defaults', function (): voi
         ->and($countries->is_active)->toBeTrue()
         ->and($countries->permission_name)->toBeNull()
         ->and($countries->permission_group)->toBeNull();
+});
+
+it('gives every seeded world application a valid, non-null color and stays idempotent on re-seed', function (): void {
+    (new WorldApplicationsSeeder)->run();
+
+    $colors = Application::query()->orderBy('sort_order')->pluck('color', 'code')
+        ->map(fn (ApplicationColor $color) => $color->value)->all();
+
+    expect($colors)->toBe([
+        'gen-wld-ctr' => 'sky',
+        'gen-wld-sta' => 'indigo',
+        'gen-wld-cty' => 'violet',
+        'gen-wld-tzn' => 'amber',
+        'gen-wld-cur' => 'emerald',
+        'gen-wld-lng' => 'rose',
+        'gen-wld-com' => 'cyan',
+        'gen-wld-per' => 'orange',
+    ]);
+
+    foreach ($colors as $color) {
+        expect(ApplicationColor::tryFrom($color))->not->toBeNull();
+    }
+
+    // Re-seeding with a deliberately wrong color must correct it via the upsert update list.
+    Application::where('code', 'gen-wld-ctr')->update(['color' => 'slate']);
+    (new WorldApplicationsSeeder)->run();
+
+    expect(Application::where('code', 'gen-wld-ctr')->first()->color)->toBe(ApplicationColor::Sky);
 });
 
 it('fails when the world submodule is missing', function (): void {

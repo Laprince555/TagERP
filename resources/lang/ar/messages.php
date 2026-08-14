@@ -46,4 +46,19 @@ return [
         'applications_empty_title' => 'لا توجد تطبيقات بعد',
         'applications_empty_description' => 'هذه الوحدة الفرعية لا تحتوي على تطبيقات متاحة لك حتى الآن. ستظهر هنا فور تفعيلها.',
     ],
+    'record_reference' => [
+        'preview_label' => 'معاينة السجل',
+        'preview_unavailable' => 'المعاينة غير متاحة',
+        'preview_error' => 'خطأ في تحميل المعاينة',
+        'preview_loading' => 'جاري تحميل المعاينة...',
+        'open_preview' => 'فتح المعاينة',
+        'close_preview' => 'إغلاق المعاينة',
+        'context_menu_instructions' => 'انقر بزر الماوس الأيمن أو اضغط على Shift+F10 لفتح المعاينة',
+        'facts' => [
+            'region' => 'المنطقة',
+            'subregion' => 'المنطقة الفرعية',
+            'phone_code' => 'رمز الهاتف',
+            'iso3' => 'ISO3',
+        ],
+    ],
 ];
