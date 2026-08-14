@@ -96,6 +96,16 @@ class SubModulesSeeder extends Seeder
                 'permission_group' => null,
                 'is_active' => true,
             ],
+            [
+                'name' => ['ar' => 'التوثيق والدليل', 'en' => 'Documentation'],
+                'description' => ['ar' => 'التوثيق التقني لنظام TagERP وتدريب المطورين.', 'en' => 'TagERP system technical documentation and guides.'],
+                'code' => 'gen-doc',
+                'route' => 'general.docs',
+                'icon' => 'book-open',
+                'sort_order' => 7,
+                'permission_group' => null,
+                'is_active' => true,
+            ],
         ];
 
         $subModules = array_map(function (array $subModule) use ($generalModule): array {
