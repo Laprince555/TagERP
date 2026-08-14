@@ -7,47 +7,54 @@
 
     <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div class="sm:col-span-2">
-            <label for="name" class="mb-2 block text-xs font-semibold uppercase tracking-wider text-[var(--color-text-main)]">
-                {{ __('Name') }}
-            </label>
-            <input id="name" type="text" wire:model="name" autocomplete="name" class="w-full rounded-lg border px-4 py-3 text-sm transition-colors focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] @error('name') border-rose-500 bg-rose-50/30 text-rose-900 @else border-[var(--color-border)] bg-[var(--color-card-bg)] text-[var(--color-text-main)] @enderror">
-            @error('name')
-                <p class="mt-2 text-xs font-semibold text-rose-600">{{ $message }}</p>
-            @enderror
+            <flux:field>
+                <flux:label for="name">{{ __('Name') }}</flux:label>
+                <flux:input id="name" type="text" wire:model="name" autocomplete="name" />
+                <flux:error name="name" />
+            </flux:field>
         </div>
 
         <div class="sm:col-span-2">
-            <label for="email" class="mb-2 block text-xs font-semibold uppercase tracking-wider text-[var(--color-text-main)]">
-                {{ __('Email Address') }}
-            </label>
-            <input id="email" type="email" wire:model="email" autocomplete="username" class="w-full rounded-lg border px-4 py-3 text-sm transition-colors focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] @error('email') border-rose-500 bg-rose-50/30 text-rose-900 @else border-[var(--color-border)] bg-[var(--color-card-bg)] text-[var(--color-text-main)] @enderror">
-            @error('email')
-                <p class="mt-2 text-xs font-semibold text-rose-600">{{ $message }}</p>
-            @enderror
+            <flux:field>
+                <flux:label for="email">{{ __('Email Address') }}</flux:label>
+                <flux:input id="email" type="email" wire:model="email" autocomplete="username" />
+                <flux:error name="email" />
+            </flux:field>
+        </div>
+
+        <div class="sm:col-span-2">
+            <flux:field>
+                <flux:label for="role">{{ __('Role') }}</flux:label>
+                <flux:select id="role" wire:model="role">
+                    <flux:option value="">{{ __('Select a role') }}</flux:option>
+                    @foreach ($roles as $availableRole)
+                        <flux:option value="{{ $availableRole }}">{{ str($availableRole)->headline() }}</flux:option>
+                    @endforeach
+                </flux:select>
+                <flux:error name="role" />
+            </flux:field>
         </div>
 
         <div>
-            <label for="password" class="mb-2 block text-xs font-semibold uppercase tracking-wider text-[var(--color-text-main)]">
-                {{ __('Password') }}
-            </label>
-            <input id="password" type="password" wire:model="password" autocomplete="new-password" class="w-full rounded-lg border px-4 py-3 text-sm transition-colors focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] @error('password') border-rose-500 bg-rose-50/30 text-rose-900 @else border-[var(--color-border)] bg-[var(--color-card-bg)] text-[var(--color-text-main)] @enderror">
-            @error('password')
-                <p class="mt-2 text-xs font-semibold text-rose-600">{{ $message }}</p>
-            @enderror
+            <flux:field>
+                <flux:label for="password">{{ __('Password') }}</flux:label>
+                <flux:input id="password" type="password" wire:model="password" autocomplete="new-password" />
+                <flux:error name="password" />
+            </flux:field>
         </div>
 
         <div>
-            <label for="password_confirmation" class="mb-2 block text-xs font-semibold uppercase tracking-wider text-[var(--color-text-main)]">
-                {{ __('Confirm Password') }}
-            </label>
-            <input id="password_confirmation" type="password" wire:model="password_confirmation" autocomplete="new-password" class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-card-bg)] px-4 py-3 text-sm text-[var(--color-text-main)] transition-colors focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]">
+            <flux:field>
+                <flux:label for="password_confirmation">{{ __('Confirm Password') }}</flux:label>
+                <flux:input id="password_confirmation" type="password" wire:model="password_confirmation" autocomplete="new-password" />
+            </flux:field>
         </div>
     </div>
 
     <div class="flex items-center justify-end gap-3 border-t border-[var(--color-border)] pt-5">
-        <button type="submit" class="inline-flex items-center justify-center rounded-lg bg-[var(--color-primary)] px-5 py-3 text-sm font-bold text-white shadow-md shadow-[var(--color-primary)]/25 transition-all hover:bg-[var(--color-primary-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70" wire:loading.attr="disabled">
+        <flux:button type="submit" variant="primary" wire:loading.attr="disabled">
             <span wire:loading.remove>{{ __('Create User') }}</span>
             <span wire:loading>{{ __('Creating...') }}</span>
-        </button>
+        </flux:button>
     </div>
 </form>

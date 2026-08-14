@@ -159,3 +159,27 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - Do NOT delete tests without approval.
 
 </laravel-boost-guidelines>
+
+## Project rules digest (read this instead of every rule file)
+
+The full rules live in `.ai/rules/`. This digest carries the load-bearing points, so a
+routine change needs no extra reading. Open the matching rule file only when the work in
+that area is non-trivial or the digest does not answer the question.
+
+**Modules** (`.ai/rules/module-organization.md`)
+- Only the top-level module is an `nwidart` package. SubModule / Application / SubApplication are business levels, expressed as subdirectories under each technical concern (`Livewire/`, `Models/`, `Resources/views/`). Never create an `Apps/` directory or a package per level.
+- Module code stays in its module. Shared-across-modules code goes to root `app/`. Cross-module use goes through an explicit public entry point, never another module's internals.
+- PascalCase for PHP dirs/namespaces, kebab-case for views and URL segments, snake_case for DB identifiers. Route names are hierarchical: `finance.general-ledger.journals.index`.
+
+**Codes** (`.ai/rules/code-field-hierarchy.md`)
+- Every navigation/business record gets a dash-joined `code` containing every parent segment, parent first: `fin-gl-jou-jv-2026-0001`. Built from persisted slugs (never display names), immutable, and never a replacement for the foreign key.
+
+**Performance & security** (`.ai/rules/performance-security.md`)
+- Eager load, `select()` only needed columns, paginate, cache what rarely changes and invalidate on write. Validate and authorize every entry point. Never expose data a user cannot access — including through counts.
+
+**Livewire & Flux** (`.ai/rules/livewire.md`)
+- Use `<flux:*>` whenever a component exists; free edition only. Hand-written markup is a fallback, not a default.
+- Split UI into small components: stateless pieces become Blade components, stateful ones their own Livewire component. Never one monolithic view.
+- `wire:key` on every loop.
+
+**Before finalizing:** `vendor/bin/pint --dirty --format agent`, then the narrowest relevant `php artisan test --compact --filter=...`.

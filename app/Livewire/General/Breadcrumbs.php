@@ -3,6 +3,7 @@
 namespace App\Livewire\General;
 
 use App\Services\NavigationTreeService;
+use App\Support\FallbackValue;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
@@ -123,14 +124,14 @@ class Breadcrumbs extends Component
      */
     protected function arrayValue(array $item, string $key): array
     {
-        $value = $item[$key] ?? [];
+        $value = FallbackValue::path($item, $key, []);
 
         return is_array($value) ? $value : [];
     }
 
     protected function stringValue(array $item, string $key, string $default = ''): string
     {
-        $value = $item[$key] ?? null;
+        $value = FallbackValue::get($item, [$key], $default);
 
         return is_string($value) && $value !== '' ? $value : $default;
     }

@@ -3,14 +3,17 @@
 namespace Modules\General\System;
 
 use App\Observers\NavigationObserver;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Modules\General\Database\Factories\ModuleFactory;
 use Spatie\Translatable\Attributes\Translatable;
 use Spatie\Translatable\HasTranslations;
 
 #[Translatable('name', 'description')]
 class Module extends EloquentModel
 {
+    use HasFactory;
     use HasTranslations;
 
     /**
@@ -47,6 +50,11 @@ class Module extends EloquentModel
     protected static function booted(): void
     {
         static::observe(NavigationObserver::class);
+    }
+
+    protected static function newFactory(): ModuleFactory
+    {
+        return ModuleFactory::new();
     }
 
     public function subModules(): HasMany

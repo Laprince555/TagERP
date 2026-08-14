@@ -1,10 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Support\ModuleRoute;
+use Modules\General\Livewire\ModuleWorkspace;
+use Modules\General\Livewire\SubModuleWorkspace;
 
-Route::middleware(['auth'])
-    ->prefix('{locale}')
-    ->name('finance.')
-    ->group(function (): void {
-        Route::view('/finance', 'finance::index')->name('index');
-    });
+ModuleRoute::registerIndex('finance', '/finance', ModuleWorkspace::class);
+ModuleRoute::registerSubModules('finance', '/finance', SubModuleWorkspace::class);

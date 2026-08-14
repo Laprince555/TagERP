@@ -1,225 +1,102 @@
 ---
 name: code-field-hierarchy
-description: Every database record must have a hierarchical code field for navigation and identification
+description: Build immutable business codes from the full ERP hierarchy and parent record context
 metadata:
   type: project
-  scope: "database/migrations,database/seeders,Modules/**"
+  scope: "database/migrations/**,database/seeders/**,Modules/**"
   priority: high
 ---
 
-# Hierarchical Code Field Rule
+# Hierarchical Business Code
 
-**Applies to:** All tables that store records, configurations, or entities
+## Scope
 
-## The Rule
+Every ERP navigation entity and business record governed by the module hierarchy must have a deterministic `code`. Framework and technical tables such as jobs, cache, sessions, and pivots are excluded unless a separate requirement gives them a business code.
 
-**Every record inserted into the database (via migration, seeder, or programmatically) MUST include a `code` field.**
+The relational foreign keys are the source of truth. A `code` is a stable business identifier and navigation aid; it does not replace foreign keys or authorization checks.
 
-The `code` field is a hierarchical identifier that represents the full path to that record in the module structure.
+## Canonical Hierarchy
 
-### Code Format
-
-```
-module-slug-application-slug[-subapplication-slug][-record-slug]
+```text
+Module -> SubModule -> Application -> Application Record -> optional SubApplication -> optional SubApplication Record
 ```
 
-**Components (left to right):**
-1. `module-slug` - Module name (lowercase, kebab-case)
-2. `application-slug` - Application name within module (lowercase, kebab-case)
-3. `[subapplication-slug]` - Optional: Subapplication within app (lowercase, kebab-case)
-4. `[record-slug]` - Optional: Individual record identifier (lowercase, kebab-case)
+Use lowercase kebab-case slugs. Each stored full code contains every preceding hierarchy segment without gaps.
 
-### Stop Points (When to Stop Adding Segments)
+Let:
 
-The `code` stops at your current hierarchy level:
-
-| Level | Code Format | Example |
-|---|---|---|
-| **Module** | `{module}` | `finance` |
-| **Module > Application** | `{module}-{application}` | `finance-general-ledger` |
-| **Module > Application > SubApp** | `{module}-{application}-{subapp}` | `finance-general-ledger-accounts` |
-| **Record in Application** | `{module}-{application}-{record-slug}` | `finance-general-ledger-jv-2024001` |
-| **Record in SubApplication** | `{module}-{application}-{subapp}-{record-slug}` | `finance-general-ledger-accounts-code-1000` |
-
-### Examples
-
-**Finance Module:**
-```
-Module registration:
-  code: "finance"
-
-GeneralLedger Application:
-  code: "finance-general-ledger"
-
-Accounts SubApplication:
-  code: "finance-general-ledger-accounts"
-
-Journal Entry record:
-  code: "finance-general-ledger-jv-20240812001"
-
-Account record:
-  code: "finance-general-ledger-accounts-1000"
+```text
+M   = module slug
+SM  = submodule slug
+A   = application slug
+AR  = application record slug
+SA  = subapplication slug
+SAR = subapplication record slug
 ```
 
-**CRM Module:**
-```
-Module registration:
-  code: "crm"
+The canonical formats are:
 
-Customer Application:
-  code: "crm-customer"
+| Entity | Full code |
+| --- | --- |
+| Module | `{M}` |
+| SubModule | `{M}-{SM}` |
+| Application | `{M}-{SM}-{A}` |
+| Application record | `{M}-{SM}-{A}-{AR}` |
+| SubApplication definition | `{M}-{SM}-{A}-{SA}` |
+| SubApplication context for a parent record | `{M}-{SM}-{A}-{AR}-{SA}` |
+| SubApplication record | `{M}-{SM}-{A}-{AR}-{SA}-{SAR}` |
 
-Customer record:
-  code: "crm-customer-cust-001"
-```
+The SubApplication definition belongs to the Application. A usable SubApplication instance is contextual to one Application record, so the parent record slug must appear before the SubApplication slug.
 
-**HR Module:**
-```
-Module registration:
-  code: "hr"
+## Finance Example
 
-Employee Application:
-  code: "hr-employee"
+For Finance -> General Ledger -> Journals -> a specific Journal -> Lines:
 
-Department SubApplication:
-  code: "hr-employee-department"
+| Entity | Local slug | Full code |
+| --- | --- | --- |
+| Finance Module | `fin` | `fin` |
+| General Ledger SubModule | `gl` | `fin-gl` |
+| Journals Application | `jou` | `fin-gl-jou` |
+| Specific Journal | `jv-2026-0001` | `fin-gl-jou-jv-2026-0001` |
+| Lines SubApplication definition | `lines` | `fin-gl-jou-lines` |
+| Lines context for that Journal | `lines` | `fin-gl-jou-jv-2026-0001-lines` |
+| Specific Journal Line | `line-0001` | `fin-gl-jou-jv-2026-0001-lines-line-0001` |
 
-Employee record:
-  code: "hr-employee-emp-00001"
+If an Application has no SubApplications, its record code stops after the Application record slug:
 
-Department record:
-  code: "hr-employee-department-dept-001"
-```
-
----
-
-## Implementation
-
-### Database Schema
-
-**Every table must include:**
-
-```php
-// In migration
-$table->string('code')->unique()->index();
+```text
+fin-gl-jou-jv-2026-0001
 ```
 
-**Placement:**
-- Add as first column after `id`
-- Make it `unique()` and `index()` for fast lookups
-- Never null
+Do not produce this for a contextual Journal Line:
 
-### Seeder Example
-
-```php
-// ModuleSeeder.php
-Module::create([
-    'code' => 'finance',           // ← Just module
-    'name' => 'Finance',
-]);
-
-// GeneralLedgerSeeder.php (under Finance)
-Application::create([
-    'code' => 'finance-general-ledger',  // ← Module-application
-    'module_code' => 'finance',
-    'name' => 'General Ledger',
-]);
-
-// AccountSeeder.php (under GL)
-Account::create([
-    'code' => 'finance-general-ledger-1000',  // ← Module-app-record
-    'app_code' => 'finance-general-ledger',
-    'account_number' => '1000',
-    'name' => 'Cash',
-]);
+```text
+fin-gl-jou-lines-line-0001
 ```
 
-### Programmatic Creation
+It is invalid because it omits the parent Journal record slug.
 
-```php
-// When creating a record programmatically
-$journal = JournalEntry::create([
-    'code' => 'finance-general-ledger-jv-' . date('YmdHis') . '-' . rand(1000, 9999),
-    'module_code' => 'finance',
-    'app_code' => 'finance-general-ledger',
-    'entry_date' => now(),
-    // ... other fields
-]);
+## Persistence Rules
+
+1. Build codes from persisted canonical slugs, never translated display names.
+2. Codes are immutable after creation except through an explicit data-correction process.
+3. Use a unique constraint appropriate to the owning table or business scope. A unique constraint is already an index; do not add a redundant normal index to the same column.
+4. A child record must store its parent foreign key even when its code embeds the parent path.
+5. Validate that each provided segment belongs to the preceding entity before generating a code.
+6. Generate codes through one shared builder or service rather than hand-concatenating strings throughout the codebase. Match the project's dependency-injection conventions when implementing it.
+7. Record slugs must be stable and unique within their parent scope.
+8. Renaming a display label must not change the code.
+
+## Ordering Rule
+
+The order is always parent before child:
+
+```text
+module-submodule-application-applicationRecord-subapplication-subapplicationRecord
 ```
 
-### Code Generation Helper
+For the Journal example, the required order is therefore:
 
-**Create a service for consistent code generation:**
-
-```php
-// app/Services/CodeGeneratorService.php
-class CodeGeneratorService
-{
-    public static function generate(
-        string $moduleSlug,
-        ?string $appSlug = null,
-        ?string $subAppSlug = null,
-        ?string $recordSlug = null
-    ): string {
-        $parts = [$moduleSlug];
-        
-        if ($appSlug) $parts[] = $appSlug;
-        if ($subAppSlug) $parts[] = $subAppSlug;
-        if ($recordSlug) $parts[] = $recordSlug;
-        
-        return implode('-', $parts);
-    }
-}
-
-// Usage
-$code = CodeGeneratorService::generate(
-    'finance',
-    'general-ledger',
-    null,
-    'jv-2024001'
-);
-// Output: finance-general-ledger-jv-2024001
+```text
+fin-gl-jou-{journalSlug}-lines-{lineSlug}
 ```
-
----
-
-## Rules
-
-1. **No Spaces**: Always kebab-case (lowercase-with-dashes)
-2. **Unique**: Each code must be unique within its scope
-3. **Immutable**: Once set, should never change (acts as identifier)
-4. **Hierarchical**: Always represents full path
-5. **Deterministic**: Same entity always gets same code
-6. **No Gaps**: Don't skip levels (e.g., `finance-accounts` is wrong if it should be `finance-general-ledger-accounts`)
-
-### Anti-Patterns (❌ Don't Do)
-
-```php
-❌ code: "Finance" // Has space/capitals
-❌ code: "JV-2024001" // Missing module-app prefix
-❌ code: "finance-jv-2024001" // Missing application level
-❌ code: "finance-general-ledger" // For a record (should have record slug)
-❌ code: "finance_general_ledger" // Uses underscore instead of dash
-```
-
----
-
-## Benefits
-
-- **Navigation**: Can determine location from code alone
-- **Access Control**: Permission checks based on code path
-- **Hierarchical Queries**: Find all children of a module/app
-- **Debugging**: Easy to trace which module/app caused an issue
-- **API**: Meaningful identifiers instead of just IDs
-- **User-Friendly**: Can display full path to users
-
----
-
-## When to Update
-
-The `code` field should change ONLY if:
-- ❌ NEVER: Record is renamed (create new, archive old)
-- ❌ NEVER: Record is moved to different module/app
-- ✓ YES: Explicitly required by data correction process
-
-Once set, treat `code` as immutable.

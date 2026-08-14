@@ -5,7 +5,7 @@ namespace App\Services;
 use Illuminate\Cache\CacheManager;
 use Illuminate\Cache\TaggableStore;
 use Illuminate\Contracts\Auth\Factory as AuthFactory;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Route;
 use Modules\General\System\Module;
 use Modules\General\System\SubModule;
 use Throwable;
@@ -17,8 +17,7 @@ class NavigationTreeService
     public function __construct(
         protected CacheManager $cache,
         protected AuthFactory $auth,
-    ) {
-    }
+    ) {}
 
     public function getTreeForUser(): array
     {
@@ -46,7 +45,7 @@ class NavigationTreeService
                 ])
                 ->where('is_active', true)
                 ->with([
-                    'subModules' => function (Builder $query) use ($shouldLoadApplications): void {
+                    'subModules' => function ($query): void {
                         $query
                             ->select([
                                 'id',
@@ -60,11 +59,9 @@ class NavigationTreeService
                                 'is_active',
                             ])
                             ->where('is_active', true)
-                            ->orderBy('sort_order');
-
-                        if ($shouldLoadApplications) {
-                            $query->with([
-                                'applications' => function (Builder $applicationQuery): void {
+                            ->orderBy('sort_order')
+                            ->with([
+                                'applications' => function ($applicationQuery): void {
                                     $applicationQuery
                                         ->select([
                                             'id',
@@ -82,7 +79,6 @@ class NavigationTreeService
                                         ->orderBy('sort_order');
                                 },
                             ]);
-                        }
                     },
                 ])
                 ->orderBy('sort_order')
@@ -117,7 +113,8 @@ class NavigationTreeService
             'name' => $this->translateAttribute($module, 'name', $locale),
             'code' => $module->code,
             'icon' => $module->icon,
-            'route' => $module->route,
+            'route_name' => $module->route,
+            'route' => $this->resolveRoute($module->route),
             'description' => $this->translateAttribute($module, 'description', $locale),
             'is_active' => (bool) $module->is_active,
             'sort_order' => (int) $module->sort_order,
@@ -145,7 +142,8 @@ class NavigationTreeService
             'name' => $this->translateAttribute($subModule, 'name', $locale),
             'code' => $subModule->code,
             'icon' => $subModule->icon,
-            'route' => $subModule->route,
+            'route_name' => $subModule->route,
+            'route' => $this->resolveRoute($subModule->route),
             'description' => $this->translateAttribute($subModule, 'description', $locale),
             'is_active' => (bool) $subModule->is_active,
             'sort_order' => (int) $subModule->sort_order,
@@ -160,7 +158,8 @@ class NavigationTreeService
             'name' => $this->translateAttribute($application, 'name', $locale),
             'code' => data_get($application, 'code'),
             'icon' => data_get($application, 'icon'),
-            'route' => data_get($application, 'route'),
+            'route_name' => data_get($application, 'route'),
+            'route' => $this->resolveRoute(data_get($application, 'route')),
             'description' => $this->translateAttribute($application, 'description', $locale),
             'is_active' => (bool) data_get($application, 'is_active', false),
             'sort_order' => (int) data_get($application, 'sort_order', 0),
@@ -275,5 +274,34 @@ class NavigationTreeService
         }
 
         return $this->cache->store();
+    }
+
+    /**
+     * Resolve a stored route name to a URL, or null when the route cannot be linked.
+     *
+     * Module routes are registered behind a `{locale}` prefix, so the active locale
+     * has to be supplied for those routes to be generated at all.
+     */
+    protected function resolveRoute(?string $routeName): ?string
+    {
+        if (blank($routeName)) {
+            return null;
+        }
+
+        $route = Route::getRoutes()->getByName($routeName);
+
+        if ($route === null) {
+            return null;
+        }
+
+        $parameters = in_array('locale', $route->parameterNames(), true)
+            ? ['locale' => app()->getLocale()]
+            : [];
+
+        try {
+            return route($routeName, $parameters);
+        } catch (Throwable) {
+            return null;
+        }
     }
 }

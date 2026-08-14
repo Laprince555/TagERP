@@ -2,9 +2,11 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\LocaleOptions;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\View;
 use Symfony\Component\HttpFoundation\Response;
 
 class SetLocale
@@ -16,11 +18,24 @@ class SetLocale
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $locale = $request->query('locale', $request->query('lang', $request->segment(1)));
+        $userLocale = $request->user()?->locale;
+        $sessionLocale = $request->session()->get('locale');
+        $queryLocale = $request->query('locale', $request->query('lang'));
+        $segmentLocale = $request->segment(1);
 
-        if (in_array($locale, ['en', 'ar'], true)) {
-            App::setLocale($locale);
-        }
+        $locale = collect([
+            $userLocale,
+            $sessionLocale,
+            $queryLocale,
+            $segmentLocale,
+            LocaleOptions::fallback(),
+        ])->first(fn (mixed $candidate): bool => LocaleOptions::isSupported($candidate), LocaleOptions::fallback());
+
+        App::setLocale($locale);
+        $request->session()->put('locale', $locale);
+
+        View::share('activeLocale', $locale);
+        View::share('availableLocales', LocaleOptions::available());
 
         return $next($request);
     }

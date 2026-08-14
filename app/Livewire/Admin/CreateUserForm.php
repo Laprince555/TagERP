@@ -17,6 +17,8 @@ class CreateUserForm extends Component
 
     public string $email = '';
 
+    public string $role = '';
+
     public string $password = '';
 
     public string $password_confirmation = '';
@@ -31,6 +33,7 @@ class CreateUserForm extends Component
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'role' => ['required', 'string', 'exists:roles,name'],
             'password' => ['required', 'string', 'confirmed', Password::min(8)],
         ];
     }
@@ -47,19 +50,23 @@ class CreateUserForm extends Component
                 'email' => $validated['email'],
                 'password' => Hash::make($validated['password']),
                 'theme' => 'orange-onyx',
+                'locale' => app()->getLocale(),
             ]);
 
-            $role = Role::findOrCreate('super_admin', 'web');
-
-            $user->assignRole($role);
+            $user->assignRole($validated['role']);
         });
 
-        $this->reset(['name', 'email', 'password', 'password_confirmation']);
-        $this->successMessage = __('User created successfully with the super_admin role.');
+        $this->reset(['name', 'email', 'role', 'password', 'password_confirmation']);
+        $this->successMessage = __('User created successfully.');
     }
 
     public function render(): View
     {
-        return view('livewire.admin.create-user-form');
+        return view('livewire.admin.create-user-form', [
+            'roles' => Role::query()
+                ->select('name')
+                ->orderBy('name')
+                ->pluck('name'),
+        ]);
     }
 }

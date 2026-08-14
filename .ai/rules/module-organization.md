@@ -1,135 +1,124 @@
 ---
 name: module-organization
-description: Strict module-based file organization - all features stay within their module scope
+description: Keep every business domain inside its Nwidart module while preserving the ERP hierarchy
 metadata:
   type: project
   scope: "Modules/**"
   priority: high
 ---
 
-# Module Organization Rule
+# Nwidart Module Organization
 
-**Applies to:** All files within `Modules/` directory
+## Package Boundary
 
-## The Rule
+The top-level ERP module is the only level implemented as an `nwidart/laravel-modules` package:
 
-**Every file that belongs to a specific module MUST be placed inside that module's directory structure.**
-
-If a feature, component, model, or service is used by a single module, it lives in that module. If it's used across multiple modules or is truly global, it belongs in `app/` or `app/Models/`.
-
-### Directory Structure
-
-```
+```text
 Modules/{ModuleName}/
-├── Apps/
-│   ├── {SubModuleName}/
-│   │   ├── Models/
-│   │   ├── Controllers/
-│   │   ├── Livewire/
-│   │   ├── Views/
-│   │   ├── Database/Migrations/
-│   │   └── Database/Seeders/
-│   └── {AnotherSubModule}/
-├── Models/
-├── Controllers/
-├── Livewire/
-├── Services/
-├── Database/
-├── Routes/
-├── Providers/
-└── Resources/views/
 ```
 
-### Naming Convention
+Examples include `Modules/Finance/`, `Modules/HR/`, and `Modules/CRM/`.
 
-**All directory names use PascalCase (UpperCamelCase):**
+Do not create an `Apps/` directory and do not create separate Nwidart packages for SubModules, Applications, or SubApplications. Those are business hierarchy levels inside their owning module package.
 
-| Item | Example | Note |
-|---|---|---|
-| Module Name | `Finance`, `CRM`, `HR` | PascalCase |
-| App/SubModule | `GeneralLedger`, `AccountsPayable` | PascalCase |
-| Model | `Invoice`, `JournalEntry` | PascalCase |
-| Controller | `InvoiceController` | PascalCase + Controller |
-| Livewire Component | `CreateInvoice.php` | PascalCase |
-| Database Table | `invoices` | snake_case |
-| Migration | `create_invoices_table.php` | snake_case |
-| Service | `InvoiceService.php` | PascalCase + Service |
-| Route File | `web.php` | lowercase |
+Before generating a module file, inspect `config/modules.php` and use the relevant `php artisan module:make-*` command when available. Respect the configured generator paths and the module's existing siblings; do not invent a second package layout.
 
-### Examples
+## Package Structure
 
-**Finance Module - General Ledger Sub-App:**
-```
-Modules/Finance/Apps/GeneralLedger/
-├── Models/
-│   ├── JournalEntry.php
-│   └── Account.php
-├── Controllers/
-│   └── JournalController.php
-├── Livewire/
-│   └── CreateJournalEntry.php
-├── Services/
-│   └── JournalService.php
-├── Database/Migrations/
-│   └── create_journal_entries_table.php
-└── Views/
-    └── journal/
-        ├── index.blade.php
-        └── create.blade.php
+Keep the Nwidart package-level directories at the module root:
+
+```text
+Modules/{ModuleName}/
+|-- Config/
+|-- Database/
+|   |-- Factories/
+|   |-- Migrations/
+|   `-- Seeders/
+|-- Http/
+|   `-- Controllers/
+|-- Livewire/
+|-- Models/
+|-- Providers/
+|-- Resources/
+|   `-- views/
+|-- Routes/
+|-- tests/
+|-- composer.json
+`-- module.json
 ```
 
-**CRM Module - Customer Sub-App:**
-```
-Modules/CRM/Apps/Customer/
-├── Models/
-│   ├── Customer.php
-│   └── Contact.php
-├── Livewire/
-│   └── CustomerForm.php
-├── Services/
-│   └── CustomerService.php
-└── Views/
-    └── customer/
+Optional concerns such as Actions, Requests, Services, Policies, and Jobs must use the path configured for their generator in `config/modules.php` and match existing module conventions.
+
+## Business Hierarchy Inside a Package
+
+The logical hierarchy is:
+
+```text
+Module -> SubModule -> Application -> optional SubApplication
 ```
 
-### Rules
+Represent that hierarchy below each technical concern instead of wrapping the module in an `Apps/` directory. For Finance -> General Ledger -> Journals:
 
-1. **One Module = One Concern**: Each module handles one business domain
-2. **Nested Apps**: For complex modules, use `Apps/{SubModuleName}/` for logical grouping
-3. **No Cross-App File Sharing**: If a file is needed by multiple apps, move it to the module root or `app/`
-4. **Imports Use Full Namespace**: `Modules\Finance\Apps\GeneralLedger\Models\JournalEntry`
-5. **Routes Are Namespaced**: `Route::name('finance.gl.journals.index')`
-
-### When Files Belong in `app/` Instead
-
-```
-✓ Truly shared across multiple modules
-✓ Global system utilities
-✓ Authentication logic (already in app/Providers/FortifyServiceProvider.php)
-✓ Base classes used by multiple modules
-✓ Global middleware
-
-Examples:
-- app/Models/User.php (used by all modules)
-- app/Traits/LogsActivity.php (used by all modules)
-- app/Http/Middleware/SetUserTheme.php (global)
-```
-
-### Anti-Patterns (❌ Don't Do)
-
-```
-❌ Modules/Finance/Models/Modules/CRM/Customer.php
-❌ app/Models/JournalEntry.php (belongs in Finance module)
-❌ Modules/Finance/Livewire/CRM/CustomerForm.php (CRM feature in Finance folder)
-❌ Mixing PascalCase and snake_case in directory names
+```text
+Modules/Finance/
+|-- Models/GeneralLedger/Journals/
+|   |-- Journal.php
+|   `-- JournalLine.php
+|-- Http/Controllers/GeneralLedger/Journals/
+|   `-- JournalController.php
+|-- Livewire/GeneralLedger/Journals/
+|   |-- JournalIndex.php
+|   `-- Lines/
+|       `-- JournalLines.php
+|-- Resources/views/general-ledger/journals/
+|   |-- index.blade.php
+|   `-- lines/
+|       `-- index.blade.php
+|-- Database/Migrations/
+|   |-- create_journals_table.php
+|   `-- create_journal_lines_table.php
+`-- Routes/web.php
 ```
 
----
+Use PascalCase for PHP directories and namespaces, kebab-case for view directories and URL segments, and snake_case for database identifiers.
 
-## Why This Rule
+Example namespaces:
 
-- **Modularity**: Clear ownership and boundaries
-- **Scalability**: Easy to add new modules without conflicts
-- **Maintenance**: Features stay together, easier to refactor
-- **Team Clarity**: Everyone knows where to find things
-- **Reusability**: Modules can be extracted/shared between projects
+```text
+Modules\Finance\Models\GeneralLedger\Journals\Journal
+Modules\Finance\Http\Controllers\GeneralLedger\Journals\JournalController
+Modules\Finance\Livewire\GeneralLedger\Journals\Lines\JournalLines
+```
+
+## SubApplication Boundary
+
+A SubApplication is an optional contextual feature beneath one specific Application record. It is not a peer of the parent Application and is not a standalone top-level module feature.
+
+For example, Journal Lines belongs to a specific Journal record:
+
+```text
+Finance -> General Ledger -> Journals -> {journal} -> Lines
+```
+
+Its routes, authorization, queries, and UI must always be scoped through the parent Journal. The parent foreign key remains authoritative; a hierarchical code never replaces the database relationship.
+
+Do not call every child model a SubApplication. A child becomes a SubApplication only when it has a distinct contextual feature boundary such as its own route, UI workflow, permission, or actions.
+
+## Ownership Rules
+
+1. Code used by one Module stays inside that module package.
+2. Code used by one SubModule or Application stays in its matching hierarchy below the relevant technical concern.
+3. Code shared by several Applications in one Module moves to a shared concern inside that Module.
+4. Code moves to the root `app/` directory only when it is genuinely shared across modules or is global infrastructure.
+5. Cross-module access must use an explicit public service or contract; do not import another module's internal implementation casually.
+6. Keep module routes in the owning module's `Routes/` directory and use hierarchical names such as `finance.general-ledger.journals.index`.
+7. Contextual SubApplication routes must bind the parent record, for example `finance.general-ledger.journals.lines.index` with a `{journal}` route parameter.
+
+## Anti-Patterns
+
+```text
+Modules/Finance/Apps/GeneralLedger/...
+Modules/Finance/Models/Modules/CRM/Customer.php
+app/Models/Journal.php
+Modules/Finance/Livewire/CRM/CustomerForm.php
+```

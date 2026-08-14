@@ -22,3 +22,14 @@ document.addEventListener('livewire:init', () => {
         applyTheme(detail?.theme, detail?.themeClass);
     });
 });
+
+document.addEventListener('keydown', (event) => {
+    const isCommandPaletteShortcut = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k';
+
+    if (! isCommandPaletteShortcut) {
+        return;
+    }
+
+    event.preventDefault();
+    window.dispatchEvent(new CustomEvent('toggle-command-palette'));
+});

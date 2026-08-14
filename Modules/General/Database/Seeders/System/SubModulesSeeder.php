@@ -4,12 +4,14 @@ namespace Modules\General\Database\Seeders\System;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use RuntimeException;
+use Modules\General\Database\Seeders\System\Concerns\EncodesTranslatableAttributes;
 use Modules\General\System\Module;
 use Modules\General\System\SubModule;
+use RuntimeException;
 
 class SubModulesSeeder extends Seeder
 {
+    use EncodesTranslatableAttributes;
     use WithoutModelEvents;
 
     /**
@@ -97,6 +99,7 @@ class SubModulesSeeder extends Seeder
         ];
 
         $subModules = array_map(function (array $subModule) use ($generalModule): array {
+            $subModule = $this->encodeTranslatableAttributes($subModule);
             $subModule['module_id'] = $generalModule->id;
 
             return $subModule;

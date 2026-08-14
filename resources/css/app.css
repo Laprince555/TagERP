@@ -84,12 +84,61 @@
     --color-sidebar-text: #ECFDF5;
     --color-sidebar-hover: #112A24;
 
-    --color-canvas-bg: #0B0F12;       /* Charcoal Dark Background */
-    --color-card-bg: #141A1F;         /* Dark Surface Card */
-    --color-border: #243038;          /* Muted Dark Border */
+    --color-canvas-bg: #0A0F11;       /* Charcoal Dark Background */
+    --color-card-bg: #182127;         /* Lifted dark surface */
+    --color-border: #33424B;          /* Clearer dark border */
 
-    --color-text-main: #F1F5F9;       /* Slate-100 */
-    --color-text-muted: #94A3B8;      /* Slate-400 */
+    --color-text-main: #F8FAFC;       /* Slate-50 */
+    --color-text-muted: #C7D2DA;      /* Brighter muted copy */
+}
+
+/* Theme: Palestine (Flag Palette - Black / White / Green / Red) */
+.theme-palestine,
+[data-theme="palestine"] {
+    --color-primary: #007A3D;         /* Flag Green */
+    --color-primary-hover: #00602F;   /* Deep Green */
+    --color-primary-light: #E8F5EE;   /* Soft Green Tint */
+
+    --color-sidebar-bg: #0A0A0A;      /* Flag Black */
+    --color-sidebar-border: #1C1C1C;  /* Soft Onyx Border */
+    --color-sidebar-text: #FFFFFF;    /* Flag White */
+    --color-sidebar-hover: #14261C;   /* Black tinted with Green */
+
+    --color-canvas-bg: #F7F9F8;       /* Warm White Canvas */
+    --color-card-bg: #FFFFFF;         /* Flag White */
+    --color-border: #E3E9E5;          /* Muted Green-Grey Border */
+
+    --color-text-main: #0A0A0A;
+    --color-text-muted: #5F6B64;
+
+    /* Flag Red drives the OUT/negative semantic */
+    --color-ledger-out: #CE1126;      /* Flag Red */
+    --color-ledger-out-bg: #FDECEE;
+    --color-ledger-out-text: #A00E1E;
+
+    --color-ledger-in: #007A3D;       /* Flag Green */
+    --color-ledger-in-bg: #E8F5EE;
+    --color-ledger-in-text: #00602F;
+}
+
+/* --------------------------------------------------------------------------
+   2b. DERIVED SURFACE TOKENS (SHARED BY LAUNCHER & MODULE WORKSPACE PAGES)
+   -------------------------------------------------------------------------- */
+
+:root {
+    --color-surface-0: color-mix(in srgb, var(--color-canvas-bg) 90%, var(--color-card-bg) 10%);
+    --color-surface-1: color-mix(in srgb, var(--color-card-bg) 94%, var(--color-canvas-bg) 6%);
+    --color-surface-2: color-mix(in srgb, var(--color-card-bg) 82%, var(--color-sidebar-bg) 18%);
+    --color-primary-soft: color-mix(in srgb, var(--color-primary) 18%, transparent);
+    --color-accent: color-mix(in srgb, var(--color-primary) 72%, #f59e0b 28%);
+    --color-accent-soft: color-mix(in srgb, var(--color-accent) 18%, transparent);
+    --color-success: #16a34a;
+    --color-danger: #dc2626;
+    --color-glass-border: color-mix(in srgb, var(--color-border) 88%, var(--color-text-main) 12%);
+    --color-card-shadow: color-mix(in srgb, var(--color-primary) 18%, transparent);
+    --color-soft-text: color-mix(in srgb, var(--color-text-main) 82%, transparent);
+    --color-muted-text: color-mix(in srgb, var(--color-text-main) 64%, transparent);
+    --color-panel-strong: color-mix(in srgb, var(--color-card-bg) 78%, var(--color-sidebar-bg) 22%);
 }
 
 /* --------------------------------------------------------------------------

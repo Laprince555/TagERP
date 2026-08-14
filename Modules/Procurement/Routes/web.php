@@ -1,10 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Support\ModuleRoute;
+use Modules\General\Livewire\ModuleWorkspace;
+use Modules\General\Livewire\SubModuleWorkspace;
 
-Route::middleware(['auth'])
-    ->prefix('{locale}')
-    ->name('procurement.')
-    ->group(function (): void {
-        Route::view('/procurement', 'procurement::index')->name('index');
-    });
+ModuleRoute::registerIndex('procurement', '/procurement', ModuleWorkspace::class);
+ModuleRoute::registerSubModules('procurement', '/procurement', SubModuleWorkspace::class);

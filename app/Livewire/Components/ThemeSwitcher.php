@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Components;
 
+use App\Support\UserPreferenceState;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
@@ -16,11 +17,12 @@ class ThemeSwitcher extends Component
         'orange-onyx',
         'navy-blue',
         'emerald-dark',
+        'palestine',
     ];
 
     public function mount(): void
     {
-        $this->currentTheme = auth()->user()?->theme ?: session('theme', 'orange-onyx');
+        $this->currentTheme = UserPreferenceState::theme(auth()->user());
     }
 
     public function switchTheme(string $theme): void
@@ -30,13 +32,7 @@ class ThemeSwitcher extends Component
         }
 
         $this->currentTheme = $theme;
-        session()->put('theme', $theme);
-
-        if (auth()->check()) {
-            auth()->user()->forceFill([
-                'theme' => $theme,
-            ])->save();
-        }
+        UserPreferenceState::persistTheme($theme, auth()->user());
 
         $this->dispatch('theme-changed', theme: $theme, themeClass: 'theme-'.$theme);
     }

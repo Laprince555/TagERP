@@ -16,6 +16,7 @@ class SetUserTheme
         'orange-onyx',
         'navy-blue',
         'emerald-dark',
+        'palestine',
     ];
 
     public function handle(Request $request, Closure $next): Response

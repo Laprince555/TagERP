@@ -1,10 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Support\ModuleRoute;
+use Modules\General\Livewire\ModuleWorkspace;
+use Modules\General\Livewire\SubModuleWorkspace;
 
-Route::middleware(['auth'])
-    ->prefix('{locale}')
-    ->name('hr.')
-    ->group(function (): void {
-        Route::view('/hr', 'hr::index')->name('index');
-    });
+ModuleRoute::registerIndex('hr', '/hr', ModuleWorkspace::class);
+ModuleRoute::registerSubModules('hr', '/hr', SubModuleWorkspace::class);

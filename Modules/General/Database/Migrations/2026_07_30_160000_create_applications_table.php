@@ -19,11 +19,13 @@ return new class extends Migration
             $table->string('permission_name')->nullable();
             $table->string('permission_group')->nullable();
             $table->boolean('is_active')->default(true);
-            $table->foreignId('submodule_id')
-                ->constrained('sub_modules')
-                ->restrictOnDelete()
-                ->cascadeOnUpdate()
-                ->index();
+            $table->unsignedBigInteger('submodule_id');
+            $table->index('submodule_id');
+            $table->foreign('submodule_id', 'fk_applications_submodule_id')
+                ->references('id')
+                ->on('sub_modules')
+                ->onDelete('restrict')
+                ->onUpdate('cascade');
             $table->timestamps();
         });
     }

@@ -3,18 +3,21 @@
 namespace Modules\General\System;
 
 use App\Observers\NavigationObserver;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Modules\General\Database\Factories\SubModuleFactory;
 use Spatie\Translatable\Attributes\Translatable;
 use Spatie\Translatable\HasTranslations;
 
 #[Translatable('name', 'description')]
-class Application extends Model
+class SubModule extends Model
 {
+    use HasFactory;
     use HasTranslations;
 
-    protected $touches = ['subModule'];
+    protected $touches = ['module'];
 
     protected $fillable = [
         'name',
@@ -23,17 +26,11 @@ class Application extends Model
         'route',
         'icon',
         'sort_order',
-        'permission_name',
         'permission_group',
         'is_active',
-        'submodule_id',
+        'module_id',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -44,18 +41,23 @@ class Application extends Model
         ];
     }
 
-    public function subModule(): BelongsTo
-    {
-        return $this->belongsTo(SubModule::class);
-    }
-
-    public function subApplications(): HasMany
-    {
-        return $this->hasMany(SubApplication::class, 'application_id');
-    }
-
     protected static function booted(): void
     {
         static::observe(NavigationObserver::class);
+    }
+
+    protected static function newFactory(): SubModuleFactory
+    {
+        return SubModuleFactory::new();
+    }
+
+    public function module(): BelongsTo
+    {
+        return $this->belongsTo(Module::class);
+    }
+
+    public function applications(): HasMany
+    {
+        return $this->hasMany(Application::class, 'submodule_id');
     }
 }

@@ -3,8 +3,10 @@
 namespace App\Livewire;
 
 use App\Services\NavigationTreeService;
+use App\Support\FallbackValue;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -16,7 +18,8 @@ class AppLauncher extends Component
     /**
      * @return array<int, array<string, mixed>>
      */
-    public function getModulesProperty(): array
+    #[Computed]
+    public function modules(): array
     {
         $tree = app(NavigationTreeService::class)->getTreeForUser();
         $search = mb_strtolower(trim($this->search));
@@ -36,6 +39,7 @@ class AppLauncher extends Component
                     'category' => (string) $category,
                     'description' => (string) $description,
                     'icon' => (string) $icon,
+                    'route_name' => (string) $this->value($module, ['route_name'], ''),
                     'route' => (string) $route,
                     'badge' => $applications->count(),
                     'is_active' => (bool) $this->value($module, ['is_active', 'active'], true),
@@ -51,6 +55,16 @@ class AppLauncher extends Component
                     $module['title'],
                     $module['category'],
                     $module['description'],
+                    $module['route_name'],
+                    $module['route'],
+                    ...collect($module['applications'])
+                        ->flatMap(fn (mixed $application): array => [
+                            (string) $this->value($application, ['name'], ''),
+                            (string) $this->value($application, ['description'], ''),
+                            (string) $this->value($application, ['route_name'], ''),
+                            (string) $this->value($application, ['route'], ''),
+                        ])
+                        ->all(),
                 ]));
 
                 return str_contains($haystack, $search);
@@ -59,12 +73,21 @@ class AppLauncher extends Component
             ->all();
     }
 
+    public function clearSearch(): void
+    {
+        $this->search = '';
+    }
+
     public function render(): View
     {
         $user = auth()->user();
+        $modules = $this->modules;
 
         return view('livewire.app-launcher', [
-            'modules' => $this->modules,
+            'modules' => $modules,
+            'visibleModuleCount' => count($modules),
+            'applicationTotal' => collect($modules)->sum('badge'),
+            'enabledModules' => collect($modules)->where('is_active', true)->count(),
             'userName' => $user?->name ?? '',
             'userRole' => $user?->getRoleNames()->first() ?? '',
         ]);
@@ -125,15 +148,7 @@ class AppLauncher extends Component
      */
     private function value(mixed $target, array $keys, mixed $default = null): mixed
     {
-        foreach ($keys as $key) {
-            $value = $this->arrayValue($target, [$key]);
-
-            if ($value !== null && $value !== '') {
-                return $value;
-            }
-        }
-
-        return $default;
+        return FallbackValue::get($target, $keys, $default);
     }
 
     /**
@@ -142,24 +157,11 @@ class AppLauncher extends Component
     private function arrayValue(mixed $target, array $keys): mixed
     {
         foreach ($keys as $key) {
-            $segments = explode('.', $key);
-            $value = $target;
+            $value = FallbackValue::path($target, $key);
 
-            foreach ($segments as $segment) {
-                if (is_array($value) && array_key_exists($segment, $value)) {
-                    $value = $value[$segment];
-                    continue;
-                }
-
-                if (is_object($value) && isset($value->{$segment})) {
-                    $value = $value->{$segment};
-                    continue;
-                }
-
-                continue 2;
+            if ($value !== null) {
+                return $value;
             }
-
-            return $value;
         }
 
         return null;

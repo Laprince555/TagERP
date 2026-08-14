@@ -1,10 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Support\ModuleRoute;
+use Modules\General\Livewire\ModuleWorkspace;
+use Modules\General\Livewire\SubModuleWorkspace;
 
-Route::middleware(['auth'])
-    ->prefix('{locale}')
-    ->name('general.')
-    ->group(function (): void {
-        Route::view('/general', 'general::index')->name('index');
-    });
+ModuleRoute::registerIndex('general', '/general', ModuleWorkspace::class);
+ModuleRoute::registerSubModules('general', '/general', SubModuleWorkspace::class);

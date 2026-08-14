@@ -2,7 +2,9 @@
 
 namespace Modules\General\Providers;
 
-use Illuminate\Console\Scheduling\Schedule;
+use Livewire\Livewire;
+use Modules\General\Livewire\ModuleWorkspace;
+use Modules\General\Livewire\SubModuleWorkspace;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 
 class GeneralServiceProvider extends ModuleServiceProvider
@@ -18,13 +20,6 @@ class GeneralServiceProvider extends ModuleServiceProvider
     protected string $nameLower = 'general';
 
     /**
-     * Command classes to register.
-     *
-     * @var string[]
-     */
-    // protected array $commands = [];
-
-    /**
      * Provider classes to register.
      *
      * @var string[]
@@ -35,12 +30,15 @@ class GeneralServiceProvider extends ModuleServiceProvider
     ];
 
     /**
-     * Define module schedules.
-     *
-     * @param  $schedule
+     * Module classes live outside Livewire's discovered namespaces, so the shared
+     * workspace pages are aliased explicitly to keep their component names stable
+     * across the initial render and subsequent Livewire requests.
      */
-    // protected function configureSchedules(Schedule $schedule): void
-    // {
-    //     $schedule->command('inspire')->hourly();
-    // }
+    public function boot(): void
+    {
+        parent::boot();
+
+        Livewire::component('general.module-workspace', ModuleWorkspace::class);
+        Livewire::component('general.sub-module-workspace', SubModuleWorkspace::class);
+    }
 }

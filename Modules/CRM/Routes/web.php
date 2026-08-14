@@ -1,10 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Support\ModuleRoute;
+use Modules\General\Livewire\ModuleWorkspace;
+use Modules\General\Livewire\SubModuleWorkspace;
 
-Route::middleware(['auth'])
-    ->prefix('{locale}')
-    ->name('crm.')
-    ->group(function (): void {
-        Route::view('/crm', 'crm::index')->name('index');
-    });
+ModuleRoute::registerIndex('crm', '/crm', ModuleWorkspace::class);
+ModuleRoute::registerSubModules('crm', '/crm', SubModuleWorkspace::class);
