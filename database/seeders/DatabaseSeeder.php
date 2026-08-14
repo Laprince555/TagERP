@@ -2,9 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Modules\General\Database\Seeders\System\ModulesSeeder;
+use Modules\General\Database\Seeders\System\SubModulesSeeder;
+use Modules\General\Database\Seeders\World\WorldApplicationsSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -16,8 +18,9 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            \Modules\General\Database\Seeders\System\ModulesSeeder::class,
-            \Modules\General\Database\Seeders\System\SubModulesSeeder::class,
+            ModulesSeeder::class,
+            SubModulesSeeder::class,
+            WorldApplicationsSeeder::class,
             RoleSeeder::class,
             WorldSeeder::class,
         ]);
