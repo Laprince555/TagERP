@@ -1,17 +1,5 @@
-<div class="min-h-screen bg-[radial-gradient(circle_at_top_left,var(--color-primary-soft),transparent_28%),linear-gradient(180deg,var(--color-surface-0),var(--color-canvas-bg))]">
+<div class="min-h-screen">
     <section class="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
-        <flux:breadcrumbs aria-label="{{ __('messages.workspace.breadcrumb') }}" class="flex-wrap gap-y-1">
-            <flux:breadcrumbs.item :href="route('launcher')" icon="home" />
-
-            @if ($module['route'] !== '#')
-                <flux:breadcrumbs.item :href="$module['route']">{{ $module['name'] }}</flux:breadcrumbs.item>
-            @else
-                <flux:breadcrumbs.item>{{ $module['name'] }}</flux:breadcrumbs.item>
-            @endif
-
-            <flux:breadcrumbs.item aria-current="page">{{ $subModule['name'] }}</flux:breadcrumbs.item>
-        </flux:breadcrumbs>
-
         @if ($module['route'] !== '#')
             <flux:button
                 :href="$module['route']"

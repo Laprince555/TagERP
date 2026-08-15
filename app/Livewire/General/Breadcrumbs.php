@@ -9,6 +9,14 @@ use Livewire\Component;
 
 class Breadcrumbs extends Component
 {
+    /**
+     * Appended as a final, non-linked crumb after the matched
+     * Module/SubModule/Application chain — the record title on a
+     * DynamicRecordView page (see record-view.blade.php), which the
+     * navigation tree has no notion of.
+     */
+    public ?string $trailing = null;
+
     public function render(): View
     {
         return view('livewire.general.breadcrumbs', [
@@ -17,14 +25,14 @@ class Breadcrumbs extends Component
     }
 
     /**
-     * @return array<int, array{label: string, route: string|null, icon: string|null}>
+     * @return array<int, array{label: string, url: string|null, icon: string|null}>
      */
     protected function breadcrumbs(): array
     {
         $currentRoute = request()->route()?->getName();
 
         if (blank($currentRoute)) {
-            return [];
+            return $this->withTrailing([]);
         }
 
         $tree = app(NavigationTreeService::class)->getTreeForUser();
@@ -34,50 +42,74 @@ class Breadcrumbs extends Component
             $matchedBreadcrumbs = $this->matchModuleBreadcrumbs($module, $currentRoute, $routeSegments);
 
             if ($matchedBreadcrumbs !== []) {
-                return $matchedBreadcrumbs;
+                return $this->withTrailing($matchedBreadcrumbs);
             }
         }
 
-        return [];
+        return $this->withTrailing([]);
+    }
+
+    /**
+     * @param  array<int, array{label: string, url: string|null, icon: string|null}>  $breadcrumbs
+     * @return array<int, array{label: string, url: string|null, icon: string|null}>
+     */
+    protected function withTrailing(array $breadcrumbs): array
+    {
+        if (blank($this->trailing)) {
+            return $breadcrumbs;
+        }
+
+        return [...$breadcrumbs, ['label' => $this->trailing, 'url' => null, 'icon' => null]];
     }
 
     /**
      * @param  array<string, mixed>  $module
      * @param  array<int, string>  $routeSegments
-     * @return array<int, array{label: string, route: string|null, icon: string|null}>
+     * @return array<int, array{label: string, url: string|null, icon: string|null}>
+     *
+     * Deepest match wins: an Application route ("general.world.countries")
+     * is always a segment-prefix of its owning SubModule route
+     * ("general.world"), which is in turn a prefix of its Module route
+     * ("general"). routeMatches() is a prefix check, so it must be tried
+     * application-first, then sub module, then module — checking the
+     * module first would match on the shared "general" prefix and return
+     * before ever looking at the sub module/application it actually
+     * belongs to.
      */
     protected function matchModuleBreadcrumbs(array $module, string $currentRoute, array $routeSegments): array
     {
-        $moduleRoute = $this->stringValue($module, 'route');
         $moduleBreadcrumb = [$this->makeBreadcrumb($module)];
-
-        if ($this->routeMatches($currentRoute, $moduleRoute, $routeSegments)) {
-            return $moduleBreadcrumb;
-        }
 
         foreach ($this->arrayValue($module, 'sub_modules') as $subModule) {
             if (! is_array($subModule)) {
                 continue;
             }
 
-            $subModuleRoute = $this->stringValue($subModule, 'route');
             $subModuleBreadcrumb = [...$moduleBreadcrumb, $this->makeBreadcrumb($subModule)];
-
-            if ($this->routeMatches($currentRoute, $subModuleRoute, $routeSegments)) {
-                return $subModuleBreadcrumb;
-            }
 
             foreach ($this->arrayValue($subModule, 'applications') as $application) {
                 if (! is_array($application)) {
                     continue;
                 }
 
-                $applicationRoute = $this->stringValue($application, 'route');
+                $applicationRoute = $this->stringValue($application, 'route_name');
 
                 if ($this->routeMatches($currentRoute, $applicationRoute, $routeSegments)) {
                     return [...$subModuleBreadcrumb, $this->makeBreadcrumb($application)];
                 }
             }
+
+            $subModuleRoute = $this->stringValue($subModule, 'route_name');
+
+            if ($this->routeMatches($currentRoute, $subModuleRoute, $routeSegments)) {
+                return $subModuleBreadcrumb;
+            }
+        }
+
+        $moduleRoute = $this->stringValue($module, 'route_name');
+
+        if ($this->routeMatches($currentRoute, $moduleRoute, $routeSegments)) {
+            return $moduleBreadcrumb;
         }
 
         return [];
@@ -85,13 +117,17 @@ class Breadcrumbs extends Component
 
     /**
      * @param  array<string, mixed>  $item
-     * @return array{label: string, route: string|null, icon: string|null}
+     * @return array{label: string, url: string|null, icon: string|null}
      */
     protected function makeBreadcrumb(array $item): array
     {
         return [
             'label' => $this->stringValue($item, 'name', 'Untitled'),
-            'route' => $this->stringValue($item, 'route') ?: null,
+            // 'route' holds the already-resolved, locale-aware URL built by
+            // NavigationTreeService::resolveRoute() — reuse it instead of
+            // calling route() again in the view (that route name needs a
+            // {locale} parameter the view doesn't have).
+            'url' => $this->stringValue($item, 'route') ?: null,
             'icon' => $this->stringValue($item, 'icon') ?: null,
         ];
     }

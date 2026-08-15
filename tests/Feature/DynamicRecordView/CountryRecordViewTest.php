@@ -115,6 +115,12 @@ it('keeps a constant query count regardless of related-city count', function ():
         City::create(['country_id' => $large->id, 'state_id' => 0, 'name' => "City-{$i}", 'country_code' => 'SA']);
     }
 
+    // Warm NavigationTreeService's forever-cached Application lookup first —
+    // otherwise whichever mount runs first pays its one-time population
+    // query and the comparison below measures cache-warmup order, not
+    // city-count scaling.
+    mountEmbeddedCitiesTable($small->id);
+
     DB::enableQueryLog();
     mountEmbeddedCitiesTable($small->id);
     $smallCount = count(DB::getQueryLog());

@@ -3,6 +3,7 @@
 namespace Modules\General\Livewire\World\Countries;
 
 use App\Livewire\DynamicTable\Table;
+use App\Services\NavigationTreeService;
 use App\Support\DynamicTable\Core\Columns\RecordReferenceColumn;
 use App\Support\DynamicTable\Core\Columns\TextColumn;
 use App\Support\DynamicTable\Core\Filter;
@@ -11,7 +12,6 @@ use App\Support\DynamicTable\Core\Sort;
 use App\Support\RecordReference\RecordReferenceAccess;
 use App\Support\RecordReference\RecordReferenceVariant;
 use Illuminate\Database\Eloquent\Builder;
-use Modules\General\System\Application;
 use Nnjeim\World\Models\Country;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -37,7 +37,7 @@ class CountriesTable extends Table
 
     protected function checkAccess(): void
     {
-        $application = Application::query()->where('code', 'gen-wld-ctr')->first();
+        $application = app(NavigationTreeService::class)->getApplicationByCode('gen-wld-ctr');
 
         if (! app(RecordReferenceAccess::class)->applicationAccessible($application)) {
             throw new NotFoundHttpException;
@@ -48,11 +48,13 @@ class CountriesTable extends Table
     {
         return [
             RecordReferenceColumn::make('name')
-                ->applicationCode('gen-wld-ctr')
-                ->variant(RecordReferenceVariant::Tag)
+                ->applicationCode('gen-wld-ctr')       // كود التطبيق المرجعي الخاص بالدول
+                ->variant(RecordReferenceVariant::Tag) // اختيار الشكل: Tag
                 ->sortable()
+                ->searchable()
                 ->label('Name'),
             TextColumn::make('iso2')->sortable()->searchable()->label('ISO2'),
+            TextColumn::make('phone_code')->sortable()->searchable()->label('Phone Code'),
             TextColumn::make('region')->sortable()->searchable()->label('Region'),
             TextColumn::make('subregion')->sortable()->searchable()->label('Subregion'),
         ];
@@ -74,7 +76,7 @@ class CountriesTable extends Table
         // Re-evaluated on every Livewire render/action, so a disabled
         // Application or revoked permission takes effect immediately —
         // never only at initial mount.
-        $application = Application::query()->where('code', 'gen-wld-ctr')->first();
+        $application = app(NavigationTreeService::class)->getApplicationByCode('gen-wld-ctr');
 
         if (! app(RecordReferenceAccess::class)->applicationAccessible($application)) {
             return Country::query()->whereRaw('1 = 0');

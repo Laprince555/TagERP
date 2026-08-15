@@ -88,7 +88,7 @@
             }
         </style>
     </head>
-    <body class="{{ $themeClass ?? 'theme-orange-onyx' }} bg-[var(--color-canvas-bg)] text-[var(--color-text-main)] antialiased" data-theme="{{ $activeTheme ?? 'orange-onyx' }}">
+    <body class="{{ $themeClass ?? 'theme-orange-onyx' }} bg-[radial-gradient(circle_at_top_left,var(--color-primary-soft),transparent_28%),linear-gradient(180deg,var(--color-surface-0),var(--color-canvas-bg))] text-[var(--color-text-main)] antialiased" data-theme="{{ $activeTheme ?? 'orange-onyx' }}">
         @php
             $authUser = auth()->user();
             $userName = $authUser?->name ?? 'Workspace User';
@@ -173,6 +173,12 @@
         <livewire:record-reference.preview-host />
 
         <main>
+            @if (($showBreadcrumbs ?? true) !== false)
+                <div class="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
+                    <livewire:general.breadcrumbs />
+                </div>
+            @endif
+
             {{ $slot ?? '' }}
         </main>
 

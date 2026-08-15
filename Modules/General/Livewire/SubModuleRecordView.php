@@ -10,7 +10,7 @@ use Livewire\Attributes\Layout;
  * general.sub-modules.view). Purely a thin adapter — all record-view
  * behavior lives in App\Livewire\DynamicRecordView\RecordView.
  */
-#[Layout('layouts.app')]
+#[Layout('layouts.app', ['showBreadcrumbs' => false])]
 class SubModuleRecordView extends RecordView
 {
     protected function recordViewKey(): string

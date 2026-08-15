@@ -2,6 +2,7 @@
 
 namespace Modules\General\System\World;
 
+use App\Services\NavigationTreeService;
 use App\Support\DynamicRecordView\Core\Content\FieldsContent;
 use App\Support\DynamicRecordView\Core\DynamicRecordView;
 use App\Support\DynamicRecordView\Core\Fields\TextViewField;
@@ -12,7 +13,6 @@ use App\Support\DynamicRecordView\Core\SubApplication;
 use App\Support\RecordReference\RecordReferenceAccess;
 use Illuminate\Database\Eloquent\Builder;
 use Modules\General\Livewire\World\Countries\CitiesTable;
-use Modules\General\System\Application;
 use Nnjeim\World\Models\Country;
 
 /**
@@ -35,7 +35,7 @@ class CountryRecordView extends DynamicRecordView
         // Re-evaluated on every mount/action (the engine's existing 404
         // convention), so a disabled Application or a revoked permission
         // is enforced on the very next request, not just at initial mount.
-        $application = Application::query()->where('code', 'gen-wld-ctr')->first();
+        $application = app(NavigationTreeService::class)->getApplicationByCode('gen-wld-ctr');
 
         if (! app(RecordReferenceAccess::class)->applicationAccessible($application)) {
             return Country::query()->whereRaw('1 = 0');

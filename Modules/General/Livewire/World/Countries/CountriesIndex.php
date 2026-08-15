@@ -2,11 +2,11 @@
 
 namespace Modules\General\Livewire\World\Countries;
 
+use App\Services\NavigationTreeService;
 use App\Support\RecordReference\RecordReferenceAccess;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
-use Modules\General\System\Application;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -29,7 +29,7 @@ class CountriesIndex extends Component
 
     protected function checkAccess(): void
     {
-        $application = Application::query()->where('code', 'gen-wld-ctr')->first();
+        $application = app(NavigationTreeService::class)->getApplicationByCode('gen-wld-ctr');
 
         if (! app(RecordReferenceAccess::class)->applicationAccessible($application)) {
             throw new NotFoundHttpException;
@@ -38,6 +38,31 @@ class CountriesIndex extends Component
 
     public function render(): View
     {
-        return view('general::livewire.world.countries.index');
+        $context = $this->locateApplication('gen-wld-ctr');
+
+        return view('general::livewire.world.countries.index', [
+            'application' => $context['application'] ?? null,
+            'subModule' => $context['subModule'] ?? null,
+            'module' => $context['module'] ?? null,
+        ]);
+    }
+
+    private function locateApplication(string $code): ?array
+    {
+        foreach (app(NavigationTreeService::class)->getTreeForUser() as $module) {
+            foreach ($module['sub_modules'] ?? [] as $subModule) {
+                foreach ($subModule['applications'] ?? [] as $application) {
+                    if (($application['code'] ?? null) === $code) {
+                        return [
+                            'application' => $application,
+                            'subModule' => $subModule,
+                            'module' => $module,
+                        ];
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 }

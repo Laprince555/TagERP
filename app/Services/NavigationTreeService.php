@@ -6,6 +6,7 @@ use Illuminate\Cache\CacheManager;
 use Illuminate\Cache\TaggableStore;
 use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Illuminate\Support\Facades\Route;
+use Modules\General\System\Application;
 use Modules\General\System\Module;
 use Modules\General\System\SubModule;
 use Throwable;
@@ -88,6 +89,44 @@ class NavigationTreeService
                 ->map(fn (Module $module): array => $this->transformModule($module, $locale, $shouldLoadApplications))
                 ->all();
         });
+    }
+
+    /**
+     * Single Application lookup by code, backed by the same forever-cached,
+     * version-invalidated store as the navigation tree. Shared across all
+     * users (no permission filtering baked in) since it returns the raw
+     * model — callers apply their own access checks.
+     *
+     * Rehydrates a fresh, unpersisted model from cached plain-array
+     * attributes on every call. The cached payload is a plain array, never
+     * a Collection or model: config('cache.serializable_classes') is false
+     * in this app, so the cache unserializes with allowed_classes = false
+     * and silently turns ANY cached object (including a bare Collection)
+     * into __PHP_Incomplete_Class. Arrays serialize as `a:` (no class
+     * involved) and are unaffected — same reason getTreeForUser() below
+     * caches transformed arrays, not models.
+     */
+    public function getApplicationByCode(string $code): ?Application
+    {
+        $attributes = $this->getApplicationAttributesByCode()[$code] ?? null;
+
+        return $attributes ? (new Application)->forceFill($attributes) : null;
+    }
+
+    /**
+     * @return array<string, array<string, mixed>>
+     */
+    protected function getApplicationAttributesByCode(): array
+    {
+        $cacheKey = 'navigation-tree:applications-by-code:v'.$this->cache->store()->get($this->versionKey(), 1);
+
+        return $this->cacheRepository()->rememberForever($cacheKey, fn (): array => Application::query()
+            ->select(['id', 'submodule_id', 'code', 'name', 'icon', 'color', 'is_active', 'permission_name'])
+            ->get()
+            ->map(fn (Application $application): array => $application->getAttributes())
+            ->keyBy('code')
+            ->all()
+        );
     }
 
     public function invalidateCache(): void

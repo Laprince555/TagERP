@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\SetUserTheme;
+use App\Support\DynamicForm\Core\FormDefinitionRegistry;
 use App\Support\DynamicRecordView\Core\RecordViewRegistry;
 use App\Support\DynamicRecordView\Resolution\RecordResolver;
 use App\Support\DynamicTable\Core\SavedTableViewStore;
@@ -42,6 +43,9 @@ class AppServiceProvider extends ServiceProvider
 
         // Scoped for the same reason as RecordReferenceRegistry above.
         $this->app->scoped(RecordViewRegistry::class);
+
+        // Scoped for the same reason as RecordReferenceRegistry above.
+        $this->app->scoped(FormDefinitionRegistry::class);
     }
 
     /**

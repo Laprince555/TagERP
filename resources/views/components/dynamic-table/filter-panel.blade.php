@@ -15,7 +15,18 @@
 @endif
 
 @if (count($filters) > 0)
-    <div class="mb-4 rounded-lg border border-[var(--color-border)] p-4">
+    <div x-data="{ open: false }" class="mb-4 rounded-lg border border-[var(--color-border)]">
+        <button
+            type="button"
+            x-on:click="open = !open"
+            class="flex w-full items-center justify-between px-4 py-2 text-sm font-medium"
+        >
+            {{ __('Filters') }}
+            <svg x-show="!open" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+            <svg x-show="open" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="display: none;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg>
+        </button>
+
+        <div x-show="open" style="display: none;" class="border-t border-[var(--color-border)] p-4">
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
             @foreach ($filters as $key => $filter)
                 <div wire:key="filter-{{ $key }}">
@@ -122,6 +133,7 @@
             @if ($hasDraftFilterChanges)
                 <span class="text-xs text-amber-600 dark:text-amber-400">{{ __('Unapplied changes') }}</span>
             @endif
+        </div>
         </div>
     </div>
 @endif

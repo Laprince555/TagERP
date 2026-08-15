@@ -2,12 +2,12 @@
 
 namespace App\Livewire\RecordReference;
 
+use App\Services\NavigationTreeService;
 use App\Support\RecordReference\RecordReferenceAccess;
 use App\Support\RecordReference\RecordReferencePreview;
 use App\Support\RecordReference\RecordReferenceRegistry;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Component;
-use Modules\General\System\Application;
 
 /**
  * Exactly one instance per page (mounted once in the app layout). Resolves
@@ -52,10 +52,7 @@ class PreviewHost extends Component
         }
 
         $access = app(RecordReferenceAccess::class);
-        $application = Application::query()
-            ->select(['id', 'code', 'name', 'icon', 'color', 'is_active', 'permission_name'])
-            ->where('code', $applicationCode)
-            ->first();
+        $application = app(NavigationTreeService::class)->getApplicationByCode($applicationCode);
 
         if (! $access->applicationAccessible($application)) {
             return RecordReferencePreview::unavailable()->toArray();

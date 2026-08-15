@@ -1,5 +1,18 @@
 <div wire:key="dynamic-table-{{ $definition->tableKey }}">
-    <x-dynamic-table.toolbar :table-key="$definition->tableKey" :per-page="$state->perPage" />
+    <x-dynamic-table.toolbar
+        :table-key="$definition->tableKey"
+        :per-page="$state->perPage"
+        :create-form-key="$createFormKey"
+        :create-form-label="$createFormLabel"
+    />
+
+    @if ($createFormKey)
+        <livewire:dynamic-form.form-modal
+            :form-key="$createFormKey"
+            :heading="$createFormLabel"
+            :key="'form-modal-'.$createFormKey"
+        />
+    @endif
 
     @if ($relationshipActions?->isLinkable())
         <div class="mb-2 flex justify-end">
@@ -46,13 +59,30 @@
         @if ($rows->isEmpty())
             <x-dynamic-table.empty-state />
         @else
+            @if (count($this->selectedIds) > 0 && $rows->total() > count($this->selectedIds))
+                <div class="mb-2 rounded-md bg-[var(--color-accent)]/10 px-3 py-2 text-sm text-[var(--color-accent)]">
+                    @if ($this->selectAllMatching)
+                        {{ __('All :count matching records are selected.', ['count' => $rows->total()]) }}
+                        <button type="button" wire:click="toggleSelectAllMatching" class="ms-1 underline">{{ __('Select this page only') }}</button>
+                    @else
+                        {{ __(':count selected on this page.', ['count' => count($this->selectedIds)]) }}
+                        <button type="button" wire:click="toggleSelectAllMatching" class="ms-1 underline">
+                            {{ __('Select all :count matching records', ['count' => $rows->total()]) }}
+                        </button>
+                    @endif
+                </div>
+            @endif
+
             <x-dynamic-table.table
                 :columns="$definition->authorizedColumns()"
                 :visible-columns="$orderedVisibleColumns"
                 :rows="$rows"
                 :sorts="$state->sorts"
                 :reference-applications="$referenceApplications"
+                :reference-cells="$referenceCells"
                 :relationship-actions="$relationshipActions"
+                :selectable="true"
+                :selected-ids="$this->selectedIds"
             />
 
             <x-dynamic-table.pagination :paginator="$rows" />

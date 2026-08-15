@@ -182,4 +182,10 @@ that area is non-trivial or the digest does not answer the question.
 - Split UI into small components: stateless pieces become Blade components, stateful ones their own Livewire component. Never one monolithic view.
 - `wire:key` on every loop.
 
+**Standard UI Engines** (`.ai/rules/dynamic-engines.md`)
+- **Tables (Lists)**: Extend `App\Livewire\DynamicTable\Table` with `App\Support\DynamicTable\Core\*`. Never roll raw table HTML or third-party table packages.
+- **Record Views (Details)**: Extend `App\Support\DynamicRecordView\Core\DynamicRecordView` and host via `App\Livewire\DynamicRecordView\RecordView`. Never create custom show views from scratch.
+- **Relations & Links**: Use `RecordReferenceProvider` + `RecordReferenceColumn`/`RecordReferenceViewField` + `<x-record-reference.*>`. Never create custom relationship tags/cards.
+
 **Before finalizing:** `vendor/bin/pint --dirty --format agent`, then the narrowest relevant `php artisan test --compact --filter=...`.
+

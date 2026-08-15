@@ -1,11 +1,18 @@
-@props(['columns', 'visibleColumns', 'rows', 'sorts', 'referenceApplications', 'referenceCells' => [], 'relationshipActions' => null])
+@props(['columns', 'visibleColumns', 'rows', 'sorts', 'referenceApplications', 'referenceCells' => [], 'relationshipActions' => null, 'selectable' => false, 'selectedIds' => []])
 @php
     use App\Support\DynamicTable\Core\Columns\RecordReferenceColumn;
+    $pageIds = $selectable ? collect($rows->items())->map(fn ($row) => (string) $row->getKey())->all() : [];
+    $pageAllSelected = $selectable && $pageIds !== [] && count(array_intersect($pageIds, $selectedIds)) === count($pageIds);
 @endphp
 
 <div class="overflow-x-auto">
     <flux:table>
         <flux:table.columns>
+            @if ($selectable)
+                <flux:table.column>
+                    <input type="checkbox" wire:click="selectPage(@js($pageIds))" @checked($pageAllSelected) />
+                </flux:table.column>
+            @endif
             @foreach ($visibleColumns as $key)
                 @php($column = $columns[$key] ?? null)
                 @continue(! $column)
@@ -37,6 +44,11 @@
         <flux:table.rows>
             @foreach ($rows as $row)
                 <flux:table.row wire:key="row-{{ $row->getKey() }}">
+                    @if ($selectable)
+                        <flux:table.cell wire:key="cell-{{ $row->getKey() }}-select">
+                            <input type="checkbox" wire:click="selectRow('{{ $row->getKey() }}')" @checked(in_array((string) $row->getKey(), $selectedIds, true)) />
+                        </flux:table.cell>
+                    @endif
                     @foreach ($visibleColumns as $key)
                         @php($column = $columns[$key] ?? null)
                         @continue(! $column)
@@ -49,6 +61,14 @@
                                     <x-record-reference.tag :identity="$referenceCell['identity']" />
                                 @elseif ($referenceCell)
                                     <x-record-reference.icon :identity="$referenceCell['identity']" />
+                                @else
+                                    @php($value = data_get($row, str_replace('.', '.', $column->getField() ?? $key)))
+                                    @php($link = $column->getLink($row))
+                                    @if ($link)
+                                        <a href="{{ $link }}" class="text-[var(--color-accent)] hover:underline">{{ $column->formatValue($value, $row) }}</a>
+                                    @else
+                                        {{ $column->formatValue($value, $row) }}
+                                    @endif
                                 @endif
                             @else
                                 @php($value = data_get($row, str_replace('.', '.', $column->getField())))

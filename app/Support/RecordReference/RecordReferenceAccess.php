@@ -2,21 +2,24 @@
 
 namespace App\Support\RecordReference;
 
+use App\Services\NavigationTreeService;
 use Illuminate\Support\Collection;
 use Modules\General\System\Application;
 use Throwable;
 
 /**
- * The one query-free* access boundary shared by table rendering, the
- * preview host, and the Country show route. (*applications() itself issues
- * exactly one bounded query — call it once per render, outside any loop,
- * never per row.)
+ * The one query-free access boundary shared by table rendering, the
+ * preview host, and the Country show route. applications() reads the
+ * NavigationTreeService forever-cache (invalidated by NavigationObserver on
+ * any Module/SubModule/Application write) — no DB query on the render path.
  */
 class RecordReferenceAccess
 {
+    public function __construct(protected NavigationTreeService $navigationTreeService) {}
+
     /**
-     * One query for every distinct Application code referenced by the
-     * current render. Selects only what identity/authorization needs.
+     * Every distinct Application referenced by the current render, resolved
+     * from the shared navigation cache instead of a per-render DB query.
      *
      * @param  string[]  $codes
      * @return Collection<string, Application>
@@ -29,10 +32,9 @@ class RecordReferenceAccess
             return collect();
         }
 
-        return Application::query()
-            ->select(['id', 'code', 'name', 'icon', 'color', 'is_active', 'permission_name'])
-            ->whereIn('code', $codes)
-            ->get()
+        return collect($codes)
+            ->map(fn (string $code): ?Application => $this->navigationTreeService->getApplicationByCode($code))
+            ->filter()
             ->keyBy('code');
     }
 

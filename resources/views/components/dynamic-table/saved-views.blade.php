@@ -58,7 +58,7 @@
                 placeholder="{{ __('Save current as…') }}"
                 wire:model="newViewName"
             />
-            <flux:button size="sm" wire:click="saveCurrentView(newViewName)">{{ __('Save') }}</flux:button>
+            <flux:button size="sm" wire:click="saveCurrentView($wire.newViewName)">{{ __('Save') }}</flux:button>
         </div>
 
         @if ($saveViewError)

@@ -14,7 +14,7 @@ export default defineConfig({
       { text: 'Dynamic Table', link: '/dynamic-table/README' },
       { text: 'Dynamic Record View', link: '/dynamic-record-view/README' },
       { text: 'Record References', link: '/record-references/README' },
-      { text: 'Dynamic Form', link: '/dynamic-form/record-references' }
+      { text: 'Dynamic Form', link: '/dynamic-form/README' }
     ],
 
     sidebar: {
@@ -82,9 +82,15 @@ export default defineConfig({
       ],
       '/dynamic-form/': [
         {
-          text: 'Dynamic Form (Planned)',
+          text: 'Dynamic Form Engine',
           items: [
-            { text: 'Record References Contract', link: '/dynamic-form/record-references' }
+            { text: 'Overview', link: '/dynamic-form/README' },
+            { text: 'Quick Start', link: '/dynamic-form/quick-start' },
+            { text: 'Fields', link: '/dynamic-form/fields' },
+            { text: 'Hosting & Events', link: '/dynamic-form/hosting-and-events' },
+            { text: 'Validation & Save', link: '/dynamic-form/validation-and-save' },
+            { text: 'Testing', link: '/dynamic-form/testing' },
+            { text: 'Record References (planned)', link: '/dynamic-form/record-references' }
           ]
         }
       ]

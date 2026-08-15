@@ -1,32 +1,39 @@
-<div wire:key="record-view-{{ $definition->getViewKey() }}-{{ $record->getKey() }}">
+<div
+    wire:key="record-view-{{ $definition->getViewKey() }}-{{ $record->getKey() }}"
+    class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 space-y-6"
+>
+    <div class="flex items-center gap-2">
+        <livewire:general.breadcrumbs :trailing="$definition->title($record)" />
+    </div>
+
     <x-dynamic-record-view.header
         :title="$definition->title($record)"
         :subtitle="$definition->subtitle($record)"
         :code="$record->code ?? null"
     />
 
-    <div class="mt-4 flex gap-2 border-b border-zinc-200 dark:border-zinc-700" role="tablist">
-        @foreach ($tabs as $tab)
-            <button
-                type="button"
-                id="primary-tab-{{ $tab->getKey() }}"
-                wire:key="primary-tab-{{ $tab->getKey() }}"
-                wire:click="setActiveTab('{{ $tab->getKey() }}')"
-                role="tab"
-                aria-selected="{{ $currentTab?->getKey() === $tab->getKey() ? 'true' : 'false' }}"
-                aria-controls="primary-tabpanel-{{ $tab->getKey() }}"
-                @class([
-                    'px-3 py-2 text-sm font-medium border-b-2 -mb-px',
-                    'border-[var(--color-accent)] text-[var(--color-accent)]' => $currentTab?->getKey() === $tab->getKey(),
-                    'border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200' => $currentTab?->getKey() !== $tab->getKey(),
-                ])
-            >
-                {{ $tab->getLabel() }}
-            </button>
-        @endforeach
-    </div>
+    <div class="space-y-4">
+        <div class="flex gap-2 border-b border-[var(--color-glass-border)]" role="tablist">
+            @foreach ($tabs as $tab)
+                <button
+                    type="button"
+                    id="primary-tab-{{ $tab->getKey() }}"
+                    wire:key="primary-tab-{{ $tab->getKey() }}"
+                    wire:click="setActiveTab('{{ $tab->getKey() }}')"
+                    role="tab"
+                    aria-selected="{{ $currentTab?->getKey() === $tab->getKey() ? 'true' : 'false' }}"
+                    aria-controls="primary-tabpanel-{{ $tab->getKey() }}"
+                    @class([
+                        'px-4 py-2.5 text-sm font-bold border-b-2 -mb-px transition duration-200',
+                        'border-[var(--color-primary)] text-[var(--color-primary)]' => $currentTab?->getKey() === $tab->getKey(),
+                        'border-transparent text-[var(--color-soft-text)] hover:text-[var(--color-text-main)]' => $currentTab?->getKey() !== $tab->getKey(),
+                    ])
+                >
+                    {{ $tab->getLabel() }}
+                </button>
+            @endforeach
+        </div>
 
-    <div class="mt-4 flex flex-col gap-4">
         @if ($currentTab)
             <div role="tabpanel" id="primary-tabpanel-{{ $currentTab->getKey() }}" aria-labelledby="primary-tab-{{ $currentTab->getKey() }}">
                 @foreach ($currentTab->getContents() as $content)
@@ -44,8 +51,12 @@
     </div>
 
     @if ($definition->subApplications() !== [])
-        <div class="mt-8">
-            <flux:heading size="lg" class="mb-3">{{ $definition->otherDataSection()->getLabel() }}</flux:heading>
+        <div class="pt-6 border-t border-[var(--color-glass-border)] space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <flux:heading size="lg" level="2">{{ $definition->otherDataSection()->getLabel() }}</flux:heading>
+                </div>
+            </div>
 
             @livewire(
                 \App\Livewire\DynamicRecordView\OtherData::class,

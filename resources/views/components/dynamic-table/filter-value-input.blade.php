@@ -8,7 +8,7 @@
     today/yesterday/this_week/this_month, two inputs for between/not_between,
     one input otherwise.
 --}}
-<div x-data="{ op: $wire.entangle('filters.{{ $filterKey }}.operator') }">
+<div x-data="{ get op() { return $wire.filters?.['{{ $filterKey }}']?.operator ?? 'contains'; } }">
     <template x-if="!['is_empty', 'is_not_empty', 'today', 'yesterday', 'this_week', 'this_month'].includes(op)">
         <div>
             <template x-if="['between', 'not_between'].includes(op)">

@@ -34,6 +34,21 @@ it('renders the Country show page for an authenticated user', function (): void 
         ->assertSee('Egypt');
 });
 
+it('shows exactly one breadcrumb bar on the record show page, not the layout one plus its own', function (): void {
+    // Regression: CountryRecordView renders its own record-title breadcrumb
+    // (record-view.blade.php), so the shared layout breadcrumb must be
+    // suppressed here (showBreadcrumbs => false) — otherwise both stack.
+    $country = Country::create(['name' => 'Egypt', 'iso2' => 'EG', 'iso3' => 'EGY', 'phone_code' => '20', 'region' => 'Africa', 'subregion' => 'Northern Africa', 'status' => 1]);
+    $user = User::factory()->create();
+
+    $html = $this->actingAs($user)
+        ->get(route('general.world.countries.show', ['recordId' => $country->id]))
+        ->assertOk()
+        ->getContent();
+
+    expect(substr_count($html, 'aria-label="Breadcrumb"'))->toBe(1);
+});
+
 it('redirects a guest away from the record show route', function (): void {
     $country = Country::create(['name' => 'Egypt', 'iso2' => 'EG', 'iso3' => 'EGY', 'phone_code' => '20', 'region' => 'Africa', 'subregion' => 'Northern Africa', 'status' => 1]);
 

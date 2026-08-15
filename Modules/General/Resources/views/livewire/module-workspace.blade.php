@@ -1,6 +1,6 @@
 <div
     data-module-code="{{ $module['code'] }}"
-    class="min-h-screen bg-[radial-gradient(circle_at_top_left,var(--color-primary-soft),transparent_28%),linear-gradient(180deg,var(--color-surface-0),var(--color-canvas-bg))]"
+    class="min-h-screen"
 >
     <section class="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
         <flux:button

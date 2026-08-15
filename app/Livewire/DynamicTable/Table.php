@@ -11,6 +11,9 @@ use App\Support\DynamicTable\Core\Exceptions\InvalidModelException;
 use App\Support\DynamicTable\Core\Exceptions\MissingTableKeyException;
 use App\Support\DynamicTable\Core\Filter;
 use App\Support\DynamicTable\Core\Filters\BelongsToFilter;
+use App\Support\DynamicTable\Core\Filters\DateFilter;
+use App\Support\DynamicTable\Core\Filters\NumberFilter;
+use App\Support\DynamicTable\Core\Filters\TextFilter;
 use App\Support\DynamicTable\Core\SavedTableViewStore;
 use App\Support\DynamicTable\Core\SearchDriver;
 use App\Support\DynamicTable\Core\Sort;
@@ -239,6 +242,7 @@ abstract class Table extends Component
         $this->columnOrder = $prefs->columnOrder;
         $this->perPage = $prefs->perPage;
         $this->sorts = array_map(fn (Sort $sort) => $sort->toArray(), $this->defaultSort());
+        $this->seedDefaultFilterOperators($definition);
 
         if (auth()->check()) {
             $this->savedViews = array_map(
@@ -419,6 +423,7 @@ abstract class Table extends Component
         $this->appliedFilters = [];
         $this->sorts = array_map(fn (Sort $sort) => $sort->toArray(), $this->defaultSort());
         $this->activeViewId = null;
+        $this->seedDefaultFilterOperators($this->definition());
         $this->resetTablePage();
         $this->resetPreferences();
     }
@@ -618,7 +623,36 @@ abstract class Table extends Component
     {
         $this->filters = [];
         $this->appliedFilters = [];
+        $this->seedDefaultFilterOperators($this->definition());
         $this->resetTablePage();
+    }
+
+    /**
+     * TextFilter/NumberFilter/DateFilter render an operator <select>; Livewire
+     * only submits a wire:model'd value that has a real underlying property,
+     * so an operator left implicit (never explicitly set) is dropped by
+     * TableState::normalizeFilterEntry() and the whole filter entry is
+     * silently discarded — the value gets typed, "Apply" looks like it
+     * worked (the chip still renders from the raw draft), but the query
+     * never receives a where() for it. Seeding a real default here — always,
+     * not just on first render — closes that gap.
+     */
+    protected function seedDefaultFilterOperators(TableDefinition $definition): void
+    {
+        foreach ($definition->authorizedFilters() as $key => $filter) {
+            if (isset($this->filters[$key])) {
+                continue;
+            }
+
+            $operator = match (true) {
+                $filter instanceof TextFilter, $filter instanceof NumberFilter, $filter instanceof DateFilter => $filter->getOperators()[0]->value,
+                default => null,
+            };
+
+            if ($operator !== null) {
+                $this->filters[$key] = ['operator' => $operator, 'value' => null];
+            }
+        }
     }
 
     /**
@@ -1104,12 +1138,41 @@ abstract class Table extends Component
      */
     protected function getListeners(): array
     {
-        return [
+        $listeners = [
             'relationship-linked.'.$this->instanceIdentifier() => 'refreshAfterLink',
         ];
+
+        if ($this->createForm() !== null) {
+            $listeners['dynamic-form-saved.'.$this->createForm()] = 'refreshAfterCreate';
+        }
+
+        return $listeners;
     }
 
     public function refreshAfterLink(): void {}
+
+    public function refreshAfterCreate(): void {}
+
+    /**
+     * Registered App\Support\DynamicForm\Core\FormDefinitionRegistry key for
+     * this table's "Create" toolbar button, or null (the default) to hide
+     * it. Override to opt a table into create-via-modal — see
+     * App\Livewire\DynamicForm\FormModal, rendered once per table by
+     * resources/views/livewire/dynamic-table/table.blade.php.
+     */
+    protected function createForm(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * Label for the toolbar create button. Only rendered when createForm()
+     * returns a key; defaults to a generic "Create".
+     */
+    protected function createFormLabel(): string
+    {
+        return __('Create');
+    }
 
     public function render(): View
     {
@@ -1162,6 +1225,8 @@ abstract class Table extends Component
             'orderedVisibleColumns' => $state->orderedVisibleColumns(),
             'relationshipActions' => $relationshipActions,
             'instanceIdentifier' => $this->instanceIdentifier(),
+            'createFormKey' => $this->createForm(),
+            'createFormLabel' => $this->createFormLabel(),
         ]);
     }
 
