@@ -26,7 +26,7 @@
                     icon="shield-check"
                     title="Security"
                     description="Password and two-factor features are enabled through Fortify."
-                    icon-class="bg-emerald-500/12 text-emerald-600"
+                    icon-class="bg-ledger-in-subtle text-ledger-in"
                 />
             </div>
 
@@ -53,7 +53,7 @@
                             </flux:button>
 
                             @if ($statusMessage)
-                                <p class="text-sm font-medium text-emerald-600">{{ $statusMessage }}</p>
+                                <p class="text-sm font-medium text-ledger-in">{{ $statusMessage }}</p>
                             @endif
                         </div>
                     </div>

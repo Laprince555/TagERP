@@ -25,7 +25,7 @@
             />
 
             @if ($error)
-                <flux:text class="text-red-600">{{ $error }}</flux:text>
+                <flux:text class="text-danger">{{ $error }}</flux:text>
             @endif
 
             <div wire:loading.class="opacity-50" wire:target="search,loadMore" class="max-h-72 space-y-1 overflow-y-auto">
@@ -37,13 +37,13 @@
                         @class([
                             'w-full rounded-md border px-3 py-2 text-start text-sm',
                             'border-[var(--color-accent)] bg-[var(--color-accent)]/10' => (string) $selectedId === (string) $result['id'],
-                            'border-zinc-200 hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800' => (string) $selectedId !== (string) $result['id'],
+                            'border-app hover:bg-surface-0' => (string) $selectedId !== (string) $result['id'],
                         ])
                     >
                         {{ $result['label'] }}
                     </button>
                 @empty
-                    <flux:text class="text-zinc-500">{{ __('No results.') }}</flux:text>
+                    <flux:text class="text-muted">{{ __('No results.') }}</flux:text>
                 @endforelse
             </div>
 
@@ -52,10 +52,10 @@
                     {{ __('Load more') }}
                 </flux:button>
             @elseif ($picker && count($results) >= $picker->getMaximumLoadedResults())
-                <flux:text class="text-sm text-zinc-500">{{ __('Refine your search to see more results.') }}</flux:text>
+                <flux:text class="text-sm text-muted">{{ __('Refine your search to see more results.') }}</flux:text>
             @endif
 
-            <div class="flex justify-end gap-2 border-t border-zinc-200 pt-4 dark:border-zinc-700">
+            <div class="flex justify-end gap-2 border-t border-app pt-4">
                 <flux:button variant="ghost" x-on:click="$flux.modal('{{ $modalName }}').close()">
                     {{ __('Cancel') }}
                 </flux:button>

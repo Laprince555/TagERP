@@ -21,10 +21,9 @@ A framework for building create forms declaratively, the same way `App\Support\D
 
 ## Status
 
-Implemented and tested: `TextField`, `TextareaField`, `DateField`, `SelectField`, `RelationListField` (bounded search picker), form-level `authorize()`, validation, `create()`, the modal and full-page hosts, and `DynamicTable` "Create" button wiring.
+Implemented and tested: `TextField`, `TextareaField`, `DateField`, `SelectField`, `RelationListField` (bounded search picker), `CascadingRelationField` (multi-step picker), form-level `authorize()`, validation, `create()`, the modal and full-page hosts, and `DynamicTable` "Create" button wiring.
 
 Not yet implemented:
-- **`CascadingRelationField`** (multi-step picker, e.g. Country → State → City) — the DSL (`CascadingRelationField`, `CascadingLevel`) is wired and validated, but no Blade/Livewire host exists. Declaring one today throws at render time. See [fields.md](fields.md#cascadingrelationfield-not-yet-renderable).
 - **`RecordReferenceField`** (pick another Application's record, reusing `RecordReferenceProvider`) — documented contract only, no implementation. See [record-references.md](record-references.md).
 - **Edit/update forms** — `DynamicForm::create()` is the only mutation; there is no update counterpart.
 

@@ -11,7 +11,7 @@ use App\Support\DynamicTable\Core\Sort;
 use App\Support\RecordReference\RecordReferenceAccess;
 use App\Support\RecordReference\RecordReferenceVariant;
 use Illuminate\Database\Eloquent\Builder;
-use Nnjeim\World\Models\City;
+use Modules\General\Models\World\City;
 
 /**
  * Ordinary, reusable Dynamic Table for Cities. Works standalone (the
@@ -45,7 +45,7 @@ class CitiesTable extends Table
             }
         }
 
-        return City::query()->with(['country', 'state']);
+        return City::query();
     }
 
     protected function columns(): array

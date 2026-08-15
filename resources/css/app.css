@@ -125,7 +125,20 @@
    2b. DERIVED SURFACE TOKENS (SHARED BY LAUNCHER & MODULE WORKSPACE PAGES)
    -------------------------------------------------------------------------- */
 
-:root {
+/*
+    Must re-derive on every themed element, not just :root — `data-theme` lives on
+    <body>, so a token computed once at :root would freeze at the default theme's
+    value and inherit down unchanged.
+*/
+:root,
+[data-theme],
+[class*='theme-'] {
+    /* Aliases for the utility names Tailwind generates (bg-card, bg-canvas, border-app…) */
+    --color-card: var(--color-card-bg);
+    --color-canvas: var(--color-canvas-bg);
+    --color-sidebar: var(--color-sidebar-bg);
+    --color-app: var(--color-border);
+
     --color-surface-0: color-mix(in srgb, var(--color-canvas-bg) 90%, var(--color-card-bg) 10%);
     --color-surface-1: color-mix(in srgb, var(--color-card-bg) 94%, var(--color-canvas-bg) 6%);
     --color-surface-2: color-mix(in srgb, var(--color-card-bg) 82%, var(--color-sidebar-bg) 18%);
@@ -154,22 +167,30 @@
     --color-primary-hover: var(--color-primary-hover);
     --color-primary-light: var(--color-primary-light);
 
-    --color-sidebar: var(--color-sidebar-bg);
+    --color-sidebar: var(--color-sidebar);
     --color-sidebar-bg: var(--color-sidebar-bg);
     --color-sidebar-border: var(--color-sidebar-border);
     --color-sidebar-text: var(--color-sidebar-text);
     --color-sidebar-hover: var(--color-sidebar-hover);
 
-    --color-canvas: var(--color-canvas-bg);
+    --color-canvas: var(--color-canvas);
     --color-canvas-bg: var(--color-canvas-bg);
 
-    --color-card: var(--color-card-bg);
+    --color-card: var(--color-card);
     --color-card-bg: var(--color-card-bg);
 
-    --color-app: var(--color-border);
+    --color-app: var(--color-app);
 
     --color-text-main: var(--color-text-main);
     --color-text-muted: var(--color-text-muted);
+
+    /* Derived surfaces (see section 2b) exposed as utilities */
+    --color-surface-0: var(--color-surface-0);
+    --color-surface-1: var(--color-surface-1);
+    --color-surface-2: var(--color-surface-2);
+    --color-primary-soft: var(--color-primary-soft);
+    --color-success: var(--color-success);
+    --color-danger: var(--color-danger);
 
     /* Stock Ledger Mapped Colors */
     --color-ledger-in: var(--color-ledger-in);

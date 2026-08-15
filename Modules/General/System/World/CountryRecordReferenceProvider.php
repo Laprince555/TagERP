@@ -6,7 +6,7 @@ use App\Support\RecordReference\RecordFact;
 use App\Support\RecordReference\RecordReferenceProvider;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Nnjeim\World\Models\Country;
+use Modules\General\Models\World\Country;
 
 /**
  * Vertical-slice provider for the "gen-wld-ctr" Application. Owns every

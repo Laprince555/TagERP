@@ -31,17 +31,17 @@ package-ready and what would need to change before extraction.
 | Views live in the app's own `resources/views/` | `resources/views/livewire/dynamic-table/`, `resources/views/components/dynamic-table/` | Low — package would publish these, app overrides via Laravel's standard view-override mechanism |
 | Eager loads not select-narrowed per relation (payload bloat, not correctness) | `TableQueryBuilder::applyEagerLoads()` | Medium — needs per-relation-type introspection to narrow `select()` inside `with()` |
 | Relation sort limited to `BelongsTo` + aggregated to-many; no `HasOne`, no multi-level paths | `TableQueryBuilder::applyRelationSort()` | Medium-high — needs a general relation-path walker |
-| Cursor pagination unimplemented | `TableQueryBuilder` | Medium |
-| `exportable()` is a flag with no exporter | `Core/Column.php` | Medium-high (a full export milestone) |
-| No row/bulk action framework | — | Medium-high |
-| No summaries (count/sum/avg/min/max) | — | Medium |
+| Only a hardcoded bulk delete — no general row/bulk action framework | `Livewire/DynamicTable/Table.php` | Medium-high |
+| CSV is the only export format — no `Exporter` contract for xlsx/PDF | `Table::export()` | Medium |
 
 **Resolved since the original version of this table** (kept as a record, not a current blocker):
 `ComputedColumn`'s fluent-order dependency was fixed via `Column::validate()` (order-independent
 now); a `SearchDriver` contract with `DatabaseSearchDriver`/`ScoutSearchDriver` exists; an
 architecture test suite now enforces the Core/Query namespace boundaries
 (`tests/Feature/DynamicTable/ArchitectureTest.php`); the `BelongsToFilter` UI is a real debounced
-async picker, not a plain ID input.
+async picker, not a plain ID input; cursor pagination is implemented
+(`TableQueryBuilder::cursorPaginate()`); `exportable()` is honored by a working CSV exporter
+(`Table::export()`); column summaries render from a single aggregate query (`Table::summaries()`).
 
 ## If extraction happens
 

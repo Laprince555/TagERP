@@ -9,8 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\General\Database\Factories\CompanyFactory;
+use Modules\General\Models\World\City;
 use Modules\General\Models\World\People\PersonPosition;
-use Nnjeim\World\Models\City;
 
 /**
  * @property string $code

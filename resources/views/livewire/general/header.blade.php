@@ -83,7 +83,7 @@
                         type="submit"
                         variant="ghost"
                         icon="arrow-left-start-on-rectangle"
-                        class="rounded-2xl border border-[var(--color-border)] bg-[var(--launcher-surface)] text-[var(--color-text-main)] hover:border-rose-400 hover:text-rose-600"
+                        class="rounded-2xl border border-[var(--color-border)] bg-[var(--launcher-surface)] text-[var(--color-text-main)] hover:border-ledger-out hover:text-ledger-out"
                     >
                         <span class="hidden sm:inline">{{ __('messages.logout') }}</span>
                     </flux:button>

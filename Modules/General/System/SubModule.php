@@ -26,6 +26,7 @@ class SubModule extends Model
         'route',
         'icon',
         'sort_order',
+        'permission_name',
         'permission_group',
         'is_active',
         'module_id',

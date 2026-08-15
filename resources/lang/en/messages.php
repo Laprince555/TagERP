@@ -66,6 +66,7 @@ return [
             'type' => 'Type',
             'symbol' => 'Symbol',
             'precision' => 'Precision',
+            'code' => 'Code',
         ],
     ],
 ];

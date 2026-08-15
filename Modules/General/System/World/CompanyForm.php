@@ -7,10 +7,10 @@ use App\Support\DynamicForm\Core\DynamicForm;
 use App\Support\DynamicForm\Core\Fields\CascadingRelationField;
 use App\Support\DynamicForm\Core\Fields\TextareaField;
 use App\Support\DynamicForm\Core\Fields\TextField;
+use Modules\General\Models\World\City;
 use Modules\General\Models\World\Companies\Company;
-use Nnjeim\World\Models\City;
-use Nnjeim\World\Models\Country;
-use Nnjeim\World\Models\State;
+use Modules\General\Models\World\Country;
+use Modules\General\Models\World\State;
 
 /**
  * Create-form definition for the "gen-wld-com" Application. Company::code

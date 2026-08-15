@@ -8,7 +8,7 @@
                 <button type="button" wire:click="clearFilter('{{ $chip['key'] }}')" aria-label="{{ __('Remove :label filter', ['label' => $chip['label']]) }}" class="ms-0.5 hover:opacity-70">&times;</button>
             </span>
         @endforeach
-        <button type="button" wire:click="clearFilters" class="text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200">
+        <button type="button" wire:click="clearFilters" class="text-xs text-muted hover:text-main">
             {{ __('Clear all') }}
         </button>
     </div>
@@ -79,7 +79,7 @@
                                 @if ($filter->isMultiple() && count($selected) > 0)
                                     <div class="mb-1.5 flex flex-wrap gap-1">
                                         @foreach ($selected as $option)
-                                            <span wire:key="belongsto-chip-{{ $key }}-{{ $option['id'] }}" class="inline-flex items-center gap-1 rounded-full bg-zinc-100 dark:bg-zinc-700 px-2 py-0.5 text-xs">
+                                            <span wire:key="belongsto-chip-{{ $key }}-{{ $option['id'] }}" class="inline-flex items-center gap-1 rounded-full bg-surface-2 px-2 py-0.5 text-xs">
                                                 {{ $option['label'] }}
                                                 <button type="button" wire:click="removeBelongsToOption('{{ $key }}', {{ $option['id'] }})" aria-label="{{ __('Remove') }}">&times;</button>
                                             </span>
@@ -101,7 +101,7 @@
                                 <div
                                     x-show="open"
                                     x-on:click.outside="open = false"
-                                    class="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-md border border-[var(--color-border)] bg-white shadow-lg dark:bg-zinc-800"
+                                    class="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-md border border-app bg-card shadow-lg"
                                     style="display: none;"
                                 >
                                     @forelse (($belongsToOptions[$key] ?? []) as $option)
@@ -110,12 +110,12 @@
                                             wire:key="belongsto-option-{{ $key }}-{{ $option['id'] }}"
                                             wire:click="selectBelongsToOption('{{ $key }}', {{ $option['id'] }})"
                                             x-on:click="open = false"
-                                            class="block w-full px-3 py-1.5 text-start text-sm hover:bg-zinc-50 dark:hover:bg-zinc-700"
+                                            class="block w-full px-3 py-1.5 text-start text-sm hover:bg-surface-0"
                                         >
                                             {{ $option['label'] }}
                                         </button>
                                     @empty
-                                        <div class="px-3 py-1.5 text-sm text-zinc-400">
+                                        <div class="px-3 py-1.5 text-sm text-muted">
                                             {{ mb_strlen($belongsToSearch[$key] ?? '') < \App\Livewire\DynamicTable\Table::BELONGS_TO_MIN_SEARCH_LENGTH ? __('Type to search…') : __('No matches.') }}
                                         </div>
                                     @endforelse
@@ -131,7 +131,7 @@
             <flux:button wire:click="applyFilters" size="sm" variant="primary">{{ __('Apply') }}</flux:button>
             <flux:button wire:click="clearFilters" size="sm" variant="ghost">{{ __('Clear') }}</flux:button>
             @if ($hasDraftFilterChanges)
-                <span class="text-xs text-amber-600 dark:text-amber-400">{{ __('Unapplied changes') }}</span>
+                <span class="text-xs text-ledger-allocated">{{ __('Unapplied changes') }}</span>
             @endif
         </div>
         </div>

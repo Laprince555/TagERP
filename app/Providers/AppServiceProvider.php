@@ -36,16 +36,14 @@ class AppServiceProvider extends ServiceProvider
         // cache never survives across requests, only within one.
         $this->app->scoped(RecordResolver::class);
 
-        // Scoped, not a true singleton, so provider registration re-runs per
-        // request rather than leaking module boot order across requests
-        // under octane/queue workers.
-        $this->app->scoped(RecordReferenceRegistry::class);
-
-        // Scoped for the same reason as RecordReferenceRegistry above.
-        $this->app->scoped(RecordViewRegistry::class);
-
-        // Scoped for the same reason as RecordReferenceRegistry above.
-        $this->app->scoped(FormDefinitionRegistry::class);
+        // Singletons, not scoped: modules fill these from their ServiceProvider
+        // boot(), which runs once per process. A worker forgets scoped instances
+        // between jobs but never re-boots providers, so a scoped registry came
+        // back empty for every job after the first ("unknown application code").
+        // Contents are static class registrations — nothing request-specific.
+        $this->app->singleton(RecordReferenceRegistry::class);
+        $this->app->singleton(RecordViewRegistry::class);
+        $this->app->singleton(FormDefinitionRegistry::class);
     }
 
     /**
@@ -53,6 +51,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Unconditional bypass for super admins; returning null (not false) for
+        // everyone else lets every other Gate::define/Policy check run normally.
+        Gate::before(fn ($user) => $user->hasRole('super_admin') ? true : null);
+
         Gate::define('manage_users', fn ($user): bool => $user->hasRole('super_admin'));
 
         Livewire::addPersistentMiddleware([

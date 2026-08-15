@@ -29,6 +29,7 @@ class Application extends Model
         'sort_order',
         'permission_name',
         'permission_group',
+        'custom_actions',
         'is_active',
         'submodule_id',
     ];
@@ -46,6 +47,7 @@ class Application extends Model
             'is_active' => 'boolean',
             'sort_order' => 'integer',
             'color' => ApplicationColor::class,
+            'custom_actions' => 'array',
         ];
     }
 

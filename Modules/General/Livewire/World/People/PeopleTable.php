@@ -4,8 +4,10 @@ namespace Modules\General\Livewire\World\People;
 
 use App\Livewire\DynamicTable\Table;
 use App\Services\NavigationTreeService;
+use App\Support\DynamicTable\Core\Columns\DateColumn;
 use App\Support\DynamicTable\Core\Columns\RecordReferenceColumn;
 use App\Support\DynamicTable\Core\Columns\TextColumn;
+use App\Support\DynamicTable\Core\Filters\DateFilter;
 use App\Support\DynamicTable\Core\Filters\TextFilter;
 use App\Support\DynamicTable\Core\Sort;
 use App\Support\RecordReference\RecordReferenceAccess;
@@ -58,7 +60,13 @@ class PeopleTable extends Table
     protected function columns(): array
     {
         return [
-            TextColumn::make('full_name')->sortable()->searchable()->label('Full Name'),
+            RecordReferenceColumn::make('name')
+                ->applicationCode('gen-wld-per')       // كود التطبيق المرجعي الخاص بالدول
+                ->field('full_name')
+                ->variant(RecordReferenceVariant::Tag) // اختيار الشكل: Tag
+                ->sortable()
+                ->searchable()
+                ->label('Name'),
             TextColumn::make('national_id')->sortable()->searchable()->label('National ID'),
             RecordReferenceColumn::make('city')
                 ->applicationCode('gen-wld-cty')
@@ -66,6 +74,7 @@ class PeopleTable extends Table
                 ->variant(RecordReferenceVariant::Tag)
                 ->label('City'),
             TextColumn::make('phone')->sortable()->searchable()->label('Phone'),
+            DateColumn::make('created_at')->hiddenByDefault()->sortable(),
         ];
     }
 
@@ -74,12 +83,13 @@ class PeopleTable extends Table
         return [
             TextFilter::make('full_name'),
             TextFilter::make('national_id'),
+            DateFilter::make('birth_date'),
         ];
     }
 
     protected function defaultSort(): array
     {
-        return [Sort::make('full_name')->ascending()];
+        return [Sort::make('created_at')->descending()];
     }
 
     protected function createForm(): ?string

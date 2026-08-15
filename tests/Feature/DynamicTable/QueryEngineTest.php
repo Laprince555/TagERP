@@ -235,6 +235,44 @@ test('hasMany relation sort with an explicit aggregate works', function () {
     expect($names)->toBe(['Ada Lovelace', 'Grace Hopper']);
 });
 
+test('an aggregate column resolves to the number and never eager loads the relation', function () {
+    $column = RelationColumn::make('posts.views')->aggregate('count');
+
+    $definition = new TableDefinition(
+        tableKey: 'authors',
+        columns: [TextColumn::make('name'), $column],
+        filters: [],
+        query: fn () => DtAuthor::query(),
+    );
+
+    $rows = (new TableQueryBuilder($definition))
+        ->query(TableState::normalize([], $definition))
+        ->get();
+
+    expect($rows->first()->relationLoaded('posts'))->toBeFalse();
+
+    foreach ($rows as $row) {
+        expect(data_get($row, $column->getValuePath()))->toBe($row->posts()->count());
+    }
+});
+
+test('an aggregate column that is both visible and sorted selects its alias once', function () {
+    $definition = new TableDefinition(
+        tableKey: 'authors',
+        columns: [
+            TextColumn::make('name'),
+            RelationColumn::make('posts.views')->aggregate('count')->sortable(),
+        ],
+        filters: [],
+        query: fn () => DtAuthor::query(),
+    );
+
+    $state = TableState::normalize(['sorts' => [['column' => 'posts.views', 'direction' => 'desc']]], $definition);
+
+    // Duplicated aliases only blow up once the query actually runs.
+    expect((new TableQueryBuilder($definition))->query($state)->get())->toHaveCount(2);
+});
+
 test('pagination respects perPage and page', function () {
     $definition = postsDefinition();
     $builder = new TableQueryBuilder($definition);

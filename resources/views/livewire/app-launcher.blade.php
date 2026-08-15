@@ -121,15 +121,15 @@
                             <span
                                 class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-black uppercase tracking-[0.18em]"
                                 @class([
-                                    'bg-emerald-500/12 text-emerald-700' => $module['is_active'],
-                                    'bg-rose-500/12 text-rose-700' => ! $module['is_active'],
+                                    'bg-ledger-in-subtle text-ledger-in' => $module['is_active'],
+                                    'bg-ledger-out-subtle text-ledger-out' => ! $module['is_active'],
                                 ])
                             >
                                 <span
                                     class="h-2 w-2 rounded-full"
                                     @class([
-                                        'bg-emerald-500' => $module['is_active'],
-                                        'bg-rose-500' => ! $module['is_active'],
+                                        'bg-ledger-in' => $module['is_active'],
+                                        'bg-ledger-out' => ! $module['is_active'],
                                     ])
                                 ></span>
                                 <span>{{ $module['is_active'] ? 'Enabled' : 'Disabled' }}</span>

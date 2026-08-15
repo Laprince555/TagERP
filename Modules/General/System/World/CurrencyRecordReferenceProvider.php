@@ -6,7 +6,7 @@ use App\Support\RecordReference\RecordFact;
 use App\Support\RecordReference\RecordReferenceProvider;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Nnjeim\World\Models\Currency;
+use Modules\General\Models\World\Currency;
 
 /**
  * Vertical-slice provider for the "gen-wld-cur" Application. Owns every

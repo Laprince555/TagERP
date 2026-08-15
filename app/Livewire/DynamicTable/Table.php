@@ -2,6 +2,7 @@
 
 namespace App\Livewire\DynamicTable;
 
+use App\Jobs\ExportTableJob;
 use App\Support\DynamicRecordView\Core\RelationshipActions;
 use App\Support\DynamicRecordView\Resolution\EmbeddedTableContext;
 use App\Support\DynamicRecordView\Resolution\RelationshipMutator;
@@ -25,14 +26,17 @@ use App\Support\DynamicTable\Query\TableQueryBuilder;
 use App\Support\RecordReference\RecordReferenceAccess;
 use App\Support\RecordReference\RecordReferenceRegistry;
 use App\Support\RecordReference\RecordReferenceResolver;
+use Flux\Flux;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Base class for one Dynamic Table instance. Public properties are primitives
@@ -1040,48 +1044,111 @@ abstract class Table extends Component
         $this->selectAllMatching = false;
     }
 
-    public function export(): StreamedResponse
+    /**
+     * Queued, not streamed: a large export can outlive any request timeout.
+     * The file lands on the local disk and the user is notified with a
+     * download link (see ExportTableJob / TableExportReady).
+     */
+    public function export(): void
+    {
+        ExportTableJob::dispatch(
+            static::class,
+            $this->exportContext(),
+            $this->rawState(),
+            $this->selectAllMatching ? [] : $this->selectedIds,
+            (int) auth()->id(),
+        );
+
+        Flux::toast(
+            text: __('We will notify you when the file is ready to download.'),
+            heading: __('Export queued'),
+            variant: 'success',
+        );
+    }
+
+    /**
+     * The Locked embedding props the job must restore so the queued export
+     * rebuilds the exact same constrained query the user was looking at.
+     *
+     * @return array<string, int|string>
+     */
+    protected function exportContext(): array
+    {
+        return [
+            'instanceKey' => $this->instanceKey,
+            'embedRecordViewKey' => $this->embedRecordViewKey,
+            'embedRecordId' => $this->embedRecordId,
+            'embedSection' => $this->embedSection,
+            'embedTab' => $this->embedTab,
+            'embedContent' => $this->embedContent,
+        ];
+    }
+
+    /**
+     * Writes the export CSV to the local disk and returns its stored path and
+     * the download filename. Called from the queue, never from a web request.
+     *
+     * @param  array<string, mixed>  $rawState
+     * @param  array<int, string>  $selectedIds
+     * @return array{path: string, filename: string, rows: int}
+     */
+    public function writeExport(array $rawState, array $selectedIds = []): array
     {
         $definition = $this->definition();
-        $state = TableState::normalize($this->rawState(), $definition);
+        $state = TableState::normalize($rawState, $definition);
         $builder = new TableQueryBuilder($definition, $this->searchDriver());
         $query = $builder->query($state);
 
-        if (! $this->selectAllMatching && count($this->selectedIds) > 0) {
-            $query->whereIn($query->getModel()->getQualifiedKeyName(), $this->selectedIds);
+        if ($selectedIds !== []) {
+            $query->whereIn($query->getModel()->getQualifiedKeyName(), $selectedIds);
         }
 
         $filename = $this->storageKey().'-export-'.now()->format('Y-m-d-His').'.csv';
+        $path = 'exports/'.auth()->id().'/'.Str::uuid()->toString().'.csv';
 
-        return response()->streamDownload(function () use ($query, $state, $definition) {
-            $handle = fopen('php://output', 'w');
+        Storage::disk('local')->put($path, '');
+        $handle = fopen(Storage::disk('local')->path($path), 'w');
 
-            $columns = $state->orderedVisibleColumns();
-            $headers = array_map(fn ($key) => $definition->column($key)?->getLabel() ?? $key, $columns);
-            fputcsv($handle, $headers);
+        $columns = array_values(array_filter(
+            $state->orderedVisibleColumns(),
+            fn ($key) => $definition->column($key)?->isExportable() ?? false
+        ));
+        fputcsv($handle, array_map(fn ($key) => $definition->column($key)->getLabel(), $columns));
 
-            $query->chunk(500, function ($rows) use ($handle, $columns, $definition) {
-                foreach ($rows as $row) {
-                    $line = [];
-                    foreach ($columns as $key) {
-                        $col = $definition->column($key);
-                        if ($col) {
-                            $rawVal = data_get($row, $col->getField());
-                            $line[] = $col->formatValue($rawVal, $row);
-                        } else {
-                            $line[] = '';
-                        }
-                    }
-                    fputcsv($handle, $line);
+        $rows = 0;
+        $query->chunk(500, function ($chunk) use ($handle, $columns, $definition, &$rows) {
+            foreach ($chunk as $row) {
+                $line = [];
+                foreach ($columns as $key) {
+                    $col = $definition->column($key);
+                    $line[] = $col->formatValue(data_get($row, $col->getValuePath()), $row);
                 }
-            });
+                fputcsv($handle, $line);
+                $rows++;
+            }
+        });
 
-            fclose($handle);
-        }, $filename, ['Content-Type' => 'text/csv']);
+        fclose($handle);
+
+        return ['path' => $path, 'filename' => $filename, 'rows' => $rows];
+    }
+
+    /**
+     * Opt-in gate for the bulk-delete toolbar action. Deliberately false by
+     * default: query() is the *read* scope, and seeing a row has never implied
+     * the right to delete it. Override with the table's own check, e.g.
+     * `return auth()->user()?->can('deleteAny', Invoice::class) ?? false;`.
+     * Also drives whether the Delete button renders at all.
+     */
+    public function canBulkDelete(): bool
+    {
+        return false;
     }
 
     public function bulkDelete(): void
     {
+        abort_unless($this->canBulkDelete(), 403);
+
         $definition = $this->definition();
         $state = TableState::normalize($this->rawState(), $definition);
         $builder = new TableQueryBuilder($definition, $this->searchDriver());
@@ -1096,12 +1163,54 @@ abstract class Table extends Component
 
         $query->chunkById(500, function ($rows) {
             foreach ($rows as $row) {
+                // ponytail: per-row policy is honored only when one is registered.
+                // A blind Gate::allows() would return false for every model without
+                // a policy and turn bulk delete into a silent no-op — worse than the
+                // hole it closes. canBulkDelete() is the required gate; this is the
+                // optional finer grain.
+                if (Gate::getPolicyFor($row) && ! Gate::allows('delete', $row)) {
+                    continue;
+                }
+
                 $row->delete();
             }
         });
 
         $this->clearSelection();
         $this->resetTablePage();
+    }
+
+    /**
+     * Aggregates for every visible, authorized column with summary() set,
+     * computed over the currently filtered/searched query — never affected by
+     * row selection or pagination. One query total (empty array short-circuits
+     * before any query runs).
+     *
+     * @return array<string, mixed> keyed by column key
+     */
+    protected function summaries(): array
+    {
+        $definition = $this->definition();
+
+        $summaryColumns = collect($this->visibleColumns)
+            ->mapWithKeys(fn (string $key) => [$key => $definition->column($key)])
+            ->filter(fn (?Column $column) => $column?->getSummary() !== null);
+
+        if ($summaryColumns->isEmpty()) {
+            return [];
+        }
+
+        $state = TableState::normalize($this->rawState(), $definition);
+        $builder = new TableQueryBuilder($definition, $this->searchDriver());
+        $query = $builder->query($state)->reorder();
+
+        $selects = $summaryColumns->map(
+            fn (Column $column, string $key) => sprintf('%s(%s) as %s', strtoupper($column->getSummary()), $column->getField(), $key)
+        )->values()->all();
+
+        $result = $query->selectRaw(implode(', ', $selects))->first();
+
+        return $summaryColumns->keys()->mapWithKeys(fn (string $key) => [$key => $result?->{$key} ?? null])->all();
     }
 
     /**
@@ -1118,9 +1227,10 @@ abstract class Table extends Component
      * 'standard' (default): length-aware pagination, one count() query, shows
      * total/last page. 'simple': no count() query — cheaper for large tables,
      * but the paginator has no total()/lastPage(), so the pagination view
-     * must never call those on it. 'cursor' is not implemented by
-     * TableQueryBuilder (see docs/dynamic-table/sorting-pagination.md) —
-     * requesting it throws immediately rather than silently falling back.
+     * must never call those on it. 'cursor': keyset pagination via
+     * TableQueryBuilder::cursorPaginate() — no count(), no total()/lastPage(),
+     * and no arbitrary page jumps. Any other value throws immediately rather
+     * than silently falling back.
      */
     protected function paginationMode(): string
     {
@@ -1227,6 +1337,7 @@ abstract class Table extends Component
             'instanceIdentifier' => $this->instanceIdentifier(),
             'createFormKey' => $this->createForm(),
             'createFormLabel' => $this->createFormLabel(),
+            'summaries' => $this->summaries(),
         ]);
     }
 

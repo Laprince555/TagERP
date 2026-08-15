@@ -10,7 +10,6 @@ use App\Support\DynamicForm\Core\Fields\RelationListField;
 use App\Support\DynamicForm\Core\FormDefinitionRegistry;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Validator;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -32,9 +31,6 @@ class Form extends Component
 
     /** @var array<string, mixed> keyed by each field's key() (not its persisted column). */
     public array $data = [];
-
-    /** @var array<string, string> validation error messages keyed by field key. */
-    public array $errors_ = [];
 
     // --- Relation list picker state (one nested picker per RelationListField, keyed by field key) ---
     public string $activeRelationField = '';
@@ -507,30 +503,47 @@ class Form extends Component
 
         $fields = $definition->fields();
         $rules = [];
+        $attributes = [];
+
+        // Rules are keyed by the wire:model path (data.{fieldKey}), not by the
+        // persisted column, so Livewire's own error bag holds them — that is
+        // what Flux reads to mark an invalid input. Validating a detached
+        // array through Validator::make() left the bag empty and every field
+        // rendered as if it were still valid.
+        foreach ($fields as $field) {
+            $field->validate();
+            $path = 'data.'.$field->getKey();
+            $rules[$path] = $field->getRules();
+            $attributes[$path] = $field->getLabel();
+        }
+
+        $this->validate($rules, [], $attributes);
+
         $payload = [];
 
         foreach ($fields as $field) {
-            $field->validate();
-            $column = $this->columnFor($field);
-            $rules[$column] = $field->getRules();
-            $payload[$column] = $this->data[$field->getKey()] ?? null;
+            $payload[$this->columnFor($field)] = $this->data[$field->getKey()] ?? null;
         }
 
-        $validator = Validator::make($payload, $rules, [], array_combine(
-            array_keys($rules),
-            array_map(fn (Field $f) => $f->getLabel(), $fields),
-        ));
-
-        if ($validator->fails()) {
-            $this->errors_ = $validator->errors()->toArray();
-
-            return;
-        }
-
-        $record = $definition->create($validator->validated());
+        $record = $definition->create($payload);
 
         $this->dispatch('dynamic-form-saved.'.$this->formKey, id: $record->getKey());
-        $this->reset('data', 'relationSelected', 'errors_');
+        // Every picker's state resets too, not just $data — a leftover
+        // cascadeSelected keeps showing the saved record's Country/State on
+        // the trigger button of the next, empty form.
+        $this->reset(
+            'data',
+            'relationSelected',
+            'relationSearch',
+            'relationResults',
+            'relationHasMore',
+            'activeRelationField',
+            'cascadeSelected',
+            'cascadeSearch',
+            'cascadeResults',
+            'cascadeHasMore',
+            'openCascadeField',
+        );
     }
 
     public function render()

@@ -10,7 +10,7 @@ use App\Support\DynamicRecordView\Core\Fields\TextViewField;
 use App\Support\DynamicRecordView\Core\RecordTab;
 use App\Support\RecordReference\RecordReferenceAccess;
 use Illuminate\Database\Eloquent\Builder;
-use Nnjeim\World\Models\Timezone;
+use Modules\General\Models\World\Timezone;
 
 /**
  * The authorized record show page for a single Timezone (package model,

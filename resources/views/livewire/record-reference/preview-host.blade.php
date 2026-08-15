@@ -115,19 +115,19 @@
         aria-label="{{ __('messages.record_reference.preview_label') }}"
         x-transition.opacity.duration.150ms
         x-bind:style="`position: fixed; left: ${x}px; top: ${y}px; z-index: 60;`"
-        class="w-72 max-w-[90vw] rounded-lg border border-[var(--color-border,#e5e7eb)] bg-[var(--color-surface,#fff)] p-3 shadow-lg dark:bg-zinc-900"
+        class="w-72 max-w-[90vw] rounded-lg border border-app bg-card p-3 shadow-lg"
     >
         <template x-if="loading">
             <div class="animate-pulse space-y-2">
-                <div class="h-3 w-2/3 rounded bg-zinc-200 dark:bg-zinc-700"></div>
-                <div class="h-2 w-full rounded bg-zinc-200 dark:bg-zinc-700"></div>
-                <div class="h-2 w-1/2 rounded bg-zinc-200 dark:bg-zinc-700"></div>
+                <div class="h-3 w-2/3 rounded bg-surface-2"></div>
+                <div class="h-2 w-full rounded bg-surface-2"></div>
+                <div class="h-2 w-1/2 rounded bg-surface-2"></div>
             </div>
         </template>
 
         <button
             type="button"
-            class="absolute end-2 top-2 inline-flex size-7 items-center justify-center rounded-md text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
+            class="absolute end-2 top-2 inline-flex size-7 items-center justify-center rounded-md text-muted hover:bg-surface-0 hover:text-main"
             aria-label="{{ __('messages.record_reference.close_preview') }}"
             x-on:click="close()"
         >

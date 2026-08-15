@@ -47,7 +47,7 @@
         aria-label="{{ __('messages.record_reference.open_preview') }}"
         x-on:click.stop.prevent="openPreview($event)"
     >
-        <span class="inline-flex size-6 items-center justify-center rounded-full bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10">
+        <span class="inline-flex size-6 items-center justify-center rounded-full bg-primary-soft hover:bg-primary/30">
             <flux:icon icon="ellipsis-horizontal" variant="micro" />
         </span>
     </button>

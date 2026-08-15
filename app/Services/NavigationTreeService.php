@@ -43,6 +43,7 @@ class NavigationTreeService
                     'icon',
                     'sort_order',
                     'is_active',
+                    'permission_name',
                 ])
                 ->where('is_active', true)
                 ->with([
@@ -58,6 +59,7 @@ class NavigationTreeService
                                 'icon',
                                 'sort_order',
                                 'is_active',
+                                'permission_name',
                             ])
                             ->where('is_active', true)
                             ->orderBy('sort_order')
@@ -83,12 +85,44 @@ class NavigationTreeService
                     },
                 ])
                 ->orderBy('sort_order')
-                ->get();
+                ->get()
+                ->filter(fn (Module $module): bool => $this->userCanAccessNavigationNode($module));
 
             return $modules
                 ->map(fn (Module $module): array => $this->transformModule($module, $locale, $shouldLoadApplications))
+                ->values()
                 ->all();
         });
+    }
+
+    /**
+     * Locate an Application inside the permission-filtered navigation tree,
+     * returning it together with its owning SubModule and Module. Page shells
+     * use this to render breadcrumbs/headers for their own Application.
+     *
+     * Walks the tree rather than consulting a flat index: the tree is already
+     * memoized per request and holds tens of nodes, so the scan is free while
+     * a second cached index would need its own invalidation path.
+     *
+     * @return array{application: array<string, mixed>, subModule: array<string, mixed>, module: array<string, mixed>}|null
+     */
+    public function locateApplication(string $code): ?array
+    {
+        foreach ($this->getTreeForUser() as $module) {
+            foreach ($module['sub_modules'] ?? [] as $subModule) {
+                foreach ($subModule['applications'] ?? [] as $application) {
+                    if (($application['code'] ?? null) === $code) {
+                        return [
+                            'application' => $application,
+                            'subModule' => $subModule,
+                            'module' => $module,
+                        ];
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -158,6 +192,7 @@ class NavigationTreeService
             'is_active' => (bool) $module->is_active,
             'sort_order' => (int) $module->sort_order,
             'sub_modules' => $module->subModules
+                ->filter(fn (SubModule $subModule): bool => $this->userCanAccessNavigationNode($subModule))
                 ->map(fn (SubModule $subModule): array => $this->transformSubModule($subModule, $locale, $shouldLoadApplications))
                 ->values()
                 ->all(),
@@ -170,7 +205,7 @@ class NavigationTreeService
 
         if ($shouldLoadApplications && $subModule->relationLoaded('applications')) {
             $applications = $subModule->applications
-                ->filter(fn ($application): bool => $this->userCanAccessApplication($application))
+                ->filter(fn ($application): bool => $this->userCanAccessNavigationNode($application))
                 ->map(fn ($application): array => $this->transformApplication($application, $locale))
                 ->values()
                 ->all();
@@ -206,7 +241,7 @@ class NavigationTreeService
         ];
     }
 
-    protected function userCanAccessApplication(object $application): bool
+    protected function userCanAccessNavigationNode(object $application): bool
     {
         $permissionName = data_get($application, 'permission_name');
 

@@ -38,31 +38,12 @@ class CurrenciesIndex extends Component
 
     public function render(): View
     {
-        $context = $this->locateApplication('gen-wld-cur');
+        $context = app(NavigationTreeService::class)->locateApplication('gen-wld-cur');
 
         return view('general::livewire.world.currencies.index', [
             'application' => $context['application'] ?? null,
             'subModule' => $context['subModule'] ?? null,
             'module' => $context['module'] ?? null,
         ]);
-    }
-
-    private function locateApplication(string $code): ?array
-    {
-        foreach (app(NavigationTreeService::class)->getTreeForUser() as $module) {
-            foreach ($module['sub_modules'] ?? [] as $subModule) {
-                foreach ($subModule['applications'] ?? [] as $application) {
-                    if (($application['code'] ?? null) === $code) {
-                        return [
-                            'application' => $application,
-                            'subModule' => $subModule,
-                            'module' => $module,
-                        ];
-                    }
-                }
-            }
-        }
-
-        return null;
     }
 }

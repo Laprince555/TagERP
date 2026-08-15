@@ -3,8 +3,13 @@
 use App\Support\ModuleRoute;
 use Illuminate\Support\Facades\Route;
 use Modules\General\Livewire\ModuleWorkspace;
+use Modules\General\Livewire\Security\Permissions\PermissionsIndex;
+use Modules\General\Livewire\Security\Rules\RuleRecordView;
+use Modules\General\Livewire\Security\Rules\RulesIndex;
 use Modules\General\Livewire\SubModuleRecordView;
 use Modules\General\Livewire\SubModuleWorkspace;
+use Modules\General\Livewire\System\Users\UserRecordView;
+use Modules\General\Livewire\System\Users\UsersIndex;
 use Modules\General\Livewire\World\Cities\CitiesIndex;
 use Modules\General\Livewire\World\Cities\CityRecordView;
 use Modules\General\Livewire\World\Companies\CompaniesIndex;
@@ -13,6 +18,8 @@ use Modules\General\Livewire\World\Countries\CountriesIndex;
 use Modules\General\Livewire\World\Countries\CountryRecordView;
 use Modules\General\Livewire\World\Currencies\CurrenciesIndex;
 use Modules\General\Livewire\World\Currencies\CurrencyRecordView;
+use Modules\General\Livewire\World\Languages\LanguageRecordView;
+use Modules\General\Livewire\World\Languages\LanguagesIndex;
 use Modules\General\Livewire\World\People\PeopleIndex;
 use Modules\General\Livewire\World\People\PersonRecordView;
 use Modules\General\Livewire\World\States\StateRecordView;
@@ -68,6 +75,14 @@ Route::middleware(['auth'])
     ->name('general.world.timezones.show');
 
 Route::middleware(['auth'])
+    ->get('/general/world/languages', LanguagesIndex::class)
+    ->name('general.world.languages');
+
+Route::middleware(['auth'])
+    ->get('/general/world/languages/{recordId}/view', LanguageRecordView::class)
+    ->name('general.world.languages.show');
+
+Route::middleware(['auth'])
     ->get('/general/world/companies', CompaniesIndex::class)
     ->name('general.world.companies');
 
@@ -82,6 +97,26 @@ Route::middleware(['auth'])
 Route::middleware(['auth'])
     ->get('/general/world/people/{recordId}/view', PersonRecordView::class)
     ->name('general.world.people.show');
+
+Route::middleware(['auth'])
+    ->get('/general/security/rules', RulesIndex::class)
+    ->name('general.security.rules');
+
+Route::middleware(['auth'])
+    ->get('/general/security/rules/{recordId}/view', RuleRecordView::class)
+    ->name('general.security.rules.show');
+
+Route::middleware(['auth'])
+    ->get('/general/security/permissions', PermissionsIndex::class)
+    ->name('general.security.permissions');
+
+Route::middleware(['auth'])
+    ->get('/general/system/users', UsersIndex::class)
+    ->name('general.system.users');
+
+Route::middleware(['auth'])
+    ->get('/general/system/users/{recordId}/view', UserRecordView::class)
+    ->name('general.system.users.show');
 
 Route::middleware(['auth'])
     ->get('/docs/{path?}', function (?string $path = null) {

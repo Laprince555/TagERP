@@ -9,11 +9,11 @@ use App\Support\DynamicForm\Core\Fields\DateField;
 use App\Support\DynamicForm\Core\Fields\SelectField;
 use App\Support\DynamicForm\Core\Fields\TextareaField;
 use App\Support\DynamicForm\Core\Fields\TextField;
+use Modules\General\Models\World\City;
+use Modules\General\Models\World\Country;
 use Modules\General\Models\World\People\Gender;
 use Modules\General\Models\World\People\Person;
-use Nnjeim\World\Models\City;
-use Nnjeim\World\Models\Country;
-use Nnjeim\World\Models\State;
+use Modules\General\Models\World\State;
 
 /**
  * Create-form definition for the "gen-wld-per" Application. Person::code

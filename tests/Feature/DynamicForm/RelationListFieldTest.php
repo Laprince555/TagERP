@@ -37,6 +37,22 @@ class RelationListFixtureForm extends DynamicForm
     }
 }
 
+/** Same, but only cities of a country whose iso2 is 'EG' may be picked. */
+class ScopedRelationListFixtureForm extends RelationListFixtureForm
+{
+    public function fields(): array
+    {
+        return [
+            TextField::make('name')->label('Name')->required(),
+            RelationListField::make('city')
+                ->model(City::class)
+                ->field('name')
+                ->label('City')
+                ->query(fn ($query) => $query->where('country_code', 'EG')),
+        ];
+    }
+}
+
 beforeEach(function (): void {
     $this->actingAs(User::factory()->create());
 
@@ -144,6 +160,36 @@ it('refuses an id that was never offered as a candidate', function (): void {
     $component->call('chooseRelation', 'city', $offered->id);
 
     expect($component->get('data.city'))->toBe($offered->id);
+});
+
+/**
+ * $data is a plain public Livewire property, so the picker's candidate check
+ * in chooseRelation() can be skipped entirely by a crafted request. The
+ * query() scope therefore has to be enforced by the validation rule too.
+ */
+it('rejects an existing id that falls outside the field query() scope', function (): void {
+    app(FormDefinitionRegistry::class)->register('test.scoped-relation-list', ScopedRelationListFixtureForm::class);
+
+    $outOfScope = City::create([
+        'name' => 'Paris',
+        'country_id' => $this->country->id,
+        'state_id' => 0,
+        'country_code' => 'FR',
+    ]);
+    $inScope = makeListCity('Cairo');
+
+    $component = Livewire::test(Form::class, ['formKey' => 'test.scoped-relation-list'])
+        ->set('data.name', 'Acme Corp')
+        ->set('data.city', $outOfScope->id)
+        ->call('save');
+
+    $component->assertHasErrors('data.city');
+
+    expect(Company::count())->toBe(0);
+
+    $component->set('data.city', $inScope->id)->call('save');
+
+    expect(Company::where('city_id', $inScope->id)->count())->toBe(1);
 });
 
 it('rejects a forged id at validation instead of hitting the foreign key', function (): void {

@@ -3,9 +3,7 @@
 namespace App\Livewire;
 
 use App\Services\NavigationTreeService;
-use App\Support\FallbackValue;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -25,25 +23,22 @@ class AppLauncher extends Component
         $search = mb_strtolower(trim($this->search));
 
         return collect($tree)
-            ->map(function (mixed $module): array {
-                $title = $this->value($module, ['title', 'name.en', 'name', 'label'], 'Untitled Module');
-                $category = $this->value($module, ['category', 'group', 'section', 'code'], 'Module');
-                $description = $this->value($module, ['description.en', 'description', 'summary'], '');
-                $icon = $this->value($module, ['icon'], 'squares-2x2');
-                $route = $this->value($module, ['route', 'url'], '#');
-                $applications = $this->moduleApplications($module);
+            ->map(function (array $module): array {
+                $applications = collect($module['sub_modules'])
+                    ->flatMap(fn (array $subModule): array => $subModule['applications'])
+                    ->all();
 
                 return [
-                    'id' => $this->value($module, ['id', 'code', 'key'], $title),
-                    'title' => (string) $title,
-                    'category' => (string) $category,
-                    'description' => (string) $description,
-                    'icon' => (string) $icon,
-                    'route_name' => (string) $this->value($module, ['route_name'], ''),
-                    'route' => (string) $route,
-                    'badge' => $applications->count(),
-                    'is_active' => (bool) $this->value($module, ['is_active', 'active'], true),
-                    'applications' => $applications->all(),
+                    'id' => $module['id'],
+                    'title' => (string) ($module['name'] ?? 'Untitled Module'),
+                    'category' => (string) $module['code'],
+                    'description' => (string) ($module['description'] ?? ''),
+                    'icon' => (string) ($module['icon'] ?? 'squares-2x2'),
+                    'route_name' => (string) ($module['route_name'] ?? ''),
+                    'route' => (string) ($module['route'] ?? '#'),
+                    'badge' => count($applications),
+                    'is_active' => $module['is_active'],
+                    'applications' => $applications,
                 ];
             })
             ->filter(function (array $module) use ($search): bool {
@@ -58,11 +53,11 @@ class AppLauncher extends Component
                     $module['route_name'],
                     $module['route'],
                     ...collect($module['applications'])
-                        ->flatMap(fn (mixed $application): array => [
-                            (string) $this->value($application, ['name'], ''),
-                            (string) $this->value($application, ['description'], ''),
-                            (string) $this->value($application, ['route_name'], ''),
-                            (string) $this->value($application, ['route'], ''),
+                        ->flatMap(fn (array $application): array => [
+                            (string) ($application['name'] ?? ''),
+                            (string) ($application['description'] ?? ''),
+                            (string) ($application['route_name'] ?? ''),
+                            (string) ($application['route'] ?? ''),
                         ])
                         ->all(),
                 ]));
@@ -91,79 +86,5 @@ class AppLauncher extends Component
             'userName' => $user?->name ?? '',
             'userRole' => $user?->getRoleNames()->first() ?? '',
         ]);
-    }
-
-    /**
-     * @return Collection<int, mixed>
-     */
-    private function moduleApplications(mixed $module): Collection
-    {
-        $applications = $this->arrayValue($module, ['applications', 'apps', 'children']);
-
-        if ($applications instanceof Collection) {
-            return $applications;
-        }
-
-        if (is_array($applications)) {
-            return collect($applications);
-        }
-
-        $subModules = $this->arrayValue($module, ['sub_modules', 'subModules']);
-
-        if ($subModules instanceof Collection) {
-            return $subModules
-                ->flatMap(fn (mixed $subModule): array => $this->subModuleApplications($subModule)->all())
-                ->values();
-        }
-
-        if (is_array($subModules)) {
-            return collect($subModules)
-                ->flatMap(fn (mixed $subModule): array => $this->subModuleApplications($subModule)->all())
-                ->values();
-        }
-
-        return collect();
-    }
-
-    /**
-     * @return Collection<int, mixed>
-     */
-    private function subModuleApplications(mixed $subModule): Collection
-    {
-        $applications = $this->arrayValue($subModule, ['applications', 'apps', 'children']);
-
-        if ($applications instanceof Collection) {
-            return $applications;
-        }
-
-        if (is_array($applications)) {
-            return collect($applications);
-        }
-
-        return collect();
-    }
-
-    /**
-     * @param  array<int, string>  $keys
-     */
-    private function value(mixed $target, array $keys, mixed $default = null): mixed
-    {
-        return FallbackValue::get($target, $keys, $default);
-    }
-
-    /**
-     * @param  array<int, string>  $keys
-     */
-    private function arrayValue(mixed $target, array $keys): mixed
-    {
-        foreach ($keys as $key) {
-            $value = FallbackValue::path($target, $key);
-
-            if ($value !== null) {
-                return $value;
-            }
-        }
-
-        return null;
     }
 }

@@ -2,7 +2,43 @@
 
 namespace Modules\HR\Providers;
 
+use App\Support\DynamicForm\Core\FormDefinitionRegistry;
+use App\Support\DynamicRecordView\Core\RecordViewRegistry;
+use App\Support\RecordReference\RecordReferenceRegistry;
 use Illuminate\Console\Scheduling\Schedule;
+use Livewire\Livewire;
+use Modules\HR\Livewire\EmployeeManagement\Employees\EmployeesIndex;
+use Modules\HR\Livewire\EmployeeManagement\Employees\EmployeesTable;
+use Modules\HR\Livewire\OrganizationStructure\Branches\BranchesIndex;
+use Modules\HR\Livewire\OrganizationStructure\Branches\BranchesTable;
+use Modules\HR\Livewire\OrganizationStructure\Departments\DepartmentEntitiesTable;
+use Modules\HR\Livewire\OrganizationStructure\Departments\DepartmentsIndex;
+use Modules\HR\Livewire\OrganizationStructure\Departments\DepartmentsTable;
+use Modules\HR\Livewire\OrganizationStructure\Entities\EntitiesIndex;
+use Modules\HR\Livewire\OrganizationStructure\Entities\EntitiesTable;
+use Modules\HR\Livewire\OrganizationStructure\JobGrades\JobGradesIndex;
+use Modules\HR\Livewire\OrganizationStructure\JobGrades\JobGradesTable;
+use Modules\HR\Livewire\OrganizationStructure\JobTitles\JobTitleGradesTable;
+use Modules\HR\Livewire\OrganizationStructure\JobTitles\JobTitlesIndex;
+use Modules\HR\Livewire\OrganizationStructure\JobTitles\JobTitlesTable;
+use Modules\HR\System\EmployeeManagement\EmployeeForm;
+use Modules\HR\System\EmployeeManagement\EmployeeRecordReferenceProvider;
+use Modules\HR\System\EmployeeManagement\EmployeeRecordView as EmployeeRecordViewDefinition;
+use Modules\HR\System\OrganizationStructure\BranchForm;
+use Modules\HR\System\OrganizationStructure\BranchRecordReferenceProvider;
+use Modules\HR\System\OrganizationStructure\BranchRecordView as BranchRecordViewDefinition;
+use Modules\HR\System\OrganizationStructure\DepartmentForm;
+use Modules\HR\System\OrganizationStructure\DepartmentRecordReferenceProvider;
+use Modules\HR\System\OrganizationStructure\DepartmentRecordView as DepartmentRecordViewDefinition;
+use Modules\HR\System\OrganizationStructure\EntityForm;
+use Modules\HR\System\OrganizationStructure\EntityRecordReferenceProvider;
+use Modules\HR\System\OrganizationStructure\EntityRecordView as EntityRecordViewDefinition;
+use Modules\HR\System\OrganizationStructure\JobGradeForm;
+use Modules\HR\System\OrganizationStructure\JobGradeRecordReferenceProvider;
+use Modules\HR\System\OrganizationStructure\JobGradeRecordView as JobGradeRecordViewDefinition;
+use Modules\HR\System\OrganizationStructure\JobTitleForm;
+use Modules\HR\System\OrganizationStructure\JobTitleRecordReferenceProvider;
+use Modules\HR\System\OrganizationStructure\JobTitleRecordView as JobTitleRecordViewDefinition;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 
 class HRServiceProvider extends ModuleServiceProvider
@@ -43,4 +79,48 @@ class HRServiceProvider extends ModuleServiceProvider
     // {
     //     $schedule->command('inspire')->hourly();
     // }
+
+    public function boot(): void
+    {
+        parent::boot();
+
+        Livewire::component('hr.entities-index', EntitiesIndex::class);
+        Livewire::component('hr.entities-table', EntitiesTable::class);
+        Livewire::component('hr.branches-index', BranchesIndex::class);
+        Livewire::component('hr.branches-table', BranchesTable::class);
+        Livewire::component('hr.departments-index', DepartmentsIndex::class);
+        Livewire::component('hr.departments-table', DepartmentsTable::class);
+        Livewire::component('hr.department-entities-table', DepartmentEntitiesTable::class);
+        Livewire::component('hr.job-grades-index', JobGradesIndex::class);
+        Livewire::component('hr.job-grades-table', JobGradesTable::class);
+        Livewire::component('hr.job-titles-index', JobTitlesIndex::class);
+        Livewire::component('hr.job-titles-table', JobTitlesTable::class);
+        Livewire::component('hr.job-title-grades-table', JobTitleGradesTable::class);
+        Livewire::component('hr.employees-index', EmployeesIndex::class);
+        Livewire::component('hr.employees-table', EmployeesTable::class);
+
+        $recordReferenceRegistry = $this->app->make(RecordReferenceRegistry::class);
+        $recordReferenceRegistry->register(new EntityRecordReferenceProvider);
+        $recordReferenceRegistry->register(new BranchRecordReferenceProvider);
+        $recordReferenceRegistry->register(new DepartmentRecordReferenceProvider);
+        $recordReferenceRegistry->register(new JobGradeRecordReferenceProvider);
+        $recordReferenceRegistry->register(new JobTitleRecordReferenceProvider);
+        $recordReferenceRegistry->register(new EmployeeRecordReferenceProvider);
+
+        $recordViewRegistry = $this->app->make(RecordViewRegistry::class);
+        $recordViewRegistry->register('hr.organization-structure.entity', EntityRecordViewDefinition::class);
+        $recordViewRegistry->register('hr.organization-structure.branch', BranchRecordViewDefinition::class);
+        $recordViewRegistry->register('hr.organization-structure.department', DepartmentRecordViewDefinition::class);
+        $recordViewRegistry->register('hr.organization-structure.job-grade', JobGradeRecordViewDefinition::class);
+        $recordViewRegistry->register('hr.organization-structure.job-title', JobTitleRecordViewDefinition::class);
+        $recordViewRegistry->register('hr.employee-management.employee', EmployeeRecordViewDefinition::class);
+
+        $formRegistry = $this->app->make(FormDefinitionRegistry::class);
+        $formRegistry->register('hr.organization-structure.entity.create', EntityForm::class);
+        $formRegistry->register('hr.organization-structure.branch.create', BranchForm::class);
+        $formRegistry->register('hr.organization-structure.department.create', DepartmentForm::class);
+        $formRegistry->register('hr.organization-structure.job-grade.create', JobGradeForm::class);
+        $formRegistry->register('hr.organization-structure.job-title.create', JobTitleForm::class);
+        $formRegistry->register('hr.employee-management.employee.create', EmployeeForm::class);
+    }
 }

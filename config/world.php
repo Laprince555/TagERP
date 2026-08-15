@@ -1,11 +1,11 @@
 <?php
 
-use Nnjeim\World\Models\City;
-use Nnjeim\World\Models\Country;
-use Nnjeim\World\Models\Currency;
-use Nnjeim\World\Models\Language;
-use Nnjeim\World\Models\State;
-use Nnjeim\World\Models\Timezone;
+use Modules\General\Models\World\City;
+use Modules\General\Models\World\Country;
+use Modules\General\Models\World\Currency;
+use Modules\General\Models\World\Language;
+use Modules\General\Models\World\State;
+use Modules\General\Models\World\Timezone;
 
 return [
 

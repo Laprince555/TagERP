@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\General\Database\Factories\PersonFactory;
-use Nnjeim\World\Models\City;
+use Modules\General\Models\World\City;
 
 /**
  * @property string $code

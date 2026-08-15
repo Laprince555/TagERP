@@ -21,7 +21,7 @@
                 </span>
             </flux:menu.item>
         @empty
-            <div class="px-3 py-1.5 text-sm text-zinc-400">{{ __('No saved views yet.') }}</div>
+            <div class="px-3 py-1.5 text-sm text-muted">{{ __('No saved views yet.') }}</div>
         @endforelse
 
         <flux:menu.separator />
@@ -62,7 +62,7 @@
         </div>
 
         @if ($saveViewError)
-            <div class="px-2 pb-1 text-xs text-red-500">{{ $saveViewError }}</div>
+            <div class="px-2 pb-1 text-xs text-danger">{{ $saveViewError }}</div>
         @endif
 
         <flux:menu.item wire:click="resetToTableDefaults">

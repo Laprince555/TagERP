@@ -127,6 +127,8 @@
                         </span>
                     </flux:button>
 
+                    <livewire:components.notification-bell />
+
                     <livewire:components.language-switcher />
 
                     <livewire:components.theme-switcher />
@@ -181,6 +183,8 @@
 
             {{ $slot ?? '' }}
         </main>
+
+        <flux:toast position="bottom end" />
 
         @livewireScripts
         @fluxScripts

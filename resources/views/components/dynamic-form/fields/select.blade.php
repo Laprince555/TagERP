@@ -1,7 +1,7 @@
 @props(['field', 'value', 'errors' => [], 'formKey'])
 
 <flux:field>
-    <flux:label>{{ $field->getLabel() }}@if ($field->isRequired()) <span class="text-red-500">*</span> @endif</flux:label>
+    <flux:label>{{ $field->getLabel() }}@if ($field->isRequired()) <span class="text-danger">*</span> @endif</flux:label>
 
     <flux:select wire:model="data.{{ $field->getKey() }}">
         <flux:select.option value="">{{ $field->getPlaceholder() ?? __('Select...') }}</flux:select.option>

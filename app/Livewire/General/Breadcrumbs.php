@@ -3,7 +3,6 @@
 namespace App\Livewire\General;
 
 use App\Services\NavigationTreeService;
-use App\Support\FallbackValue;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
@@ -80,35 +79,21 @@ class Breadcrumbs extends Component
     {
         $moduleBreadcrumb = [$this->makeBreadcrumb($module)];
 
-        foreach ($this->arrayValue($module, 'sub_modules') as $subModule) {
-            if (! is_array($subModule)) {
-                continue;
-            }
-
+        foreach ($module['sub_modules'] as $subModule) {
             $subModuleBreadcrumb = [...$moduleBreadcrumb, $this->makeBreadcrumb($subModule)];
 
-            foreach ($this->arrayValue($subModule, 'applications') as $application) {
-                if (! is_array($application)) {
-                    continue;
-                }
-
-                $applicationRoute = $this->stringValue($application, 'route_name');
-
-                if ($this->routeMatches($currentRoute, $applicationRoute, $routeSegments)) {
+            foreach ($subModule['applications'] as $application) {
+                if ($this->routeMatches($currentRoute, $application['route_name'], $routeSegments)) {
                     return [...$subModuleBreadcrumb, $this->makeBreadcrumb($application)];
                 }
             }
 
-            $subModuleRoute = $this->stringValue($subModule, 'route_name');
-
-            if ($this->routeMatches($currentRoute, $subModuleRoute, $routeSegments)) {
+            if ($this->routeMatches($currentRoute, $subModule['route_name'], $routeSegments)) {
                 return $subModuleBreadcrumb;
             }
         }
 
-        $moduleRoute = $this->stringValue($module, 'route_name');
-
-        if ($this->routeMatches($currentRoute, $moduleRoute, $routeSegments)) {
+        if ($this->routeMatches($currentRoute, $module['route_name'], $routeSegments)) {
             return $moduleBreadcrumb;
         }
 
@@ -122,13 +107,13 @@ class Breadcrumbs extends Component
     protected function makeBreadcrumb(array $item): array
     {
         return [
-            'label' => $this->stringValue($item, 'name', 'Untitled'),
+            'label' => $item['name'] ?: 'Untitled',
             // 'route' holds the already-resolved, locale-aware URL built by
             // NavigationTreeService::resolveRoute() — reuse it instead of
             // calling route() again in the view (that route name needs a
             // {locale} parameter the view doesn't have).
-            'url' => $this->stringValue($item, 'route') ?: null,
-            'icon' => $this->stringValue($item, 'icon') ?: null,
+            'url' => $item['route'] ?: null,
+            'icon' => $item['icon'] ?: null,
         ];
     }
 
@@ -153,22 +138,5 @@ class Breadcrumbs extends Component
         }
 
         return array_slice($currentSegments, 0, $candidateLength) === $candidateSegments;
-    }
-
-    /**
-     * @return array<int, mixed>
-     */
-    protected function arrayValue(array $item, string $key): array
-    {
-        $value = FallbackValue::path($item, $key, []);
-
-        return is_array($value) ? $value : [];
-    }
-
-    protected function stringValue(array $item, string $key, string $default = ''): string
-    {
-        $value = FallbackValue::get($item, [$key], $default);
-
-        return is_string($value) && $value !== '' ? $value : $default;
     }
 }

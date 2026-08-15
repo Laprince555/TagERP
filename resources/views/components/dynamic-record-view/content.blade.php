@@ -17,7 +17,7 @@
     @if ($content instanceof \App\Support\DynamicRecordView\Core\Content\FieldsContent)
         <x-dynamic-record-view.fields-content :content="$content" :record="$record" :reference-fields="$referenceFields" wire:key="content-{{ $section }}-{{ $tab }}-{{ $content->getKey() }}" />
     @elseif ($content instanceof \App\Support\DynamicRecordView\Core\Content\EmptyStateContent)
-        <div class="rounded-lg border border-dashed border-zinc-300 p-8 text-center text-zinc-500 dark:border-zinc-600" wire:key="content-{{ $section }}-{{ $tab }}-{{ $content->getKey() }}">
+        <div class="rounded-lg border border-dashed border-app p-8 text-center text-muted" wire:key="content-{{ $section }}-{{ $tab }}-{{ $content->getKey() }}">
             {{ $content->getMessage() }}
         </div>
     @elseif ($content instanceof \App\Support\DynamicRecordView\Core\Content\TableContent && $content->getTable())

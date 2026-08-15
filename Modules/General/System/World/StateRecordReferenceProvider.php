@@ -6,7 +6,7 @@ use App\Support\RecordReference\RecordFact;
 use App\Support\RecordReference\RecordReferenceProvider;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Nnjeim\World\Models\State;
+use Modules\General\Models\World\State;
 
 /**
  * Vertical-slice provider for the "gen-wld-sta" Application. Owns every

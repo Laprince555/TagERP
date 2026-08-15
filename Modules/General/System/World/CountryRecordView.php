@@ -13,7 +13,7 @@ use App\Support\DynamicRecordView\Core\SubApplication;
 use App\Support\RecordReference\RecordReferenceAccess;
 use Illuminate\Database\Eloquent\Builder;
 use Modules\General\Livewire\World\Countries\CitiesTable;
-use Nnjeim\World\Models\Country;
+use Modules\General\Models\World\Country;
 
 /**
  * The authorized record show page for a single Country (package model,

@@ -4,7 +4,9 @@ namespace App\Support\DynamicForm\Core\Fields;
 
 use App\Support\DynamicForm\Core\Field;
 use Closure;
+use Illuminate\Contracts\Database\Query\Builder as QueryBuilder;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Validation\Rule;
 use InvalidArgumentException;
 
 /**
@@ -119,7 +121,14 @@ class RelationListField extends Field
         return $this->maximumLoadedResults;
     }
 
-    /** @param  Closure(Builder $query): Builder  $callback */
+    /**
+     * Scopes the candidates. Applied twice: to the Eloquent picker query and,
+     * as an exists() constraint, at validation — so it must only use
+     * constraints a plain query builder also understands (where/whereNull/
+     * whereIn/…), never a model scope or relation method.
+     *
+     * @param  Closure(Builder $query): Builder  $callback
+     */
     public function query(Closure $callback): static
     {
         $this->query = $callback;
@@ -138,9 +147,12 @@ class RelationListField extends Field
     }
 
     /**
-     * Always constrains the picked value to a row that actually exists, so
-     * a forged id reaching save() fails validation instead of exploding on
-     * the foreign-key constraint.
+     * Always constrains the picked value to a row that actually exists AND
+     * is inside this field's query() scope — the picker only ever offers
+     * scoped candidates, but $data is a plain public Livewire property, so
+     * a crafted request can set the id without ever calling chooseRelation().
+     * Without the scope here, "only Persons without a User" would be a UI
+     * suggestion rather than a rule.
      */
     public function getRules(): array
     {
@@ -154,9 +166,15 @@ class RelationListField extends Field
             ? $model->getTable()
             : $connection.'.'.$model->getTable();
 
+        $exists = Rule::exists($table, $model->getKeyName());
+
+        if ($constrain = $this->query) {
+            $exists->where(fn (QueryBuilder $query) => $constrain($query));
+        }
+
         return [
             ...parent::getRules(),
-            'exists:'.$table.','.$model->getKeyName(),
+            $exists,
         ];
     }
 

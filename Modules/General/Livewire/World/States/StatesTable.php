@@ -11,7 +11,7 @@ use App\Support\DynamicTable\Core\Sort;
 use App\Support\RecordReference\RecordReferenceAccess;
 use App\Support\RecordReference\RecordReferenceVariant;
 use Illuminate\Database\Eloquent\Builder;
-use Nnjeim\World\Models\State;
+use Modules\General\Models\World\State;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**

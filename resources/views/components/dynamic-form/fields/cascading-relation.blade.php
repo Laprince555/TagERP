@@ -44,7 +44,7 @@
                  Use {{ }} interpolation on <flux:*> elements. --}}
             wire:click="toggleCascadePicker('{{ $fieldKey }}')"
         >
-            {{ $buttonText }}@if ($field->isRequired()) <span class="text-red-500">*</span> @endif
+            {{ $buttonText }}@if ($field->isRequired()) <span class="text-danger">*</span> @endif
         </flux:button>
 
         @if ($field->getHelpText())
@@ -64,7 +64,7 @@
         ></div>
 
         <div
-            class="fixed left-1/2 top-1/2 z-[9999] w-[min(28rem,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 space-y-3 overflow-y-auto rounded-xl border border-zinc-200 bg-white p-4 shadow-2xl dark:border-zinc-700 dark:bg-zinc-800"
+            class="fixed left-1/2 top-1/2 z-[9999] w-[min(28rem,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 space-y-3 overflow-y-auto rounded-xl border border-app bg-card p-4 shadow-2xl"
             style="max-height: min(32rem, calc(100vh - 4rem));"
         >
             <div class="flex items-center justify-between gap-2">
@@ -108,7 +108,7 @@
                     </div>
 
                     @if (! $unlocked)
-                        <flux:text class="text-xs text-zinc-500">
+                        <flux:text class="text-xs text-muted">
                             {{ __('Choose a :parent first.', ['parent' => str($field->parentLevel($levelKey)?->getKey() ?? '')->headline()->toString()]) }}
                         </flux:text>
                     @elseif (! $selected)
@@ -130,12 +130,12 @@
                                     type="button"
                                     wire:key="cascade-opt-{{ $levelKey }}-{{ $result['id'] }}"
                                     wire:click="chooseCascade(@js($fieldKey), @js($levelKey), @js($result['id']))"
-                                    class="w-full rounded-md border border-zinc-200 px-3 py-2 text-start text-sm hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
+                                    class="w-full rounded-md border border-app px-3 py-2 text-start text-sm hover:bg-surface-0"
                                 >
                                     {{ $result['label'] }}
                                 </button>
                             @empty
-                                <flux:text class="text-xs text-zinc-500">{{ __('No results.') }}</flux:text>
+                                <flux:text class="text-xs text-muted">{{ __('No results.') }}</flux:text>
                             @endforelse
                         </div>
 

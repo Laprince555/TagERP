@@ -50,4 +50,32 @@ class RelationColumn extends Column
     {
         return Str::afterLast($this->getField(), '.');
     }
+
+    /**
+     * The select alias the aggregate lands in. Always passed to
+     * withAggregate() explicitly as "{relation} as {alias}" rather than left
+     * to Laravel to derive: Laravel strips the dots out of a nested relation
+     * path when deriving one, so a path like `country.state` would be read
+     * back under a name nobody here computes the same way.
+     */
+    public function getAggregateAlias(): ?string
+    {
+        if ($this->aggregate === null) {
+            return null;
+        }
+
+        return Str::snake(str_replace('.', '_', $this->getRelationPath()))
+            .'_'.$this->aggregate.'_'.$this->getRelationField();
+    }
+
+    /**
+     * Where the rendered value actually lives on the row — the aggregate
+     * alias for aggregate columns, the dotted relation path otherwise.
+     * Reading an aggregate column through its dotted path would return the
+     * whole related collection (and lazy-load it per row), never the number.
+     */
+    public function getValuePath(): string
+    {
+        return $this->getAggregateAlias() ?? $this->getField();
+    }
 }

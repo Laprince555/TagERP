@@ -1,16 +1,10 @@
-@php
-    $columnFor = fn ($field) => method_exists($field, 'getColumn') ? $field->getColumn() : $field->getKey();
-@endphp
-
 <form wire:submit="save" class="space-y-4">
     @foreach ($definition->fields() as $field)
-        @php $column = $columnFor($field); @endphp
-
         <x-dynamic-component
             :component="$field->component()"
             :field="$field"
             :value="$data[$field->getKey()] ?? null"
-            :errors="$errors_[$column] ?? []"
+            :errors="$errors->get('data.'.$field->getKey())"
             :form-key="$formKey"
             :relation-results="$relationResults[$field->getKey()] ?? []"
             :relation-has-more="$relationHasMore[$field->getKey()] ?? false"

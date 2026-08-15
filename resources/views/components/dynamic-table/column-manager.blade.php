@@ -17,7 +17,7 @@
             <flux:menu.item wire:key="column-fixed-{{ $key }}" disabled>
                 <flux:checkbox checked disabled />
                 {{ $column->getLabel() }}
-                <span class="ms-auto text-xs text-zinc-400">{{ __('Fixed') }}</span>
+                <span class="ms-auto text-xs text-muted">{{ __('Fixed') }}</span>
             </flux:menu.item>
         @endforeach
 
@@ -30,7 +30,7 @@
         <ul wire:sort="sortColumns" class="contents">
             @foreach ($toggleableColumns as $key => $column)
                 <li wire:sort:item="{{ $key }}" wire:key="column-toggle-{{ $key }}" class="group flex items-center">
-                    <span class="cursor-move px-1 text-zinc-400" aria-hidden="true">&#8942;&#8942;</span>
+                    <span class="cursor-move px-1 text-muted" aria-hidden="true">&#8942;&#8942;</span>
 
                     <flux:menu.item wire:click.stop="toggleColumn('{{ $key }}')" class="flex-1">
                         <flux:checkbox :checked="in_array($key, $visible, true)" />
@@ -43,14 +43,14 @@
                             wire:click.stop="sortColumns('{{ $key }}', {{ $loop->index - 1 }})"
                             @if ($loop->first) disabled @endif
                             aria-label="{{ __('Move up') }}"
-                            class="rounded px-1 text-xs text-zinc-400 hover:text-zinc-700 disabled:opacity-30 dark:hover:text-white"
+                            class="rounded px-1 text-xs text-muted hover:text-main disabled:opacity-30"
                         >&uarr;</button>
                         <button
                             type="button"
                             wire:click.stop="sortColumns('{{ $key }}', {{ $loop->index + 1 }})"
                             @if ($loop->last) disabled @endif
                             aria-label="{{ __('Move down') }}"
-                            class="rounded px-1 text-xs text-zinc-400 hover:text-zinc-700 disabled:opacity-30 dark:hover:text-white"
+                            class="rounded px-1 text-xs text-muted hover:text-main disabled:opacity-30"
                         >&darr;</button>
                     </span>
                 </li>

@@ -40,6 +40,9 @@ class TableQueryBuilder
 {
     protected SearchDriver $searchDriver;
 
+    /** @var array<int, string> aggregate aliases already selected on the query being built. */
+    protected array $appliedAggregates = [];
+
     public function __construct(protected TableDefinition $definition, ?SearchDriver $searchDriver = null)
     {
         $this->searchDriver = $searchDriver ?? new DatabaseSearchDriver;
@@ -52,6 +55,8 @@ class TableQueryBuilder
         if (! $query instanceof Builder) {
             throw InvalidModelException::forQuery();
         }
+
+        $this->appliedAggregates = [];
 
         $this->applySelect($query, $state);
         $this->applyEagerLoads($query, $state);
@@ -156,6 +161,16 @@ class TableQueryBuilder
             $column = $this->definition->column($key);
 
             if ($column instanceof RelationColumn) {
+                // An aggregate column wants one number, not the relation. Eager
+                // loading it would hydrate every related row of every row on the
+                // page just to throw them away, and the rendered cell would be
+                // the collection rather than the aggregate.
+                if ($column->getAggregate() !== null) {
+                    $this->applyAggregate($query, $column);
+
+                    continue;
+                }
+
                 $relationColumnFields[$column->getRelationPath()][] = $column->getRelationField();
             }
 
@@ -164,7 +179,6 @@ class TableQueryBuilder
             }
         }
 
-        $loads = [];
         $allPaths = array_unique(array_merge(array_keys($relationColumnFields), array_keys($recordRefColumns)));
 
         foreach ($allPaths as $path) {
@@ -397,6 +411,28 @@ class TableQueryBuilder
         $query->orderBy($model->getQualifiedKeyName(), 'asc');
     }
 
+    /**
+     * Adds the aggregate sub-select once per query, no matter how many times
+     * it is asked for — a column that is both visible and sorted goes through
+     * here twice, and selecting the same alias twice is a SQL error.
+     */
+    protected function applyAggregate(Builder $query, RelationColumn $column): string
+    {
+        $alias = $column->getAggregateAlias();
+
+        if (! in_array($alias, $this->appliedAggregates, true)) {
+            $query->withAggregate(
+                $column->getRelationPath().' as '.$alias,
+                $column->getRelationField(),
+                $column->getAggregate(),
+            );
+
+            $this->appliedAggregates[] = $alias;
+        }
+
+        return $alias;
+    }
+
     protected function applyRelationSort(Builder $query, RelationColumn $column, string $direction): void
     {
         $model = $query->getModel();
@@ -407,10 +443,7 @@ class TableQueryBuilder
                 throw HasManySortWithoutAggregateException::forKey($column->getKey());
             }
 
-            // Laravel's withAggregate() alias convention: {relation}_{function}_{column}.
-            $alias = Str::snake($column->getRelationPath()).'_'.$column->getAggregate().'_'.$column->getRelationField();
-            $query->withAggregate($column->getRelationPath(), $column->getRelationField(), $column->getAggregate());
-            $query->orderBy($alias, $direction);
+            $query->orderBy($this->applyAggregate($query, $column), $direction);
 
             return;
         }

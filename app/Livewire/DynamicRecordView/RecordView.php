@@ -84,7 +84,7 @@ abstract class RecordView extends Component
      */
     protected function resolveRecord(): Model
     {
-        return app(RecordResolver::class)->resolveFresh($this->definition(), $this->recordId);
+        return app(RecordResolver::class)->resolve($this->definition(), $this->recordId);
     }
 
     public function render(): View

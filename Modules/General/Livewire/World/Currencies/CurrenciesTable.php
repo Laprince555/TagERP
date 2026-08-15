@@ -11,7 +11,7 @@ use App\Support\DynamicTable\Core\Sort;
 use App\Support\RecordReference\RecordReferenceAccess;
 use App\Support\RecordReference\RecordReferenceVariant;
 use Illuminate\Database\Eloquent\Builder;
-use Nnjeim\World\Models\Currency;
+use Modules\General\Models\World\Currency;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**

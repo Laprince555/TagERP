@@ -1,4 +1,4 @@
-@props(['columns', 'visibleColumns', 'rows', 'sorts', 'referenceApplications', 'referenceCells' => [], 'relationshipActions' => null, 'selectable' => false, 'selectedIds' => []])
+@props(['columns', 'visibleColumns', 'rows', 'sorts', 'referenceApplications', 'referenceCells' => [], 'relationshipActions' => null, 'selectable' => false, 'selectedIds' => [], 'summaries' => []])
 @php
     use App\Support\DynamicTable\Core\Columns\RecordReferenceColumn;
     $pageIds = $selectable ? collect($rows->items())->map(fn ($row) => (string) $row->getKey())->all() : [];
@@ -32,7 +32,7 @@
                          common single-sort case stays visually unchanged. Shift-click a header to
                          add it to a multi-sort. --}}
                     @if ($sortPriority !== false)
-                        <span class="ms-1 text-xs text-zinc-400">{{ $sortPriority + 1 }}</span>
+                        <span class="ms-1 text-xs text-muted">{{ $sortPriority + 1 }}</span>
                     @endif
                 </flux:table.column>
             @endforeach
@@ -62,7 +62,7 @@
                                 @elseif ($referenceCell)
                                     <x-record-reference.icon :identity="$referenceCell['identity']" />
                                 @else
-                                    @php($value = data_get($row, str_replace('.', '.', $column->getField() ?? $key)))
+                                    @php($value = data_get($row, $column->getValuePath()))
                                     @php($link = $column->getLink($row))
                                     @if ($link)
                                         <a href="{{ $link }}" class="text-[var(--color-accent)] hover:underline">{{ $column->formatValue($value, $row) }}</a>
@@ -71,7 +71,7 @@
                                     @endif
                                 @endif
                             @else
-                                @php($value = data_get($row, str_replace('.', '.', $column->getField())))
+                                @php($value = data_get($row, $column->getValuePath()))
                                 @php($link = $column->getLink($row))
                                 @if ($link)
                                     <a href="{{ $link }}" class="text-[var(--color-accent)] hover:underline">{{ $column->formatValue($value, $row) }}</a>
@@ -95,6 +95,26 @@
                     @endif
                 </flux:table.row>
             @endforeach
+
+            @if ($summaries !== [])
+                <flux:table.row wire:key="summary-row" class="border-t-2 font-medium">
+                    @if ($selectable)
+                        <flux:table.cell></flux:table.cell>
+                    @endif
+                    @foreach ($visibleColumns as $key)
+                        @php($column = $columns[$key] ?? null)
+                        @continue(! $column)
+                        <flux:table.cell wire:key="summary-cell-{{ $key }}">
+                            @if (array_key_exists($key, $summaries))
+                                {{ $column->formatValue($summaries[$key], null) }}
+                            @endif
+                        </flux:table.cell>
+                    @endforeach
+                    @if ($relationshipActions?->isUnlinkable())
+                        <flux:table.cell></flux:table.cell>
+                    @endif
+                </flux:table.row>
+            @endif
         </flux:table.rows>
     </flux:table>
 </div>

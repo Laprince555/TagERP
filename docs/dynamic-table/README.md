@@ -43,9 +43,9 @@ Every feature documented here is implemented and covered by Pest tests unless ex
 | Active filter chips, applied-vs-draft indicator | ✅ Implemented |
 | Responsive Flux UI rendering | ⚠️ Partial — desktop verified; mobile/RTL/dark-mode not yet verified (no browser test environment available in this session) |
 | Authorization & security enforcement | ✅ Implemented, hardened across sessions (search leak, filter authorization, panel exposure) |
-| Export | ❌ Not implemented — `exportable()` is a config flag only |
-| Row/bulk actions | ❌ Not implemented |
-| Summaries (count/sum/avg/min/max) | ❌ Not implemented |
+| Export | ✅ Implemented — CSV streaming download (`Table::export()`), respects visible/ordered columns, `Column::exportable(false)`, selection, and select-all-matching |
+| Row/bulk actions | ✅ Implemented — row selection + select-all-matching + bulk delete (`Table::bulkDelete()`) |
+| Summaries (count/sum/avg/min/max) | ✅ Implemented — `Column::summary()`, one aggregate query over the filtered/searched query (not selection or pagination), rendered as a footer row |
 | Between/not-between two-value filter UI | ✅ Implemented — dynamic two-input control, operator-specific hiding of the value control entirely for is_empty/is_not_empty/today/yesterday/this_week/this_month |
 | Async `BelongsToFilter` picker | ✅ Implemented — debounced search, min length, bounded/narrow-selected results, chips for multiple, escaped labels, previously-selected label resolution |
 | Strict timezone-aware date filtering | ✅ Implemented — strict `createFromFormat()` parsing with round-trip validation, per-filter timezone, DST-correct day boundaries computed in the filter's timezone then converted to the app timezone |

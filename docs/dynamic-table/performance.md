@@ -53,8 +53,11 @@ N+1 risk (the primary performance hazard) but is not maximally minimal payload â
 ## Large relation option lists
 
 See [relationships.md](relationships.md#large-relation-option-lists) â€” `BelongsToFilter::async()`
-exists as a contract; the shipped filter-panel UI does not yet implement the async
-search-as-you-type picker (plain numeric-ID input for now).
+is fully wired: the filter panel renders a search-as-you-type picker backed by
+`Table::searchBelongsTo()`. Nothing is queried until the picker is typed into, results are
+capped at `Table::BELONGS_TO_MAX_RESULTS`, only the key plus declared search/display fields
+are selected, and every picked id is re-verified through the same authorized options query
+in `selectBelongsToOption()`.
 
 ## Pagination recommendations
 

@@ -1,6 +1,6 @@
 <form wire:submit="submit" class="space-y-6">
     @if ($successMessage)
-        <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
+        <div class="rounded-lg border border-ledger-in bg-ledger-in-subtle px-4 py-3 text-sm font-medium text-ledger-in">
             {{ $successMessage }}
         </div>
     @endif

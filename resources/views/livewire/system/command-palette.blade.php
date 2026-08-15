@@ -232,7 +232,7 @@
                                 :class="activeColumn === 2 && activeAppIndex === applicationIndex
                                     ? 'border-[var(--palette-active-border)] bg-[var(--palette-active)] text-[var(--color-text-main)]'
                                     : 'border-transparent bg-transparent text-[var(--palette-soft-text)] hover:border-[var(--palette-border)] hover:bg-[var(--palette-panel-strong)]'"
-                                x-on:click="activeColumn = 2; activeAppIndex = applicationIndex"
+                                x-on:click="activeColumn = 2; activeAppIndex = applicationIndex; navigateToRoute(application.route)"
                             >
                                 <div class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--palette-app-icon-bg)] text-[var(--color-primary)]">
                                     @foreach ($paletteIcons as $icon)

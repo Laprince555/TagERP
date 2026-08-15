@@ -11,22 +11,24 @@
         @endif
 
         @if ($this->selectAllMatching || count($this->selectedIds) > 0)
-            <span class="text-sm text-zinc-500">
+            <span class="text-sm text-muted">
                 {{ $this->selectAllMatching ? __('All matching selected') : __(':count selected', ['count' => count($this->selectedIds)]) }}
             </span>
             <flux:button size="sm" wire:click="clearSelection">{{ __('Clear') }}</flux:button>
-            <flux:button
-                size="sm"
-                variant="danger"
-                wire:click="bulkDelete"
-                wire:confirm="{{ __('Delete the selected records? This cannot be undone.') }}"
-            >
-                {{ __('Delete selected') }}
-            </flux:button>
+            @if ($this->canBulkDelete())
+                <flux:button
+                    size="sm"
+                    variant="danger"
+                    wire:click="bulkDelete"
+                    wire:confirm="{{ __('Delete the selected records? This cannot be undone.') }}"
+                >
+                    {{ __('Delete selected') }}
+                </flux:button>
+            @endif
         @endif
 
         <flux:button size="sm" wire:click="export" wire:target="export">
-            {{ __('Export to Excel') }}
+            {{ __('Export CSV') }}
         </flux:button>
 
         <flux:select wire:change="setPerPage($event.target.value)" size="sm" class="max-w-[8rem]">

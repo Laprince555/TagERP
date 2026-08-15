@@ -5,7 +5,7 @@ namespace Modules\General\System\World;
 use App\Support\RecordReference\RecordReferenceProvider;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Nnjeim\World\Models\Timezone;
+use Modules\General\Models\World\Timezone;
 
 /**
  * Vertical-slice provider for the "gen-wld-tzn" Application. Owns every

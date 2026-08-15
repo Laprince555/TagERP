@@ -3,7 +3,7 @@
 All field types extend `App\Support\DynamicForm\Core\Field` and live in
 `App\Support\DynamicForm\Core\Fields`:
 
-`TextField`, `TextareaField`, `DateField`, `SelectField`, `RelationListField`, `CascadingRelationField` (not yet renderable — see below).
+`TextField`, `TextareaField`, `DateField`, `SelectField`, `RelationListField`, `CascadingRelationField`.
 
 Every field is created with `SomeField::make('key')` and configured through a fluent chain that returns `static`, so calls can be chained in any order. `'key'` is both the field's identity within the form (`data.{key}` in Livewire, event names, error lookups) and — unless the field type says otherwise — its persisted column name.
 
@@ -105,7 +105,7 @@ SelectField::make('status')
 | `->column(string $column)` | `{key}_id` | Destination column on the form's model for the picked row's key |
 | `->pageSize(int $size)` | `5` | Rows fetched per page/search |
 | `->maximumLoadedResults(int $max)` | `50` | Hard cap on rows accumulated client-side across "Load more" clicks |
-| `->query(Closure $callback)` | `null` | `fn (Builder $query): Builder` — scope/filter the candidate query (e.g. restrict by tenant, status) |
+| `->query(Closure $callback)` | `null` | `fn (Builder $query): Builder` — scope/filter the candidate query (e.g. restrict by tenant, status). Applied to the picker **and** to the `exists` validation rule, so a crafted request can't submit an id outside the scope; use only constraints a plain query builder understands (no model scopes or relation methods) |
 
 ```php
 RelationListField::make('city')
@@ -128,9 +128,9 @@ RelationListField::make('manager')
 
 The picked value is written to `data.{key}` in the Livewire component and saved under `getColumn()` (`{key}_id` by default) — the field's own `key` is never itself a column when it's a relation picker.
 
-## CascadingRelationField (not yet renderable)
+## CascadingRelationField
 
-`component()`: `dynamic-form.fields.cascading-relation` — declared for a multi-step picker (e.g. Country → State → City, each level locked until the previous is chosen), and its config is fully wired/validated. **No Blade or Livewire host exists yet** (`App\Livewire\DynamicForm\CascadingRelationPicker` is not implemented) — declaring this field type today will throw when the form tries to render it. Documented here so the shape is known when that host lands.
+`component()`: `dynamic-form.fields.cascading-relation` — a multi-step picker (e.g. Country → State → City), each level locked until the previous is chosen and filtered by it. The picker state and queries live in `App\Livewire\DynamicForm\Form` (`openCascadePicker`/`chooseCascade`/`loadMoreCascade`, state keyed `[fieldKey][levelKey]`); the panel is rendered inline by `resources/views/components/dynamic-form/fields/cascading-relation.blade.php` rather than in a nested modal. See `tests/Feature/DynamicForm/CascadingCityPickerTest.php`.
 
 | Method | Default | Effect |
 |---|---|---|
@@ -153,7 +153,6 @@ One step of a `CascadingRelationField`, from `App\Support\DynamicForm\Core\Casca
 | `->maximumLoadedResults(int $max)` | `50` | Same semantics as `RelationListField::maximumLoadedResults()` |
 
 ```php
-// shape only — throws at render time until the picker host is built
 CascadingRelationField::make('city')
     ->level(CascadingLevel::make('country', Country::class)->field('name'))
     ->level(
@@ -170,4 +169,4 @@ CascadingRelationField::make('city')
     ->column('city_id'),
 ```
 
-Use `RelationListField` today for any single-level relation pick — it's the only relation picker with a working UI.
+Use `RelationListField` for any single-level relation pick; reach for the cascade only when one level alone can't bound the candidate list.

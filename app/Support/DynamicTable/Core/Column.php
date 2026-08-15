@@ -36,6 +36,8 @@ abstract class Column
 
     protected ?string $field = null;
 
+    protected ?string $summary = null;
+
     protected function __construct(protected string $key) {}
 
     public static function make(string $key): static
@@ -128,7 +130,6 @@ abstract class Column
 
     public function exportable(bool $exportable = true): static
     {
-        // NOTE: config flag only in this milestone. No exporter is implemented.
         $this->exportable = $exportable;
 
         return $this;
@@ -137,6 +138,22 @@ abstract class Column
     public function field(string $field): static
     {
         $this->field = $field;
+
+        return $this;
+    }
+
+    /**
+     * Shows an aggregate of this column below the table, computed over the
+     * currently filtered/searched query (not affected by row selection or
+     * pagination). $type must be one of sum, avg, min, max, count.
+     */
+    public function summary(string $type): static
+    {
+        if (! in_array($type, ['sum', 'avg', 'min', 'max', 'count'], true)) {
+            throw new \InvalidArgumentException("Unsupported summary type [{$type}] — use sum, avg, min, max, or count.");
+        }
+
+        $this->summary = $type;
 
         return $this;
     }
@@ -154,6 +171,16 @@ abstract class Column
     public function getField(): string
     {
         return $this->field ?? $this->key;
+    }
+
+    /**
+     * The path data_get() should read to render this column. Identical to
+     * getField() unless a subclass stores its value somewhere else (see
+     * RelationColumn's aggregate alias).
+     */
+    public function getValuePath(): string
+    {
+        return $this->getField();
     }
 
     public function isSortable(): bool
@@ -207,6 +234,11 @@ abstract class Column
     public function isExportable(): bool
     {
         return $this->exportable;
+    }
+
+    public function getSummary(): ?string
+    {
+        return $this->summary;
     }
 
     public function hasExplicitField(): bool

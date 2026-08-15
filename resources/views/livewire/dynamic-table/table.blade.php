@@ -83,6 +83,7 @@
                 :relationship-actions="$relationshipActions"
                 :selectable="true"
                 :selected-ids="$this->selectedIds"
+                :summaries="$summaries"
             />
 
             <x-dynamic-table.pagination :paginator="$rows" />
