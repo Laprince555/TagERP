@@ -86,7 +86,7 @@ abstract class DynamicRecordView
     {
         $tabs = [];
 
-        foreach ($this->subApplications() as $index => $subApplication) {
+        foreach ($this->subApplications() as $subApplication) {
             $tableContent = TableContent::make($subApplication->getKey().'-table')
                 ->table($subApplication->getTable());
 
@@ -106,7 +106,7 @@ abstract class DynamicRecordView
 
             $tabs[] = RecordTab::make($subApplication->getKey())
                 ->label($subApplication->getLabel())
-                ->default($index === 0)
+                ->default($subApplication->isDefault())
                 ->visible(fn (mixed $record) => $subApplication->isAuthorized($record))
                 ->contents([$tableContent]);
         }

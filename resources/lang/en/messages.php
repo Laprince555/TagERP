@@ -45,6 +45,7 @@ return [
         'pending_tasks_sub_module_hint' => 'Sub module task tracking is not available yet',
         'application' => 'Application',
         'back_to_sub_module' => 'Back to :name',
+        'application_group_other' => 'Other',
         'applications_empty_title' => 'No applications yet',
         'applications_empty_description' => 'This sub module has no applications available to you yet. They will appear here as soon as they are enabled.',
     ],

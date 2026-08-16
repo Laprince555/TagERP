@@ -7,6 +7,8 @@
     'relationHasMore' => false,
     'relationSelected' => null,
     'isOpen' => false,
+    'createFormKey' => null,
+    'createIsOpen' => false,
 ])
 
 @php
@@ -60,15 +62,41 @@
             <div class="flex items-center justify-between gap-2">
                 <flux:heading size="lg">{{ $field->getLabel() }}</flux:heading>
 
-                <flux:button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    icon="x-mark"
-                    :aria-label="__('Close')"
-                    wire:click="toggleRelationPicker('{{ $fieldKey }}')"
-                />
+                <div class="flex items-center gap-1">
+                    @if ($createFormKey)
+                        <flux:button
+                            type="button"
+                            size="sm"
+                            :variant="$createIsOpen ? 'filled' : 'ghost'"
+                            icon="plus"
+                            :aria-label="__('Add new')"
+                            wire:click="toggleCreateForm('{{ $fieldKey }}')"
+                        />
+                    @endif
+
+                    <flux:button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        icon="x-mark"
+                        :aria-label="__('Close')"
+                        wire:click="toggleRelationPicker('{{ $fieldKey }}')"
+                    />
+                </div>
             </div>
+
+            @if ($createIsOpen)
+                {{--
+                    The nested form is mounted with nested: true, so it renders
+                    a <div> rather than a <form> (illegal inside this field's
+                    own form) and offers no create buttons of its own.
+                --}}
+                @livewire(
+                    \App\Livewire\DynamicForm\Form::class,
+                    ['formKey' => $createFormKey, 'nested' => true],
+                    key('nested-form-'.$formKey.'-'.$fieldKey)
+                )
+            @else
 
             <flux:input
                 wire:model.live.debounce.400ms="relationSearch.{{ $fieldKey }}"
@@ -107,6 +135,8 @@
                 >
                     {{ __('Load more') }}
                 </flux:button>
+            @endif
+
             @endif
         </div>
     @endif

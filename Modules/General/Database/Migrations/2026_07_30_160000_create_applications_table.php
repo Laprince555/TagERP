@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('route');
             $table->string('icon')->nullable();
             $table->string('color', 32);
+            $table->json('application_group')->nullable();
             $table->integer('sort_order')->default(0);
             $table->string('permission_name')->nullable();
             $table->string('permission_group')->nullable();

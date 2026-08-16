@@ -5,10 +5,11 @@ namespace Modules\General\Livewire\Security\Rules;
 use App\Livewire\DynamicTable\Table;
 use App\Models\Role;
 use App\Services\NavigationTreeService;
-use App\Support\DynamicTable\Core\Columns\TextColumn;
+use App\Support\DynamicTable\Core\Columns\RecordReferenceColumn;
 use App\Support\DynamicTable\Core\Filters\TextFilter;
 use App\Support\DynamicTable\Core\Sort;
 use App\Support\RecordReference\RecordReferenceAccess;
+use App\Support\RecordReference\RecordReferenceVariant;
 use Illuminate\Database\Eloquent\Builder;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -53,7 +54,11 @@ class RulesTable extends Table
     protected function columns(): array
     {
         return [
-            TextColumn::make('name')->sortable()->searchable()->label('Rule Name'),
+            RecordReferenceColumn::make('name')
+                ->applicationCode('gen-sec-rul')       // كود التطبيق المرجعي الخاص بالدول
+                ->variant(RecordReferenceVariant::Tag) // اختيار الشكل: Tag
+                ->sortable()
+                ->searchable(),
         ];
     }
 

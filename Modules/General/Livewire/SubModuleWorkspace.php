@@ -70,7 +70,7 @@ class SubModuleWorkspace extends Component
      * application whose route name is not registered yet resolves to a null url and
      * renders as an unavailable card rather than a dead link.
      *
-     * @return array<int, array{id: int, name: string, description: string, code: string, icon: string, url: ?string}>
+     * @return array<int, array{id: int, name: string, description: string, code: string, icon: string, group: string, url: ?string}>
      */
     #[Computed]
     public function applications(): array
@@ -82,8 +82,39 @@ class SubModuleWorkspace extends Component
                 'description' => (string) ($application['description'] ?? ''),
                 'code' => (string) ($application['code'] ?? ''),
                 'icon' => (string) ($application['icon'] ?: 'squares-2x2'),
+                'group' => (string) ($application['application_group'] ?? ''),
                 'url' => ($application['route'] ?? '#') === '#' ? null : (string) $application['route'],
             ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Applications bucketed by their `application_group`, groups ordered by the
+     * first application in each of them so the existing `sort_order` stays the
+     * single source of ordering. Applications without a group fall into a
+     * trailing "Other" bucket; a sub module where nobody set a group ends up
+     * with one unlabeled bucket and renders exactly as it did before.
+     *
+     * @return array<int, array{label: string, applications: array<int, array<string, mixed>>}>
+     */
+    #[Computed]
+    public function applicationGroups(): array
+    {
+        $applications = collect($this->applications);
+        $hasGroups = $applications->contains(fn (array $application): bool => $application['group'] !== '');
+
+        return $applications
+            ->groupBy(fn (array $application): string => $application['group'])
+            ->map(fn ($grouped, string $group): array => [
+                'label' => match (true) {
+                    ! $hasGroups => '',
+                    $group === '' => __('messages.workspace.application_group_other'),
+                    default => $group,
+                },
+                'applications' => $grouped->values()->all(),
+            ])
+            ->sortBy(fn (array $bucket, string $group): int => $group === '' ? PHP_INT_MAX : 0)
             ->values()
             ->all();
     }
@@ -116,6 +147,7 @@ class SubModuleWorkspace extends Component
             'module' => $context['module'],
             'subModule' => $context['sub_module'],
             'applications' => $this->applications,
+            'applicationGroups' => $this->applicationGroups,
             'statistics' => $this->statistics,
         ]);
     }

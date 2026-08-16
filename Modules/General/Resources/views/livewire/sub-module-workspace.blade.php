@@ -97,12 +97,28 @@
         </div>
 
         @if ($applications !== [])
-            <div class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-                @foreach ($applications as $application)
-                    <x-general::workspace.application-card
-                        wire:key="workspace-application-{{ $application['id'] }}"
-                        :application="$application"
-                    />
+            <div class="space-y-8">
+                @foreach ($applicationGroups as $group)
+                    <div wire:key="workspace-application-group-{{ $loop->index }}">
+                        @if ($group['label'] !== '')
+                            <div class="mb-4 flex items-center gap-3">
+                                <flux:heading size="base" level="3" class="shrink-0">{{ $group['label'] }}</flux:heading>
+
+                                <flux:badge color="zinc" size="sm">{{ count($group['applications']) }}</flux:badge>
+
+                                <span class="h-px flex-1 bg-[var(--color-glass-border)]"></span>
+                            </div>
+                        @endif
+
+                        <div class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+                            @foreach ($group['applications'] as $application)
+                                <x-general::workspace.application-card
+                                    wire:key="workspace-application-{{ $application['id'] }}"
+                                    :application="$application"
+                                />
+                            @endforeach
+                        </div>
+                    </div>
                 @endforeach
             </div>
         @else

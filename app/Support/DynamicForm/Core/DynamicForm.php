@@ -2,6 +2,8 @@
 
 namespace App\Support\DynamicForm\Core;
 
+use App\Services\NavigationTreeService;
+use App\Support\RecordReference\RecordReferenceAccess;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -42,12 +44,52 @@ abstract class DynamicForm
     }
 
     /**
+     * The Application this form creates records for. Declaring it is what
+     * makes authorize() a real permission check instead of an open door —
+     * see below. Derived from the model's own APPLICATION_CODE so a form
+     * cannot be registered without a gate by simply forgetting to add one;
+     * override only for a model that has no such constant (App\Models\User,
+     * App\Models\Role).
+     */
+    public function applicationCode(): ?string
+    {
+        $constant = $this->model().'::APPLICATION_CODE';
+
+        return defined($constant) ? constant($constant) : null;
+    }
+
+    /**
      * Extra, form-level authorization beyond the caller's own Application
-     * gate (e.g. a business rule). True by default.
+     * gate (e.g. a business rule). True by default — a form reached from its
+     * own Application's page is already gated by that page.
+     *
+     * NOT the gate for a form opened from somewhere else entirely: a
+     * RelationListField's inline create button exposes a form key from an
+     * unrelated page, and is gated separately by
+     * App\Livewire\DynamicForm\Form::createFormKeyFor().
      */
     public function authorize(): bool
     {
         return true;
+    }
+
+    /**
+     * Whether the current actor may reach this form from outside its own
+     * Application — the only question the inline create button asks. Fails
+     * closed when the form declares no applicationCode(), so a form can
+     * never become creatable-from-anywhere by omission.
+     */
+    public function authorizeOutOfContext(): bool
+    {
+        $code = $this->applicationCode();
+
+        if ($code === null) {
+            return false;
+        }
+
+        return $this->authorize() && app(RecordReferenceAccess::class)->applicationAccessible(
+            app(NavigationTreeService::class)->getApplicationByCode($code),
+        );
     }
 
     /**

@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Modules\Finance\Database\Seeders\GeneralLedger\ApplicationsSeeder as FinanceGeneralLedgerApplicationsSeeder;
+use Modules\Finance\Database\Seeders\System\SubModulesSeeder as FinanceSubModulesSeeder;
 use Modules\General\Database\Seeders\Security\ApplicationsSeeder as GeneralSecurityApplicationsSeeder;
 use Modules\General\Database\Seeders\System\ModulesSeeder;
 use Modules\General\Database\Seeders\System\SubModulesSeeder;
@@ -26,11 +28,13 @@ class DatabaseSeeder extends Seeder
             ModulesSeeder::class,
             SubModulesSeeder::class,
             HRSubModulesSeeder::class,
+            FinanceSubModulesSeeder::class,
             WorldApplicationsSeeder::class,
             SystemApplicationsSeeder::class,
             GeneralSecurityApplicationsSeeder::class,
             HROrganizationStructureApplicationsSeeder::class,
             HREmployeeManagementApplicationsSeeder::class,
+            FinanceGeneralLedgerApplicationsSeeder::class,
             RoleSeeder::class,
             WorldSeeder::class,
         ]);

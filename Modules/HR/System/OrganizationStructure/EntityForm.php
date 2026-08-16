@@ -32,6 +32,7 @@ class EntityForm extends DynamicForm
             TextField::make('name')->label('Name')->required(),
             RelationListField::make('company')
                 ->model(Company::class)
+                ->createForm('general.world.company.create')
                 ->field('name')
                 ->searchable(['name', 'tax_id', 'commercial_registration'])
                 ->query(fn ($query) => $query->whereNotNull('tax_id')->whereNotNull('commercial_registration'))
@@ -40,6 +41,7 @@ class EntityForm extends DynamicForm
                 ->required(),
             RelationListField::make('parent_entity')
                 ->model(Entity::class)
+                ->createForm('hr.organization-structure.entity.create')
                 ->field('name')
                 ->column('parent_entity_id')
                 ->label('Parent Entity'),

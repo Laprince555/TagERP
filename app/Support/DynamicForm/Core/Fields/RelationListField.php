@@ -40,6 +40,26 @@ class RelationListField extends Field
     /** @var (Closure(Builder): Builder)|null */
     protected ?Closure $query = null;
 
+    protected ?string $createForm = null;
+
+    /**
+     * Registers an inline "create a missing candidate" form inside this
+     * field's picker, for the common dead end of picking a Company that was
+     * never added. The key is a FormDefinitionRegistry key; whether the
+     * button renders at all is decided by that definition's own authorize().
+     */
+    public function createForm(string $formKey): static
+    {
+        $this->createForm = $formKey;
+
+        return $this;
+    }
+
+    public function getCreateForm(): ?string
+    {
+        return $this->createForm;
+    }
+
     /** @param  class-string  $model */
     public function model(string $model): static
     {

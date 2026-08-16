@@ -29,6 +29,7 @@ class BranchForm extends DynamicForm
             TextField::make('name')->label('Name')->required(),
             RelationListField::make('entity')
                 ->model(Entity::class)
+                ->createForm('hr.organization-structure.entity.create')
                 ->field('name')
                 ->column('entity_id')
                 ->label('Entity')

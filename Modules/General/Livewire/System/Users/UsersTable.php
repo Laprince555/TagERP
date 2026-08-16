@@ -55,7 +55,10 @@ class UsersTable extends Table
     protected function columns(): array
     {
         return [
-            TextColumn::make('name')->sortable()->searchable()->label('Name'),
+            RecordReferenceColumn::make('name')
+                ->applicationCode('gen-sys-usr')
+                ->variant(RecordReferenceVariant::Tag)
+                ->label('name'),
             TextColumn::make('email')->sortable()->searchable()->label('Email'),
             RecordReferenceColumn::make('employee')
                 ->applicationCode('hr-emp-emp')

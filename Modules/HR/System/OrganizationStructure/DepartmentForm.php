@@ -30,6 +30,7 @@ class DepartmentForm extends DynamicForm
             TextField::make('name')->label('Name')->required(),
             RelationListField::make('parent_department')
                 ->model(Department::class)
+                ->createForm('hr.organization-structure.department.create')
                 ->field('name')
                 ->column('parent_department_id')
                 ->label('Parent Department'),

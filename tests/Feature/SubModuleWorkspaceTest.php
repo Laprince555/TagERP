@@ -136,6 +136,55 @@ it('lists the applications of the sub module ordered by sort order', function ()
         ->assertSee('3 applications');
 });
 
+it('buckets applications under their group heading and pushes ungrouped ones to the end', function (): void {
+    $subModule = seedSubModule();
+
+    Application::factory()->for($subModule, 'subModule')->create([
+        'name' => ['en' => 'Countries Registry'],
+        'application_group' => ['en' => 'Geography Applications'],
+        'sort_order' => 0,
+    ]);
+
+    Application::factory()->for($subModule, 'subModule')->create([
+        'name' => ['en' => 'Currencies Registry'],
+        'application_group' => null,
+        'sort_order' => 1,
+    ]);
+
+    Application::factory()->for($subModule, 'subModule')->create([
+        'name' => ['en' => 'Cities Registry'],
+        'application_group' => ['en' => 'Geography Applications'],
+        'sort_order' => 2,
+    ]);
+
+    publishSubModuleRoutes();
+
+    $this->get('/en/general/world')
+        ->assertSuccessful()
+        ->assertSeeInOrder([
+            'Geography Applications',
+            'Countries Registry',
+            'Cities Registry',
+            'Other',
+            'Currencies Registry',
+        ]);
+});
+
+it('renders a single unlabeled bucket when no application declares a group', function (): void {
+    $subModule = seedSubModule();
+
+    Application::factory()->for($subModule, 'subModule')->create([
+        'name' => ['en' => 'Countries Registry'],
+    ]);
+
+    publishSubModuleRoutes();
+
+    $this->get('/en/general/world')
+        ->assertSuccessful()
+        ->assertSee('Countries Registry')
+        ->assertDontSee('Other');
+});
+
 it('hides inactive applications and the ones the user has no permission for', function (): void {
     $subModule = seedSubModule();
 

@@ -45,6 +45,7 @@ return [
         'pending_tasks_sub_module_hint' => 'تتبّع مهام الوحدة الفرعية غير متاح بعد',
         'application' => 'تطبيق',
         'back_to_sub_module' => 'العودة إلى :name',
+        'application_group_other' => 'أخرى',
         'applications_empty_title' => 'لا توجد تطبيقات بعد',
         'applications_empty_description' => 'هذه الوحدة الفرعية لا تحتوي على تطبيقات متاحة لك حتى الآن. ستظهر هنا فور تفعيلها.',
     ],

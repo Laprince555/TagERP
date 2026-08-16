@@ -26,6 +26,16 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 class Form extends Component
 {
+    /**
+     * A nested save announces itself separately from a top-level one. Both
+     * are the same $formKey when a field points at its own definition (an
+     * Account's parent is an Account), and the plain event is what the
+     * hosting FormModal closes on and the hosting table refreshes on —
+     * creating a parent inline would otherwise tear down the very form the
+     * user is still filling in.
+     */
+    public const NESTED_SAVED_EVENT = 'dynamic-form-nested-saved.';
+
     #[Locked]
     public string $formKey;
 
@@ -71,9 +81,129 @@ class Form extends Component
      */
     public string $openCascadeField = '';
 
-    public function mount(string $formKey): void
+    /**
+     * Which RelationListField's inline create form is expanded, or '' for
+     * none. Only one at a time, and never in a form that is itself nested —
+     * see $nested.
+     */
+    public string $openCreateField = '';
+
+    /**
+     * True for a Form rendered inside another Form's relation picker. Such a
+     * form renders no create buttons of its own, so "add the missing
+     * Company" can never open "add the missing Country" three levels deep,
+     * each level holding unsaved state the user would lose.
+     */
+    #[Locked]
+    public bool $nested = false;
+
+    public function mount(string $formKey, bool $nested = false): void
     {
         $this->formKey = $formKey;
+        $this->nested = $nested;
+    }
+
+    /**
+     * Listens for a save from every nested create form this definition
+     * declares, so the record the user just created is picked automatically
+     * — the whole point of the button.
+     *
+     * @return array<string, string>
+     */
+    protected function getListeners(): array
+    {
+        $listeners = [];
+
+        foreach ($this->definition()->fields() as $field) {
+            if ($field instanceof RelationListField && $field->getCreateForm() !== null) {
+                $listeners[self::NESTED_SAVED_EVENT.$field->getCreateForm()] = 'selectCreatedRelation';
+            }
+        }
+
+        return $listeners;
+    }
+
+    /** Collapse if this create form is already expanded, otherwise open it. */
+    public function toggleCreateForm(string $fieldKey): void
+    {
+        if ($this->openCreateField === $fieldKey) {
+            $this->openCreateField = '';
+
+            return;
+        }
+
+        if ($this->createFormKeyFor($fieldKey) === null) {
+            return;
+        }
+
+        $this->openCreateField = $fieldKey;
+    }
+
+    /**
+     * The create form key a field may open, or null when the field declares
+     * none, this form is itself nested, or the actor is not allowed to
+     * create through it. Checked here as well as in the view so a crafted
+     * toggleCreateForm() cannot mount a form the button never offered.
+     */
+    public function createFormKeyFor(string $fieldKey): ?string
+    {
+        if ($this->nested) {
+            return null;
+        }
+
+        $field = $this->fieldByKey($fieldKey);
+
+        if (! $field instanceof RelationListField) {
+            return null;
+        }
+
+        $formKey = $field->getCreateForm();
+
+        if ($formKey === null) {
+            return null;
+        }
+
+        return app(FormDefinitionRegistry::class)->resolve($formKey)->authorizeOutOfContext() ? $formKey : null;
+    }
+
+    /**
+     * Picks the just-created record. Its label is read back through the
+     * field's own query() scope rather than taken from the event: a record
+     * the field is not allowed to offer must not become its value just
+     * because the user created it from here.
+     */
+    public function selectCreatedRelation(int|string $id): void
+    {
+        // Nothing to fill when no create form is expanded — a stray event
+        // must not overwrite a value the user picked normally.
+        $fieldKey = $this->openCreateField;
+
+        if ($fieldKey === '') {
+            return;
+        }
+
+        $field = $this->fieldByKey($fieldKey);
+
+        if (! $field instanceof RelationListField) {
+            return;
+        }
+
+        $modelClass = $field->getModel();
+        $query = $modelClass::query();
+
+        if ($constrain = $field->getQuery()) {
+            $query = $constrain($query);
+        }
+
+        $record = $query->find($id);
+
+        $this->openCreateField = '';
+
+        if ($record === null) {
+            return;
+        }
+
+        $this->selectRelation($fieldKey, $record->getKey(), (string) data_get($record, $field->getDisplayField()));
     }
 
     protected function definition(): DynamicForm
@@ -497,7 +627,12 @@ class Form extends Component
     {
         $definition = $this->definition();
 
-        if (! $definition->authorize()) {
+        // A nested form was opened from an unrelated page, so page access
+        // proves nothing about it — it carries its own gate all the way to
+        // the write, not just to whether the button rendered.
+        $authorized = $this->nested ? $definition->authorizeOutOfContext() : $definition->authorize();
+
+        if (! $authorized) {
             throw new NotFoundHttpException;
         }
 
@@ -527,7 +662,10 @@ class Form extends Component
 
         $record = $definition->create($payload);
 
-        $this->dispatch('dynamic-form-saved.'.$this->formKey, id: $record->getKey());
+        $this->dispatch(
+            ($this->nested ? self::NESTED_SAVED_EVENT : 'dynamic-form-saved.').$this->formKey,
+            id: $record->getKey(),
+        );
         // Every picker's state resets too, not just $data — a leftover
         // cascadeSelected keeps showing the saved record's Country/State on
         // the trigger button of the next, empty form.
@@ -543,6 +681,7 @@ class Form extends Component
             'cascadeResults',
             'cascadeHasMore',
             'openCascadeField',
+            'openCreateField',
         );
     }
 

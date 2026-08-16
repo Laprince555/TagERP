@@ -39,6 +39,7 @@ class EmployeeForm extends DynamicForm
             TextField::make('employee_number')->label('Employee Number')->required(),
             RelationListField::make('person')
                 ->model(Person::class)
+                ->createForm('general.world.person.create')
                 ->field('full_name')
                 ->searchable(['full_name', 'national_id', 'passport_number'])
                 ->column('person_id')
@@ -46,30 +47,35 @@ class EmployeeForm extends DynamicForm
                 ->required(),
             RelationListField::make('entity')
                 ->model(Entity::class)
+                ->createForm('hr.organization-structure.entity.create')
                 ->field('name')
                 ->column('entity_id')
                 ->label('Entity')
                 ->required(),
             RelationListField::make('branch')
                 ->model(Branch::class)
+                ->createForm('hr.organization-structure.branch.create')
                 ->field('name')
                 ->column('branch_id')
                 ->label('Branch')
                 ->required(),
             RelationListField::make('department')
                 ->model(Department::class)
+                ->createForm('hr.organization-structure.department.create')
                 ->field('name')
                 ->column('department_id')
                 ->label('Department')
                 ->required(),
             RelationListField::make('job_title')
                 ->model(JobTitle::class)
+                ->createForm('hr.organization-structure.job-title.create')
                 ->field('name')
                 ->column('job_title_id')
                 ->label('Job Title')
                 ->required(),
             RelationListField::make('job_grade')
                 ->model(JobGrade::class)
+                ->createForm('hr.organization-structure.job-grade.create')
                 ->field('name')
                 ->column('job_grade_id')
                 ->label('Job Grade')

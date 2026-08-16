@@ -6,9 +6,11 @@ use App\Support\DynamicForm\Core\DynamicForm;
 use App\Support\DynamicForm\Core\Fields\RelationListField;
 use App\Support\DynamicForm\Core\Fields\TextField;
 use App\Support\DynamicForm\Core\FormDefinitionRegistry;
+use Illuminate\Database\Eloquent\Model;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
 use Modules\General\Models\World\Companies\Company;
+use Modules\General\System\Application;
 use Nnjeim\World\Models\City;
 use Nnjeim\World\Models\Country;
 
@@ -199,4 +201,198 @@ it('rejects a forged id at validation instead of hitting the foreign key', funct
         ->call('save');
 
     expect(Company::count())->toBe(0);
+});
+
+/**
+ * The inline create button. Its whole risk is that it exposes a second
+ * form's create path from a page the actor reached for something else, so
+ * every test below is about who may open it and what it may set.
+ */
+class CreatableRelationListFixtureForm extends RelationListFixtureForm
+{
+    public function fields(): array
+    {
+        return [
+            TextField::make('name')->label('Name')->required(),
+            RelationListField::make('city')
+                ->model(City::class)
+                ->field('name')
+                ->label('City')
+                ->createForm('test.city-create'),
+        ];
+    }
+}
+
+/** Same, but the field only ever offers cities of a country that has none. */
+class ScopedCreatableRelationListFixtureForm extends CreatableRelationListFixtureForm
+{
+    public function fields(): array
+    {
+        return [
+            TextField::make('name')->label('Name')->required(),
+            RelationListField::make('city')
+                ->model(City::class)
+                ->field('name')
+                ->label('City')
+                ->query(fn ($query) => $query->where('country_code', 'XX'))
+                ->createForm('test.city-create'),
+        ];
+    }
+}
+
+/** Declares no applicationCode(), so it must never be creatable from elsewhere. */
+class UngatedCityCreateFixtureForm extends DynamicForm
+{
+    public function model(): string
+    {
+        return City::class;
+    }
+
+    public function fields(): array
+    {
+        return [TextField::make('name')->label('Name')->required()];
+    }
+}
+
+class GatedCityCreateFixtureForm extends UngatedCityCreateFixtureForm
+{
+    public function applicationCode(): ?string
+    {
+        return 'test-city';
+    }
+}
+
+/** @param  class-string<DynamicForm>  $createForm */
+function creatableRelationListForm(string $createForm): Testable
+{
+    app(FormDefinitionRegistry::class)->register('test.city-create', $createForm);
+    app(FormDefinitionRegistry::class)->register('test.creatable', CreatableRelationListFixtureForm::class);
+
+    return Livewire::test(Form::class, ['formKey' => 'test.creatable']);
+}
+
+it('offers the create form once its Application is reachable', function (): void {
+    Application::factory()->create(['code' => 'test-city', 'is_active' => true, 'permission_name' => null]);
+
+    expect(creatableRelationListForm(GatedCityCreateFixtureForm::class)->instance()->createFormKeyFor('city'))
+        ->toBe('test.city-create');
+});
+
+it('refuses a create form whose Application is inactive', function (): void {
+    Application::factory()->create(['code' => 'test-city', 'is_active' => false, 'permission_name' => null]);
+
+    $component = creatableRelationListForm(GatedCityCreateFixtureForm::class)->call('toggleCreateForm', 'city');
+
+    expect($component->instance()->createFormKeyFor('city'))->toBeNull()
+        ->and($component->get('openCreateField'))->toBe('');
+});
+
+it('fails closed for a create form that declares no Application at all', function (): void {
+    expect(creatableRelationListForm(UngatedCityCreateFixtureForm::class)->instance()->createFormKeyFor('city'))
+        ->toBeNull();
+});
+
+it('never offers a create button inside an already nested form', function (): void {
+    Application::factory()->create(['code' => 'test-city', 'is_active' => true, 'permission_name' => null]);
+    app(FormDefinitionRegistry::class)->register('test.city-create', GatedCityCreateFixtureForm::class);
+    app(FormDefinitionRegistry::class)->register('test.creatable', CreatableRelationListFixtureForm::class);
+
+    $nested = Livewire::test(Form::class, ['formKey' => 'test.creatable', 'nested' => true]);
+
+    expect($nested->instance()->createFormKeyFor('city'))->toBeNull();
+});
+
+it('rejects a nested save whose Application is out of reach', function (): void {
+    app(FormDefinitionRegistry::class)->register('test.city-create', UngatedCityCreateFixtureForm::class);
+
+    Livewire::test(Form::class, ['formKey' => 'test.city-create', 'nested' => true])
+        ->set('data.name', 'Cairo')
+        ->call('save');
+
+    expect(City::where('name', 'Cairo')->count())->toBe(0);
+});
+
+it('picks the record created through the nested form', function (): void {
+    Application::factory()->create(['code' => 'test-city', 'is_active' => true, 'permission_name' => null]);
+
+    $component = creatableRelationListForm(GatedCityCreateFixtureForm::class)->call('toggleCreateForm', 'city');
+
+    expect($component->get('openCreateField'))->toBe('city');
+
+    $city = makeListCity('Cairo');
+    $component->call('selectCreatedRelation', $city->getKey());
+
+    expect($component->get('data.city'))->toBe($city->getKey())
+        ->and($component->get('relationSelected.city.label'))->toBe('Cairo')
+        ->and($component->get('openCreateField'))->toBe('');
+});
+
+it('will not pick a created record the field is not allowed to offer', function (): void {
+    Application::factory()->create(['code' => 'test-city', 'is_active' => true, 'permission_name' => null]);
+    app(FormDefinitionRegistry::class)->register('test.city-create', GatedCityCreateFixtureForm::class);
+    app(FormDefinitionRegistry::class)->register('test.scoped-creatable', ScopedCreatableRelationListFixtureForm::class);
+
+    $component = Livewire::test(Form::class, ['formKey' => 'test.scoped-creatable'])
+        ->call('toggleCreateForm', 'city');
+
+    // Created, but outside the field's query() scope.
+    $city = makeListCity('Cairo');
+    $component->call('selectCreatedRelation', $city->getKey());
+
+    expect($component->get('data.city'))->toBeNull();
+});
+
+/**
+ * A field pointing at its own definition (an Account's parent is an
+ * Account) means the nested form shares the parent's formKey, so its save
+ * must NOT look like the parent's own save — that is what the hosting
+ * FormModal closes on and the hosting table refreshes on.
+ */
+class SelfCreatableFixtureForm extends DynamicForm
+{
+    public function model(): string
+    {
+        return City::class;
+    }
+
+    public function applicationCode(): ?string
+    {
+        return 'test-city';
+    }
+
+    /** Which event a save announces is the whole subject here, not the row. */
+    public function create(array $data): Model
+    {
+        return new City(['name' => $data['name']]);
+    }
+
+    public function fields(): array
+    {
+        return [
+            TextField::make('name')->label('Name')->required(),
+            RelationListField::make('city')
+                ->model(City::class)
+                ->field('name')
+                ->column('country_id')
+                ->label('Nearest City')
+                ->createForm('test.self-creatable'),
+        ];
+    }
+}
+
+it('announces a nested save separately from a top-level one', function (): void {
+    Application::factory()->create(['code' => 'test-city', 'is_active' => true, 'permission_name' => null]);
+    app(FormDefinitionRegistry::class)->register('test.self-creatable', SelfCreatableFixtureForm::class);
+
+    Livewire::test(Form::class, ['formKey' => 'test.self-creatable', 'nested' => true])
+        ->set('data.name', 'Cairo')
+        ->call('save')
+        ->assertDispatched(Form::NESTED_SAVED_EVENT.'test.self-creatable')
+        ->assertNotDispatched('dynamic-form-saved.test.self-creatable');
+
+    Livewire::test(Form::class, ['formKey' => 'test.self-creatable'])
+        ->set('data.name', 'Giza')
+        ->call('save')
+        ->assertDispatched('dynamic-form-saved.test.self-creatable')
+        ->assertNotDispatched(Form::NESTED_SAVED_EVENT.'test.self-creatable');
 });

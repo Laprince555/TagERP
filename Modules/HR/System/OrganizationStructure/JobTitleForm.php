@@ -30,6 +30,7 @@ class JobTitleForm extends DynamicForm
             TextField::make('name')->label('Name')->required(),
             RelationListField::make('department')
                 ->model(Department::class)
+                ->createForm('hr.organization-structure.department.create')
                 ->field('name')
                 ->column('department_id')
                 ->label('Department')

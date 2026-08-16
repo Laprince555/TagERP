@@ -37,6 +37,7 @@ class UserForm extends DynamicForm
             TextField::make('email')->type('email')->label('Email')->required()->rules(['email', 'max:255', 'unique:users,email']),
             RelationListField::make('employee')
                 ->model(Employee::class)
+                ->createForm('hr.employee-management.employee.create')
                 ->field('employee_number')
                 ->searchable(['employee_number'])
                 ->query(fn ($query) => $query->whereNull('user_id'))

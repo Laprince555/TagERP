@@ -30,6 +30,8 @@ class SubApplication
 
     protected ?RelationshipActions $relationshipActions = null;
 
+    protected bool $default = false;
+
     protected function __construct(protected string $key) {}
 
     public static function make(string $key): static
@@ -121,6 +123,19 @@ class SubApplication
     public function isAuthorized(mixed $record = null): bool
     {
         return is_callable($this->authorization) ? (bool) ($this->authorization)($record) : (bool) $this->authorization;
+    }
+
+    /** Which tab the Other Data section lands on. Falls back to the first declared one. */
+    public function default(bool $default = true): static
+    {
+        $this->default = $default;
+
+        return $this;
+    }
+
+    public function isDefault(): bool
+    {
+        return $this->default;
     }
 
     public function relationshipActions(RelationshipActions $actions): static

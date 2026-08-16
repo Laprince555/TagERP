@@ -11,7 +11,7 @@ use Modules\General\Database\Factories\ApplicationFactory;
 use Spatie\Translatable\Attributes\Translatable;
 use Spatie\Translatable\HasTranslations;
 
-#[Translatable('name', 'description')]
+#[Translatable('name', 'description', 'application_group')]
 class Application extends Model
 {
     use HasFactory;
@@ -26,6 +26,7 @@ class Application extends Model
         'route',
         'icon',
         'color',
+        'application_group',
         'sort_order',
         'permission_name',
         'permission_group',
@@ -44,6 +45,7 @@ class Application extends Model
         return [
             'name' => 'array',
             'description' => 'array',
+            'application_group' => 'array',
             'is_active' => 'boolean',
             'sort_order' => 'integer',
             'color' => ApplicationColor::class,

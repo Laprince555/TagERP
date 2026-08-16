@@ -28,6 +28,7 @@ class ApplicationFactory extends Factory
             'route' => $slug.'.index',
             'icon' => 'squares-2x2',
             'color' => fake()->randomElement(ApplicationColor::cases())->value,
+            'application_group' => null,
             'sort_order' => 0,
             'permission_name' => null,
             'permission_group' => null,
