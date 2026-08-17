@@ -2,6 +2,7 @@
 
 namespace Modules\HR\Database\Seeders\OrganizationStructure;
 
+use App\Services\NavigationTreeService;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Modules\General\System\Application;
@@ -104,7 +105,10 @@ class ApplicationsSeeder extends Seeder
         Application::query()->upsert(
             $prepared,
             ['code'],
-            ['name', 'description', 'route', 'icon', 'color', 'sort_order', 'permission_name', 'permission_group', 'custom_actions', 'is_active', 'submodule_id'],
+            ['name', 'description', 'route', 'icon', 'color', 'sort_order', 'permission_group', 'custom_actions', 'is_active', 'submodule_id'],
         );
+
+        // `upsert` bypasses model events, so the navigation observer never fires for it.
+        app(NavigationTreeService::class)->invalidateCache();
     }
 }

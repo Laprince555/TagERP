@@ -1,7 +1,6 @@
 <?php
 
 use App\Livewire\DynamicRecordView\RelationPickerModal;
-use App\Models\User;
 use App\Support\DynamicRecordView\Core\Content\TableContent;
 use App\Support\DynamicRecordView\Core\DynamicRecordView;
 use App\Support\DynamicRecordView\Core\Exceptions\UnsupportedUnlinkForNonNullableForeignKeyException;
@@ -22,7 +21,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 /**
  * Phase 5/6: Link/Unlink mutation engine + RelationPicker, exercised against
  * the real SubModule -> Applications relation (the canonical test bed for
- * this pass — Application.submodule_id is NOT NULL, so this relation is
+ * this pass â€” Application.submodule_id is NOT NULL, so this relation is
  * wired Link-only with allowReassignment(); see SubModuleRecordView).
  */
 function mountEmbeddedApplicationsPicker(int|string $subModuleId)
@@ -59,7 +58,7 @@ it('fails at definition time when unlink() is enabled on a HasMany relation with
 
 it('does not throw for the real SubModule to Applications relationshipActions, which never enables unlink()', function (): void {
     // Building otherDataSection() runs assertSupportedFor() for every
-    // SubApplication with relationshipActions() configured — this must not
+    // SubApplication with relationshipActions() configured â€” this must not
     // throw for the real, shipped Link-only configuration.
     $view = app(SubModuleRecordView::class);
 
@@ -82,14 +81,14 @@ it('renders a Link button for the real SubModule -> Applications tab, which is c
 
 it('hides the Link button when the content block has no relationshipActions configured', function (): void {
     // ApplicationsTable standalone (unconstrained) never resolves an embedded
-    // relationshipActions() — no embed context means no Link button at all.
+    // relationshipActions() â€” no embed context means no Link button at all.
     Livewire::test(ApplicationsTable::class)->assertDontSeeHtml('open-relation-picker');
 });
 
 // --- Link mutation ---
 
 beforeEach(function (): void {
-    $this->actingAs(User::factory()->create());
+    $this->actingAs(superAdmin());
 });
 
 it('links an authorized candidate and reassigns it to the new parent', function (): void {
@@ -198,6 +197,9 @@ it('rolls back the transaction when a custom mutateUsing callback throws, leavin
                     ->relationshipActions(
                         RelationshipActions::make()
                             ->linkExisting(RelationPicker::make()->displayUsing('name')->searchable(['name']))
+                            // Explicit: link authorization denies when omitted,
+                            // and this case is about the rollback, not the gate.
+                            ->linkAuthorization(fn (): bool => true)
                             ->allowReassignment()
                             ->mutateUsing(function () {
                                 throw new RuntimeException('simulated failure');
@@ -280,7 +282,7 @@ it('escapes LIKE wildcards and handles a SQL-injection-attempt and Arabic search
     $target = SubModule::factory()->create();
     $other = SubModule::factory()->create();
     Application::factory()->create(['submodule_id' => $other->id, 'color' => 'sky', 'code' => '100%off']);
-    Application::factory()->create(['submodule_id' => $other->id, 'color' => 'sky', 'name' => ['en' => 'arabic-app', 'ar' => 'تطبيق تجريبي']]);
+    Application::factory()->create(['submodule_id' => $other->id, 'color' => 'sky', 'name' => ['en' => 'arabic-app', 'ar' => 'ØªØ·Ø¨ÙŠÙ‚ ØªØ¬Ø±ÙŠØ¨ÙŠ']]);
 
     $picker = mountEmbeddedApplicationsPicker($target->id);
     $picker->call('openPicker');
@@ -291,7 +293,7 @@ it('escapes LIKE wildcards and handles a SQL-injection-attempt and Arabic search
     $picker->set('search', "1' OR '1'='1");
     expect($picker->get('error'))->toBeNull();
 
-    $picker->set('search', 'تطبيق');
+    $picker->set('search', 'ØªØ·Ø¨ÙŠÙ‚');
     expect($picker->get('error'))->toBeNull();
 });
 
@@ -324,7 +326,7 @@ it('keeps a bounded query count across open, search, and load-more', function ()
     $picker->call('loadMore');
     $count = count(DB::getQueryLog());
 
-    // A handful of definition/candidate queries per interaction — nowhere
+    // A handful of definition/candidate queries per interaction â€” nowhere
     // near N+1 territory (e.g. bounded well under 30 for 3 interactions).
     expect($count)->toBeLessThan(30);
 });

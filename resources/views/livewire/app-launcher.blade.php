@@ -102,6 +102,7 @@
             @foreach ($modules as $module)
                 <a
                     wire:key="launcher-module-{{ $module['id'] }}"
+                    wire:navigate
                     href="{{ $module['route'] ?? '#' }}"
                     class="group relative flex min-h-[19rem] flex-col overflow-hidden rounded-[1.75rem] border border-[var(--color-glass-border)] bg-[var(--color-surface-1)] p-5 shadow-lg shadow-[var(--color-card-shadow)] transition duration-300 hover:-translate-y-1.5 hover:border-[var(--color-primary)]/55 hover:shadow-2xl hover:shadow-[var(--color-card-shadow)]"
                 >

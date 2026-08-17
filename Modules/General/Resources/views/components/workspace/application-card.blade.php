@@ -10,6 +10,7 @@
 
 <{{ $tag }}
     @if ($isAvailable)
+        wire:navigate
         href="{{ $url }}"
         aria-label="{{ __('messages.workspace.open_application', ['name' => $application['name']]) }}"
     @else

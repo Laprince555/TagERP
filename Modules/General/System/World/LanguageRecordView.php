@@ -38,6 +38,11 @@ class LanguageRecordView extends DynamicRecordView
         return Language::query();
     }
 
+    public function applicationCode(): ?string
+    {
+        return 'gen-wld-lng';
+    }
+
     public function title(mixed $record): string
     {
         return (string) $record->name;

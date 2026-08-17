@@ -31,6 +31,14 @@ class JournalPoster
     public function post(Journal $journal, ?int $userId = null): Journal
     {
         return DB::transaction(function () use ($journal, $userId): Journal {
+            // The status check below decides whether this journal gets posted,
+            // so the row has to be held from the moment it is read. Without the
+            // lock two concurrent posts both read Draft and both replicate.
+            // The status is re-read onto the caller's own instance rather than
+            // swapped for a fresh one, so the model they hold still reflects
+            // what happened here when this returns.
+            $journal->status = $this->lockedStatus($journal);
+
             $journal->loadMissing(['lines.account', 'lines.costCenter', 'ledger.chart', 'fiscalPeriod', 'journalBook']);
 
             $this->assertPostable($journal);
@@ -45,6 +53,12 @@ class JournalPoster
                 'total_debit' => $totalDebit,
                 'total_credit' => $totalCredit,
             ])->save();
+
+            // Inside the same transaction: if a secondary ledger cannot take
+            // this journal, the primary posting is rolled back too. Two sets of
+            // books that disagree without anyone noticing is a worse outcome
+            // than a posting that refuses and says why.
+            app(JournalReplicator::class)->replicate($journal);
 
             return $journal;
         });
@@ -62,10 +76,23 @@ class JournalPoster
     public function reverse(Journal $journal, ?int $userId = null): Journal
     {
         return DB::transaction(function () use ($journal, $userId): Journal {
+            // Same reason as post(): the status decides whether a reversal is
+            // created, so it has to be read under the lock that stops a second
+            // caller reading Posted at the same moment.
+            $journal->status = $this->lockedStatus($journal);
+
             $journal->loadMissing('lines');
 
             if ($journal->status !== JournalStatus::Posted) {
                 throw new RuntimeException("Only a posted journal can be reversed; [{$journal->code}] is {$journal->status->value}.");
+            }
+
+            // Guarded here as well as in the UI: a copy is cancelled by
+            // reversing the journal it was generated from, which propagates to
+            // every ledger. Reversing the copy on its own leaves the source
+            // posted and the ledgers disagreeing.
+            if ($journal->isGenerated()) {
+                throw new RuntimeException("Journal [{$journal->code}] is a generated copy; reverse its source journal instead.");
             }
 
             $reversal = Journal::create([
@@ -84,6 +111,7 @@ class JournalPoster
                 $reversal->lines()->create([
                     'line_number' => $line->line_number,
                     'account_id' => $line->account_id,
+                    'cost_center_id' => $line->cost_center_id,
                     'description' => $line->description,
                     'currency_id' => $line->currency_id,
                     'exchange_rate' => $line->exchange_rate,
@@ -100,12 +128,34 @@ class JournalPoster
                 ]);
             }
 
+            // Posting the reversal replicates it by the same routing that
+            // carried the original, so every ledger that received the entry
+            // receives its cancellation. No separate propagation to keep in step.
             $this->post($reversal->refresh(), $userId);
 
             $journal->forceFill(['status' => JournalStatus::Reversed])->save();
 
+            // The copies of the original are cancelled too, so a secondary
+            // ledger never shows a live entry whose source has been reversed.
+            Journal::where('source_journal_id', $journal->getKey())
+                ->where('status', JournalStatus::Posted->value)
+                ->get()
+                ->each(fn (Journal $copy) => $copy->forceFill(['status' => JournalStatus::Reversed])->save());
+
             return $reversal;
         });
+    }
+
+    /**
+     * Takes the row lock on this journal and returns the status as it stands
+     * under that lock — the value the caller may act on until the surrounding
+     * transaction ends.
+     */
+    protected function lockedStatus(Journal $journal): JournalStatus
+    {
+        return JournalStatus::from(
+            DB::table('journals')->where('id', $journal->getKey())->lockForUpdate()->value('status')
+        );
     }
 
     /**
@@ -213,6 +263,9 @@ class JournalPoster
     /**
      * Next document number for this journal's book and fiscal year.
      *
+     * Sequences run per ledger, so a copy landing in a secondary ledger never
+     * consumes a number the primary's own documents were going to use.
+     *
      * ponytail: serialized on the book's row, so two clerks numbering in the
      * same book queue behind each other. Move to a dedicated sequence table if
      * a single book ever becomes a throughput problem.
@@ -228,6 +281,7 @@ class JournalPoster
         $prefix = $book->sequence_prefix.'-'.$yearLabel.'-';
 
         $lastNumber = Journal::query()
+            ->where('ledger_id', $journal->ledger_id)
             ->where('journal_book_id', $book->getKey())
             ->where('number', 'like', $prefix.'%')
             ->orderByDesc('number')

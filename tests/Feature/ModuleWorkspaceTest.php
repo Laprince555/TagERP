@@ -68,7 +68,7 @@ it('displays active sub modules ordered by sort order', function (): void {
 
     SubModule::factory()->for($module)->create([
         'code' => 'gen-sec',
-        'name' => ['en' => 'Security Rules'],
+        'name' => ['en' => 'Security Roles'],
         'sort_order' => 2,
     ]);
 
@@ -88,7 +88,7 @@ it('displays active sub modules ordered by sort order', function (): void {
 
     $this->get('/en/general')
         ->assertSuccessful()
-        ->assertSeeInOrder(['System Settings', 'World Geography', 'Security Rules']);
+        ->assertSeeInOrder(['System Settings', 'World Geography', 'Security Roles']);
 });
 
 it('hides inactive sub modules', function (): void {

@@ -13,6 +13,7 @@ use App\Support\DynamicRecordView\Core\SubApplication;
 use App\Support\RecordReference\RecordReferenceAccess;
 use Illuminate\Database\Eloquent\Builder;
 use Modules\General\Livewire\World\Countries\CitiesTable;
+use Modules\General\Livewire\World\States\StatesTable;
 use Modules\General\Models\World\Country;
 
 /**
@@ -44,6 +45,11 @@ class CountryRecordView extends DynamicRecordView
         // Same record-level rule as CountryRecordReferenceProvider::authorize():
         // only active (status = 1) Countries are showable.
         return Country::query()->where('status', 1);
+    }
+
+    public function applicationCode(): ?string
+    {
+        return 'gen-wld-ctr';
     }
 
     public function title(mixed $record): string
@@ -104,12 +110,44 @@ class CountryRecordView extends DynamicRecordView
                         ->linkExisting(
                             RelationPicker::make()
                                 ->displayUsing('name')
-                                ->searchable(['name', 'country_code'])
+                                ->searchable(['name', 'state.name'])
                                 ->pageSize(5)
                                 ->maximumLoadedResults(50),
                         )
                         ->linkAuthorization(fn ($user, $parent, $candidate) => $user !== null)
-                        ->allowReassignment(),
+                        ->allowReassignment()
+
+                ),
+            SubApplication::make('states')
+                ->applicationKey('general.world.country.states')
+                ->label('States')
+                ->table(StatesTable::class)
+                ->relation('states')
+                ->authorization(true)
+                // Link-only, no Unlink: City.country_id is NOT NULL (see
+                // vendor/nnjeim/world .../create_cities_table.php), so a City
+                // can never be "unassigned" and the FK can never be set to
+                // null — plain Unlink is impossible, same reasoning as
+                // SubModuleRecordView::subApplications(). Unlike a genuinely
+                // optional relation, that also means no City is ever a valid
+                // Link candidate by default (none is ever unassigned), so
+                // allowReassignment() is required to make Link do anything:
+                // it lets an admin move a mis-seeded City from one Country to
+                // this one (a real, useful correction against a NOT NULL FK),
+                // not a fabricated "unassign" capability. See
+                // docs/dynamic-record-view/embedded-tables.md for the worked
+                // example.
+                ->relationshipActions(
+                    RelationshipActions::make()
+                        ->linkExisting(
+                            RelationPicker::make()
+                                ->displayUsing('name')
+                                ->searchable(['name'])
+                                ->pageSize(5)
+                                ->maximumLoadedResults(50),
+                        )
+                        ->linkAuthorization(fn ($user, $parent, $candidate) => $user !== null)
+                        ->allowReassignment()
                 ),
         ];
     }

@@ -90,7 +90,12 @@ class SubModuleRecordView extends DynamicRecordView
                                 ->pageSize(5)
                                 ->maximumLoadedResults(50),
                         )
-                        ->linkAuthorization(fn ($user, $parent, $candidate) => $user !== null)
+                        // Moving an Application re-parents a navigation node
+                        // and, with it, a whole permission namespace — gated
+                        // on the receiving SubModule's own update permission
+                        // (permissions:sync generates `{code}.update` for
+                        // every navigation node).
+                        ->linkAuthorization(fn ($user, $parent, $candidate) => (bool) $user?->can($parent->code.'.update'))
                         ->allowReassignment(),
                 ),
         ];

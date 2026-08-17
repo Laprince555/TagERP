@@ -33,7 +33,8 @@ class LanguageSwitcher extends Component
         app()->setLocale($locale);
         UserPreferenceState::persistLocale($locale, auth()->user());
 
-        $this->redirect(url()->previous() ?: route('launcher'), navigate: true);
+        /** Full page load on purpose: <html lang>/<dir> and the persisted header are not swapped by wire:navigate. */
+        $this->redirect(url()->previous() ?: route('launcher'));
     }
 
     public function render(): View

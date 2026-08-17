@@ -8,6 +8,8 @@ use App\Support\DynamicRecordView\Core\DynamicRecordView;
 use App\Support\DynamicRecordView\Core\Fields\RecordReferenceViewField;
 use App\Support\DynamicRecordView\Core\Fields\TextViewField;
 use App\Support\DynamicRecordView\Core\RecordTab;
+use App\Support\DynamicRecordView\Core\RelationPicker;
+use App\Support\DynamicRecordView\Core\RelationshipActions;
 use App\Support\DynamicRecordView\Core\SubApplication;
 use App\Support\RecordReference\RecordReferenceAccess;
 use Illuminate\Database\Eloquent\Builder;
@@ -95,7 +97,24 @@ class PersonRecordView extends DynamicRecordView
                 ->label('Positions')
                 ->table(PersonPositionsTable::class)
                 ->relation('positions')
-                ->authorization(true),
+                ->authorization(true)
+                ->relationshipActions(
+                    RelationshipActions::make()
+                        ->linkExisting(
+                            RelationPicker::make()
+                                ->displayUsing('position')
+                                ->searchable(['position', 'slug'])
+                                ->pageSize(5)
+                                ->maximumLoadedResults(50),
+                        )
+                        // Reassignment moves a position row from one person to
+                        // another — employment history, not a cosmetic link —
+                        // so it takes the same grant as editing a person.
+                        ->linkAuthorization(fn ($user, $parent, $candidate) => (bool) $user?->can('gen-wld-per.update'))
+                        ->allowReassignment()
+
+                ),
+
         ];
     }
 }

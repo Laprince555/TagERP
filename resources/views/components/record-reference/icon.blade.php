@@ -32,6 +32,7 @@
     class="inline-flex items-center gap-1"
 >
     <a
+        wire:navigate
         href="{{ $identity->url }}"
         class="inline-flex min-w-[44px] min-h-[44px] items-center justify-center focus:outline-none"
         aria-label="{{ $identity->title }} ({{ $identity->applicationName }})"

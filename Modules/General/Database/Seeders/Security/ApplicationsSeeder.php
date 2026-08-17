@@ -2,6 +2,7 @@
 
 namespace Modules\General\Database\Seeders\Security;
 
+use App\Services\NavigationTreeService;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Modules\General\Database\Seeders\System\Concerns\EncodesTranslatableAttributes;
@@ -22,7 +23,7 @@ class ApplicationsSeeder extends Seeder
         $securitySubModule = SubModule::where('code', 'gen-sec')->first();
 
         if (! $securitySubModule) {
-            throw new RuntimeException('Security & Rules submodule with code "gen-sec" was not found.');
+            throw new RuntimeException('Security & Roles submodule with code "gen-sec" was not found.');
         }
 
         $applications = [
@@ -36,18 +37,20 @@ class ApplicationsSeeder extends Seeder
                 'sort_order' => 0,
                 'permission_name' => null,
                 'permission_group' => null,
+                'custom_actions' => json_encode(['assign', 'unassign']),
                 'is_active' => true,
             ],
             [
-                'name' => ['ar' => 'القواعد', 'en' => 'Rules'],
+                'name' => ['ar' => 'الأدوار', 'en' => 'Roles'],
                 'description' => ['ar' => 'حزم صلاحيات مسمّاة (زي "مدير مالي") تُربط بلقب وظيفي أو موظف معيّن.', 'en' => 'Named bundles of permissions (e.g. "Finance Manager") attached to a job title or a specific employee.'],
-                'code' => 'gen-sec-rul',
-                'route' => 'general.security.rules',
+                'code' => 'gen-sec-rol',
+                'route' => 'general.security.roles',
                 'icon' => 'shield-check',
                 'color' => 'rose',
                 'sort_order' => 1,
                 'permission_name' => null,
                 'permission_group' => null,
+                'custom_actions' => json_encode(['assign']),
                 'is_active' => true,
             ],
         ];
@@ -62,7 +65,10 @@ class ApplicationsSeeder extends Seeder
         Application::query()->upsert(
             $prepared,
             ['code'],
-            ['name', 'description', 'route', 'icon', 'color', 'sort_order', 'permission_name', 'permission_group', 'is_active', 'submodule_id'],
+            ['name', 'description', 'route', 'icon', 'color', 'sort_order', 'permission_group', 'custom_actions', 'is_active', 'submodule_id'],
         );
+
+        // `upsert` bypasses model events, so the navigation observer never fires for it.
+        app(NavigationTreeService::class)->invalidateCache();
     }
 }

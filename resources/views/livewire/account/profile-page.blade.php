@@ -23,10 +23,10 @@
                 </div>
 
                 <div class="flex gap-3">
-                    <flux:button href="{{ route('settings') }}" variant="primary" icon="cog-6-tooth">
+                    <flux:button wire:navigate href="{{ route('settings') }}" variant="primary" icon="cog-6-tooth">
                         Settings
                     </flux:button>
-                    <flux:button href="{{ route('launcher') }}" variant="ghost" icon="squares-2x2">
+                    <flux:button wire:navigate href="{{ route('launcher') }}" variant="ghost" icon="squares-2x2">
                         Launcher
                     </flux:button>
                 </div>

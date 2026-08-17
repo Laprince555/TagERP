@@ -14,9 +14,7 @@ use Modules\Finance\Models\GeneralLedger\Account;
 use Modules\Finance\Models\GeneralLedger\CostCenter;
 use Modules\Finance\Models\GeneralLedger\Journal;
 use Modules\Finance\Services\GeneralLedger\AccountAccessResolver;
-use Modules\Finance\Services\GeneralLedger\JournalPoster;
 use Modules\General\Models\World\Currency;
-use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -30,7 +28,10 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * Every accounting rule is enforced at posting time by JournalPoster instead,
  * which is the only moment the journal has to be true.
  */
-#[Layout('layouts.app')]
+// The layout's own breadcrumb has no notion of the record on the page, so
+// this screen suppresses it and renders its own trailing crumb — exactly as
+// every DynamicRecordView page does.
+#[Layout('layouts.app', ['showBreadcrumbs' => false])]
 class JournalEditor extends Component
 {
     public int $recordId;
@@ -94,7 +95,7 @@ class JournalEditor extends Component
             throw new NotFoundHttpException;
         }
 
-        $journal = Journal::with(['lines', 'ledger.baseCurrency', 'journalBook', 'fiscalPeriod'])
+        $journal = Journal::with(['lines', 'ledger.baseCurrency', 'entity', 'journalBook', 'fiscalPeriod'])
             ->find($this->recordId);
 
         if ($journal === null) {
@@ -110,9 +111,18 @@ class JournalEditor extends Component
         return $journal;
     }
 
+    /**
+     * Reaching this screen only proves the journal is readable. Writing to it
+     * is the `update` permission the record view's Edit lines action is gated
+     * on — re-asked here so a direct request cannot skip the button.
+     */
     public function isEditable(): bool
     {
-        return $this->journal()->status->isEditable() && ! $this->journal()->isGenerated();
+        $journal = $this->journal();
+
+        return auth()->user()?->can(Journal::APPLICATION_CODE.'.update')
+            && $journal->status->isEditable()
+            && ! $journal->isGenerated();
     }
 
     /**
@@ -215,6 +225,8 @@ class JournalEditor extends Component
     {
         $this->postingError = null;
 
+        abort_unless((bool) auth()->user()?->can(Journal::APPLICATION_CODE.'.update'), 403);
+
         if (! $this->isEditable()) {
             $this->postingError = __('This journal is posted and can no longer be edited.');
 
@@ -262,47 +274,6 @@ class JournalEditor extends Component
         $this->mount($this->recordId);
 
         $this->flash = __('Draft saved.');
-    }
-
-    /**
-     * Save first, then hand the finished document to the poster. The poster
-     * owns every accounting rule; this screen only reports what it says.
-     */
-    public function post(): void
-    {
-        $this->saveDraft();
-
-        if ($this->postingError !== null) {
-            return;
-        }
-
-        try {
-            app(JournalPoster::class)->post($this->journal(), auth()->id());
-        } catch (RuntimeException $exception) {
-            $this->postingError = $exception->getMessage();
-            $this->flash = null;
-
-            return;
-        }
-
-        unset($this->journal);
-
-        $this->flash = __('Journal posted.');
-    }
-
-    public function reverse(): void
-    {
-        $this->postingError = null;
-
-        try {
-            $reversal = app(JournalPoster::class)->reverse($this->journal(), auth()->id());
-        } catch (RuntimeException $exception) {
-            $this->postingError = $exception->getMessage();
-
-            return;
-        }
-
-        $this->redirectRoute('finance.general-ledger.journals.edit', ['recordId' => $reversal->id], navigate: true);
     }
 
     /**

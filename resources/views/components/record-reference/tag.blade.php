@@ -32,6 +32,7 @@
     {{ $attributes->class(['inline-flex max-w-full items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium', $tokens['bg'], $tokens['text'], $tokens['border'], $tokens['darkBg'], $tokens['darkText']]) }}
 >
     <a
+        wire:navigate
         href="{{ $identity->url }}"
         class="inline-flex min-w-0 items-center gap-1.5 hover:underline"
         aria-label="{{ $identity->title }} ({{ $identity->applicationName }})"

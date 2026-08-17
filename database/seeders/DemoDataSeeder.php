@@ -43,20 +43,23 @@ class DemoDataSeeder extends Seeder
     {
         $currency = Currency::query()->where('code', 'EGP')->first() ?? Currency::factory()->create();
 
-        $company = Company::factory()->create(['name' => 'Tag Holding']);
-
+        // entities.company_id is unique — a company has exactly one entity,
+        // so each entity gets its own company rather than sharing one.
         $holding = Entity::factory()->create([
             'name' => 'Tag Holding',
-            'company_id' => $company->id,
+            'company_id' => Company::factory()->create(['name' => 'Tag Holding'])->id,
             'is_holding' => true,
             'currency_id' => $currency->id,
         ]);
 
-        $entities = Entity::factory()->count(2)->create([
-            'company_id' => $company->id,
-            'parent_entity_id' => $holding->id,
-            'currency_id' => $currency->id,
-        ]);
+        $entities = collect(['Tag Trading', 'Tag Services'])->map(
+            fn (string $name): Entity => Entity::factory()->create([
+                'name' => $name,
+                'company_id' => Company::factory()->create(['name' => $name])->id,
+                'parent_entity_id' => $holding->id,
+                'currency_id' => $currency->id,
+            ]),
+        );
 
         $this->seedOrganization($holding, $entities->all());
         $this->seedGeneralLedger($holding, $currency);
@@ -75,6 +78,8 @@ class DemoDataSeeder extends Seeder
      */
     protected function seedOrganization(Entity $holding, array $entities): void
     {
+        $employeeNumber = 0;
+
         $grades = JobGrade::factory()
             ->count(4)
             ->sequence(
@@ -111,7 +116,7 @@ class DemoDataSeeder extends Seeder
 
                     foreach (Person::factory()->count(2)->create() as $person) {
                         Employee::create([
-                            'employee_number' => 'EMP-'.str_pad((string) (Employee::count() + 1), 5, '0', STR_PAD_LEFT),
+                            'employee_number' => 'EMP-'.str_pad((string) ++$employeeNumber, 5, '0', STR_PAD_LEFT),
                             'person_id' => $person->id,
                             'entity_id' => $entity->id,
                             'branch_id' => $branch->id,
@@ -197,10 +202,17 @@ class DemoDataSeeder extends Seeder
 
         AccountGroup::factory()->count(3)->create();
 
-        ExchangeRate::factory()->count(5)->create([
-            'from_currency_id' => $currency->id,
-            'to_currency_id' => Currency::query()->where('id', '!=', $currency->id)->value('id') ?? Currency::factory()->create()->id,
-        ]);
+        // Unique on (from, to, date, type), so the dates have to differ.
+        $counterCurrency = Currency::query()->where('id', '!=', $currency->id)->value('id')
+            ?? Currency::factory()->create()->id;
+
+        foreach (range(1, 5) as $month) {
+            ExchangeRate::factory()->create([
+                'from_currency_id' => $currency->id,
+                'to_currency_id' => $counterCurrency,
+                'rate_date' => now()->setDate(2026, $month, 1)->startOfDay(),
+            ]);
+        }
 
         $postable = Account::query()->whereNotNull('parent_id')->get();
 

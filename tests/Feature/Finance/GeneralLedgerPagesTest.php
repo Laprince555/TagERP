@@ -127,7 +127,11 @@ it('renders the record view of a journal with its lines tab', function (): void 
 
     $this->get(route('finance.general-ledger.journals.show', ['recordId' => $journal->id]))
         ->assertSuccessful()
-        ->assertSee($journal->code);
+        ->assertSee($journal->code)
+        // Whose books it lands in, and which period it falls in — both reached
+        // through relations the view has to eager-load itself.
+        ->assertSee($journal->ledger->entity->name)
+        ->assertSee($journal->fiscalPeriod->name);
 });
 
 it('renders the cost centres index', function (): void {
@@ -160,4 +164,17 @@ it('renders the record view of an account group with its accounts tab', function
     $this->get(route('finance.general-ledger.account-groups.show', ['recordId' => $group->id]))
         ->assertSuccessful()
         ->assertSee('Treasury Accounts');
+});
+
+it('shows the carried-to tab only on a selectively routed book', function (): void {
+    $all = JournalBook::factory()->create(['name' => 'Receipt Voucher', 'sequence_prefix' => 'REC']);
+    $selected = JournalBook::factory()->primaryLedgerOnly()->create(['name' => 'Tax Adjustment', 'sequence_prefix' => 'TXA']);
+
+    $this->get(route('finance.general-ledger.journal-books.show', ['recordId' => $selected->id]))
+        ->assertSuccessful()
+        ->assertSee('Carried To');
+
+    $this->get(route('finance.general-ledger.journal-books.show', ['recordId' => $all->id]))
+        ->assertSuccessful()
+        ->assertSee('Every secondary ledger');
 });

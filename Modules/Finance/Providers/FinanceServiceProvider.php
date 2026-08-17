@@ -24,6 +24,7 @@ use Modules\Finance\Livewire\GeneralLedger\ExchangeRates\ExchangeRatesTable;
 use Modules\Finance\Livewire\GeneralLedger\FiscalYears\FiscalPeriodsTable;
 use Modules\Finance\Livewire\GeneralLedger\FiscalYears\FiscalYearsIndex;
 use Modules\Finance\Livewire\GeneralLedger\FiscalYears\FiscalYearsTable;
+use Modules\Finance\Livewire\GeneralLedger\JournalBooks\JournalBookLedgersTable;
 use Modules\Finance\Livewire\GeneralLedger\JournalBooks\JournalBooksIndex;
 use Modules\Finance\Livewire\GeneralLedger\JournalBooks\JournalBooksTable;
 use Modules\Finance\Livewire\GeneralLedger\Journals\JournalEditor;
@@ -107,6 +108,7 @@ class FinanceServiceProvider extends ModuleServiceProvider
         Livewire::component('finance.ledgers-table', LedgersTable::class);
         Livewire::component('finance.journal-books-index', JournalBooksIndex::class);
         Livewire::component('finance.journal-books-table', JournalBooksTable::class);
+        Livewire::component('finance.journal-book-ledgers-table', JournalBookLedgersTable::class);
         Livewire::component('finance.journals-index', JournalsIndex::class);
         Livewire::component('finance.journals-table', JournalsTable::class);
         Livewire::component('finance.journal-lines-table', JournalLinesTable::class);

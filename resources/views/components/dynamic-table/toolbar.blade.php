@@ -27,9 +27,17 @@
             @endif
         @endif
 
-        <flux:button size="sm" wire:click="export" wire:target="export">
-            {{ __('Export CSV') }}
-        </flux:button>
+        @if ($this->canImport())
+            <flux:modal.trigger name="import-{{ $tableKey }}">
+                <flux:button size="sm" icon="arrow-up-tray">{{ __('Import') }}</flux:button>
+            </flux:modal.trigger>
+        @endif
+
+        @if ($this->canExport())
+            <flux:button size="sm" wire:click="export" wire:target="export">
+                {{ __('Export CSV') }}
+            </flux:button>
+        @endif
 
         <flux:select wire:change="setPerPage($event.target.value)" size="sm" class="max-w-[8rem]">
             @foreach (\App\Support\DynamicTable\Core\TableState::PER_PAGE_OPTIONS as $option)

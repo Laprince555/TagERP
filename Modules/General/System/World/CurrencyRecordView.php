@@ -39,6 +39,11 @@ class CurrencyRecordView extends DynamicRecordView
         return Currency::query();
     }
 
+    public function applicationCode(): ?string
+    {
+        return 'gen-wld-cur';
+    }
+
     public function title(mixed $record): string
     {
         return (string) $record->name;

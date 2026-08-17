@@ -11,7 +11,13 @@ class EnumFilter extends Filter
     /** @var class-string<BackedEnum> */
     protected string $enumClass;
 
-    protected bool $multiple = false;
+    /**
+     * Multi-select by default: "show me the drafts and the reversed ones" is
+     * the normal question asked of a status column, and a single-choice list
+     * makes the user apply the filter twice to answer it. Opt out with
+     * multiple(false) where exactly one value can ever make sense.
+     */
+    protected bool $multiple = true;
 
     /**
      * @param  class-string<BackedEnum>  $enumClass

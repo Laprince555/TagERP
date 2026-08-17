@@ -101,11 +101,11 @@ class EmployeePermissionSynchronizer
             })
             ->pluck('roles.name');
 
-        // A Rule assigned directly to this one employee — an exception on
+        // A Role assigned directly to this one employee — an exception on
         // top of whatever their job title already grants, not instead of it.
-        $directGrants = DB::table('employee_rules')
-            ->join('roles', 'roles.id', '=', 'employee_rules.role_id')
-            ->where('employee_rules.employee_id', $employee->id)
+        $directGrants = DB::table('employee_roles')
+            ->join('roles', 'roles.id', '=', 'employee_roles.role_id')
+            ->where('employee_roles.employee_id', $employee->id)
             ->pluck('roles.name');
 
         return $jobTitleGrants->merge($directGrants)->unique()->values()->all();

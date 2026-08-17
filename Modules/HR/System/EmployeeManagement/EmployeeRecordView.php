@@ -36,7 +36,7 @@ class EmployeeRecordView extends DynamicRecordView
             return Employee::query()->whereRaw('1 = 0');
         }
 
-        return Employee::query();
+        return Employee::query()->with(['person', 'entity', 'branch', 'department', 'jobTitle']);
     }
 
     public function title(mixed $record): string

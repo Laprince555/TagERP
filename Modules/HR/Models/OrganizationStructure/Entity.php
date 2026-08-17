@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Modules\General\Models\World\Companies\Company;
 use Modules\General\Models\World\Currency;
 use Modules\HR\Database\Factories\EntityFactory;
@@ -107,18 +109,44 @@ class Entity extends Model
 
         static::updating(function (Entity $entity): void {
             if ($entity->isDirty('parent_entity_id')) {
+                $entity->assertParentIsNotDescendant();
                 $entity->refreshPath();
             }
         });
 
         static::updated(function (Entity $entity): void {
             if ($entity->wasChanged('path')) {
-                $entity->cascadePathToDescendants();
+                // All or nothing: a cascade that stops halfway leaves part of
+                // the subtree pointing at the old branch of the tree.
+                DB::transaction(fn () => $entity->cascadePathToDescendants());
             }
         });
 
         static::saved(fn (): mixed => app(OrganizationVersion::class)->bump());
         static::deleted(fn (): mixed => app(OrganizationVersion::class)->bump());
+    }
+
+    /**
+     * A node cannot be moved under itself or under one of its own descendants:
+     * the cascade below would recurse forever and the paths it wrote would
+     * describe a tree that has no root.
+     *
+     * @throws ValidationException
+     */
+    protected function assertParentIsNotDescendant(): void
+    {
+        if ($this->parent_entity_id === null) {
+            return;
+        }
+
+        $parent = self::withTrashed()->find($this->parent_entity_id);
+
+        if ($this->parent_entity_id === $this->getKey()
+            || ($parent && str_contains($parent->path, '/'.$this->getKey().'/'))) {
+            throw ValidationException::withMessages([
+                'parent_entity_id' => 'An entity cannot be placed under itself or under one of its own descendants.',
+            ]);
+        }
     }
 
     /**

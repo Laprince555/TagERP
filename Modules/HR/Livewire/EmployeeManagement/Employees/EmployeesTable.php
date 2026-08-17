@@ -49,7 +49,9 @@ class EmployeesTable extends Table
             return Employee::query()->whereRaw('1 = 0');
         }
 
-        return Employee::query();
+        // One query per relation instead of one per relation per row — the
+        // reference columns below resolve each of these on every row.
+        return Employee::query()->with(['person', 'entity', 'branch', 'department', 'jobTitle']);
     }
 
     protected function columns(): array

@@ -2,6 +2,7 @@
 
 namespace Modules\Finance\Database\Seeders\System;
 
+use App\Services\NavigationTreeService;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Modules\General\System\Module;
@@ -128,6 +129,9 @@ class SubModulesSeeder extends Seeder
             ['code'],
             ['name', 'description', 'route', 'icon', 'sort_order', 'permission_group', 'is_active', 'module_id'],
         );
+
+        // `upsert` bypasses model events, so the navigation observer never fires for it.
+        app(NavigationTreeService::class)->invalidateCache();
     }
 
     /**

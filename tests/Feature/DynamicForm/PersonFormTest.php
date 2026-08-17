@@ -2,7 +2,6 @@
 
 use App\Livewire\DynamicForm\Form;
 use App\Livewire\DynamicForm\FormModal;
-use App\Models\User;
 use Livewire\Livewire;
 use Modules\General\Database\Seeders\System\ModulesSeeder;
 use Modules\General\Database\Seeders\System\SubModulesSeeder;
@@ -19,7 +18,7 @@ beforeEach(function (): void {
     (new SubModulesSeeder)->run();
     (new WorldApplicationsSeeder)->run();
 
-    $this->actingAs(User::factory()->create());
+    $this->actingAs(superAdmin());
 });
 
 /** Builds a City reachable through the full Country -> State -> City cascade. */

@@ -3,9 +3,10 @@
 use App\Support\ModuleRoute;
 use Illuminate\Support\Facades\Route;
 use Modules\General\Livewire\ModuleWorkspace;
+use Modules\General\Livewire\Security\Permissions\PermissionRecordView;
 use Modules\General\Livewire\Security\Permissions\PermissionsIndex;
-use Modules\General\Livewire\Security\Rules\RuleRecordView;
-use Modules\General\Livewire\Security\Rules\RulesIndex;
+use Modules\General\Livewire\Security\Roles\RoleRecordView;
+use Modules\General\Livewire\Security\Roles\RolesIndex;
 use Modules\General\Livewire\SubModuleRecordView;
 use Modules\General\Livewire\SubModuleWorkspace;
 use Modules\General\Livewire\System\Users\UserRecordView;
@@ -99,16 +100,20 @@ Route::middleware(['auth'])
     ->name('general.world.people.show');
 
 Route::middleware(['auth'])
-    ->get('/general/security/rules', RulesIndex::class)
-    ->name('general.security.rules');
+    ->get('/general/security/roles', RolesIndex::class)
+    ->name('general.security.roles');
 
 Route::middleware(['auth'])
-    ->get('/general/security/rules/{recordId}/view', RuleRecordView::class)
-    ->name('general.security.rules.show');
+    ->get('/general/security/roles/{recordId}/view', RoleRecordView::class)
+    ->name('general.security.roles.show');
 
 Route::middleware(['auth'])
     ->get('/general/security/permissions', PermissionsIndex::class)
     ->name('general.security.permissions');
+
+Route::middleware(['auth'])
+    ->get('/general/security/permissions/{recordId}/view', PermissionRecordView::class)
+    ->name('general.security.permissions.show');
 
 Route::middleware(['auth'])
     ->get('/general/system/users', UsersIndex::class)
@@ -134,10 +139,23 @@ Route::middleware(['auth'])
             ];
         }
 
+        // realpath() collapses `..` before the containment test, so
+        // `/docs/../.env` — and every encoded or symlinked variant of it —
+        // resolves outside $root and is simply not a candidate. Testing the
+        // resolved path rather than the raw segment is what makes this
+        // exhaustive instead of a blocklist.
+        $root = realpath($base);
+
         $filePath = null;
         foreach ($candidates as $candidate) {
-            if (file_exists($candidate) && is_file($candidate)) {
-                $filePath = $candidate;
+            $resolved = realpath($candidate);
+
+            if ($resolved === false || $root === false || ! str_starts_with($resolved, $root.DIRECTORY_SEPARATOR)) {
+                continue;
+            }
+
+            if (is_file($resolved) && ! str_starts_with(basename($resolved), '.')) {
+                $filePath = $resolved;
                 break;
             }
         }

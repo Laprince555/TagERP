@@ -9,8 +9,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Modules\Finance\Database\Factories\JournalFactory;
+use Modules\HR\Models\OrganizationStructure\Entity;
 use RuntimeException;
 
 /**
@@ -71,6 +73,19 @@ class Journal extends Model
     public function lines(): HasMany
     {
         return $this->hasMany(JournalLine::class, 'journal_id')->orderBy('line_number');
+    }
+
+    /**
+     * Whose books this journal belongs to, reached through its ledger.
+     *
+     * Declared here rather than read as `ledger.entity` because the ledger is
+     * eager-loaded with a narrowed column list (see LedgerRecordReferenceProvider
+     * ::identityColumns()) that excludes entity_id — a nested load through it
+     * would silently resolve to null.
+     */
+    public function entity(): HasOneThrough
+    {
+        return $this->hasOneThrough(Entity::class, Ledger::class, 'id', 'id', 'ledger_id', 'entity_id');
     }
 
     public function postedBy(): BelongsTo
@@ -134,7 +149,16 @@ class Journal extends Model
         // legal change after posting is the transition to Reversed.
         static::updating(function (Journal $journal): void {
             $original = $journal->getOriginal('status');
-            $originalStatus = $original instanceof JournalStatus ? $original : JournalStatus::from((string) $original);
+
+            // A journal created earlier in this same request has no original
+            // status at all — the column was filled by its database default —
+            // and such a record cannot be posted yet, so the guard has nothing
+            // to protect and must not blow up on the empty value.
+            $originalStatus = match (true) {
+                $original instanceof JournalStatus => $original,
+                blank($original) => JournalStatus::Draft,
+                default => JournalStatus::from((string) $original),
+            };
 
             if (! $originalStatus->isPosted()) {
                 return;

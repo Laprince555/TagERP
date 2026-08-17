@@ -2,7 +2,6 @@
 
 use App\Livewire\DynamicForm\Form;
 use App\Livewire\DynamicForm\FormModal;
-use App\Models\User;
 use Livewire\Livewire;
 use Modules\General\Database\Seeders\System\ModulesSeeder;
 use Modules\General\Database\Seeders\System\SubModulesSeeder;
@@ -24,7 +23,7 @@ beforeEach(function (): void {
     (new SubModulesSeeder)->run();
     (new WorldApplicationsSeeder)->run();
 
-    $this->actingAs(User::factory()->create());
+    $this->actingAs(superAdmin());
 });
 
 it('shows an Add Company button on the companies table wired to its form key', function (): void {

@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Artisan;
 use Modules\Finance\Database\Seeders\GeneralLedger\ApplicationsSeeder as FinanceGeneralLedgerApplicationsSeeder;
 use Modules\Finance\Database\Seeders\System\SubModulesSeeder as FinanceSubModulesSeeder;
 use Modules\General\Database\Seeders\Security\ApplicationsSeeder as GeneralSecurityApplicationsSeeder;
@@ -38,5 +39,7 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             WorldSeeder::class,
         ]);
+
+        Artisan::call('permissions:sync');
     }
 }

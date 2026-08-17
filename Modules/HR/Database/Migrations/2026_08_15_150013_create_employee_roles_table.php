@@ -8,11 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // A direct grant of a Rule (Spatie Role) to one specific employee —
+        // A direct grant of a Role (Spatie Role) to one specific employee —
         // an exception on top of whatever their job title already grants via
         // job_title_grade_roles, not a replacement for it. A fourth grant
         // source EmployeePermissionSynchronizer unions in, never a bypass of it.
-        Schema::create('employee_rules', function (Blueprint $table) {
+        Schema::create('employee_roles', function (Blueprint $table) {
             $table->id();
             $table->foreignId('employee_id')
                 ->constrained('employees')
@@ -30,6 +30,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('employee_rules');
+        Schema::dropIfExists('employee_roles');
     }
 };

@@ -39,6 +39,11 @@ class StateRecordView extends DynamicRecordView
         return State::query();
     }
 
+    public function applicationCode(): ?string
+    {
+        return 'gen-wld-sta';
+    }
+
     public function title(mixed $record): string
     {
         return (string) $record->name;

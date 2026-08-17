@@ -43,6 +43,7 @@
 <section class="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8" {{ $attributes }}>
     @if (filled($subModuleRoute))
         <flux:button
+            wire:navigate
             :href="$subModuleRoute"
             variant="ghost"
             size="sm"

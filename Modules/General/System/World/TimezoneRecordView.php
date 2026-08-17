@@ -39,6 +39,11 @@ class TimezoneRecordView extends DynamicRecordView
         return Timezone::query();
     }
 
+    public function applicationCode(): ?string
+    {
+        return 'gen-wld-tzn';
+    }
+
     public function title(mixed $record): string
     {
         return (string) $record->name;

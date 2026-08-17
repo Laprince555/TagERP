@@ -97,10 +97,102 @@ class Form extends Component
     #[Locked]
     public bool $nested = false;
 
-    public function mount(string $formKey, bool $nested = false): void
+    /**
+     * The record being edited, or null to create one. Locked: the id is fixed
+     * by whoever mounted the form, and save() re-resolves it server-side
+     * rather than trusting it to still point where the client says.
+     */
+    #[Locked]
+    public int|string|null $recordId = null;
+
+    /**
+     * True when $recordId is only a template: the form prefills from it and
+     * then forgets it, so saving creates a new record instead of updating the
+     * one it was copied from.
+     */
+    #[Locked]
+    public bool $copy = false;
+
+    /**
+     * The record a copy was prefilled from. Kept after $recordId is cleared so
+     * the definition can carry the parts of it that are not form fields —
+     * a Journal's lines — into the new record.
+     */
+    #[Locked]
+    public int|string|null $copySourceId = null;
+
+    public function mount(string $formKey, bool $nested = false, int|string|null $recordId = null, bool $copy = false): void
     {
         $this->formKey = $formKey;
         $this->nested = $nested;
+        $this->recordId = $recordId;
+        $this->copy = $copy;
+
+        if ($recordId !== null) {
+            $this->fillFromRecord();
+        }
+
+        if ($copy) {
+            $this->copySourceId = $recordId;
+            $this->recordId = null;
+        }
+    }
+
+    public function isEditing(): bool
+    {
+        return $this->recordId !== null;
+    }
+
+    /**
+     * Loads the edited record's current values into the same $data shape a
+     * create form builds up by typing, so every field renders and validates
+     * through exactly one path.
+     *
+     * A RelationListField also needs the chosen record's display label, not
+     * just its id, or the picker's trigger button opens showing "Select…"
+     * over a value that is already set.
+     *
+     * ponytail: CascadingRelationField prefills its stored leaf id but not the
+     * ancestor labels on the trigger — no form that has one is editable yet.
+     * Resolve the chain in fillFromRecord() when the first one is.
+     */
+    protected function fillFromRecord(): void
+    {
+        $definition = $this->definition();
+        $record = $definition->findForEdit($this->recordId);
+
+        if ($record === null || ! $definition->authorize()) {
+            throw new NotFoundHttpException;
+        }
+
+        if (! ($this->copy ? $definition->authorizeCopy($record) : $definition->authorizeUpdate($record))) {
+            throw new NotFoundHttpException;
+        }
+
+        foreach ($definition->fields() as $field) {
+            $value = data_get($record, $this->columnFor($field));
+            $this->data[$field->getKey()] = $value;
+
+            if (! $field instanceof RelationListField || $value === null) {
+                continue;
+            }
+
+            $relatedClass = $field->getModel();
+            $displayField = $field->getDisplayField();
+
+            if ($relatedClass === null || $displayField === null) {
+                continue;
+            }
+
+            $related = $relatedClass::query()->find($value);
+
+            if ($related !== null) {
+                $this->relationSelected[$field->getKey()] = [
+                    'id' => $value,
+                    'label' => (string) data_get($related, $displayField),
+                ];
+            }
+        }
     }
 
     /**
@@ -632,6 +724,13 @@ class Form extends Component
         // the write, not just to whether the button rendered.
         $authorized = $this->nested ? $definition->authorizeOutOfContext() : $definition->authorize();
 
+        // A create — including a Copy, which is a create with prefilled
+        // values — additionally needs the Application's create permission.
+        // Reaching the form proved read access and nothing more.
+        if ($authorized && ($this->copy || ! $this->isEditing())) {
+            $authorized = $definition->authorizeCreate();
+        }
+
         if (! $authorized) {
             throw new NotFoundHttpException;
         }
@@ -660,12 +759,49 @@ class Form extends Component
             $payload[$this->columnFor($field)] = $this->data[$field->getKey()] ?? null;
         }
 
-        $record = $definition->create($payload);
+        if ($this->copy) {
+            $source = $definition->findForEdit($this->copySourceId);
+
+            if ($source === null || ! $definition->authorizeCopy($source)) {
+                throw new NotFoundHttpException;
+            }
+
+            $record = $definition->createCopy($payload, $source);
+        } elseif ($this->isEditing()) {
+            $existing = $definition->findForEdit($this->recordId);
+
+            // Re-checked on the write, not merely when the button rendered:
+            // the record can have been posted, deleted, or moved out of reach
+            // since the modal was opened.
+            if ($existing === null || ! $definition->authorizeUpdate($existing)) {
+                throw new NotFoundHttpException;
+            }
+
+            $record = $definition->update($existing, $payload);
+        } else {
+            $record = $definition->create($payload);
+        }
 
         $this->dispatch(
             ($this->nested ? self::NESTED_SAVED_EVENT : 'dynamic-form-saved.').$this->formKey,
             id: $record->getKey(),
         );
+
+        // A copy lands on the record it just created rather than leaving the
+        // user on the one it was copied from — the new document is what they
+        // are going to work on next.
+        if ($this->copy && ($url = $definition->recordUrl($record)) !== null) {
+            $this->redirect($url, navigate: true);
+
+            return;
+        }
+
+        // An edit form stays on the record it edits; only a create form is
+        // reset so the next, empty one starts clean.
+        if ($this->isEditing()) {
+            return;
+        }
+
         // Every picker's state resets too, not just $data — a leftover
         // cascadeSelected keeps showing the saved record's Country/State on
         // the trigger button of the next, empty form.

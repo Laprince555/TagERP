@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\User;
 use Livewire\Livewire;
 use Modules\General\Database\Seeders\System\ModulesSeeder;
 use Modules\General\Database\Seeders\System\SubModulesSeeder;
@@ -16,7 +15,7 @@ use Modules\General\System\Application;
 /**
  * Smoke coverage for the Company/Person vertical slices: index render,
  * hierarchical code generation, Company tag on the embedded Positions
- * table, show route, and access denial — mirrors
+ * table, show route, and access denial â€” mirrors
  * tests/Feature/WorldReferenceDataTest.php.
  */
 beforeEach(function (): void {
@@ -24,7 +23,7 @@ beforeEach(function (): void {
     (new SubModulesSeeder)->run();
     (new WorldApplicationsSeeder)->run();
 
-    $this->actingAs(User::factory()->create());
+    $this->actingAs(superAdmin());
 });
 
 it('generates a hierarchical code and a companyname-taxid slug on create', function (): void {

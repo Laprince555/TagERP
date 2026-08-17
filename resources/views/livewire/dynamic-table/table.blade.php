@@ -6,6 +6,13 @@
         :create-form-label="$createFormLabel"
     />
 
+    @if ($this->canImport())
+        <x-dynamic-table.import-modal
+            :table-key="$definition->tableKey"
+            :template-columns="$this->importTemplateColumns()"
+        />
+    @endif
+
     @if ($createFormKey)
         <livewire:dynamic-form.form-modal
             :form-key="$createFormKey"

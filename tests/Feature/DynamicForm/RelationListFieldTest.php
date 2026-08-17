@@ -1,7 +1,6 @@
 <?php
 
 use App\Livewire\DynamicForm\Form;
-use App\Models\User;
 use App\Support\DynamicForm\Core\DynamicForm;
 use App\Support\DynamicForm\Core\Fields\RelationListField;
 use App\Support\DynamicForm\Core\Fields\TextField;
@@ -56,9 +55,13 @@ class ScopedRelationListFixtureForm extends RelationListFixtureForm
 }
 
 beforeEach(function (): void {
-    $this->actingAs(User::factory()->create());
+    $this->actingAs(superAdmin());
 
     app(FormDefinitionRegistry::class)->register('test.relation-list', RelationListFixtureForm::class);
+
+    // The fixture forms save Companies, and a create now needs that
+    // Application to exist so its create permission has a namespace.
+    Application::factory()->create(['code' => Company::APPLICATION_CODE, 'is_active' => true, 'permission_name' => null]);
 
     $this->country = Country::create(['name' => 'Egypt', 'iso2' => 'EG', 'iso3' => 'EGY', 'phone_code' => '20', 'region' => 'Africa', 'subregion' => 'Northern Africa', 'status' => 1]);
 });
@@ -345,7 +348,7 @@ it('will not pick a created record the field is not allowed to offer', function 
 /**
  * A field pointing at its own definition (an Account's parent is an
  * Account) means the nested form shares the parent's formKey, so its save
- * must NOT look like the parent's own save — that is what the hosting
+ * must NOT look like the parent's own save â€” that is what the hosting
  * FormModal closes on and the hosting table refreshes on.
  */
 class SelfCreatableFixtureForm extends DynamicForm

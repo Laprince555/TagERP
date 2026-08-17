@@ -83,7 +83,7 @@ class PeopleTable extends Table
         return [
             TextFilter::make('full_name'),
             TextFilter::make('national_id'),
-            DateFilter::make('birth_date'),
+            DateFilter::make('date_of_birth'),
         ];
     }
 

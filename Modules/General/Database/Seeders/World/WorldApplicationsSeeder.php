@@ -2,6 +2,7 @@
 
 namespace Modules\General\Database\Seeders\World;
 
+use App\Services\NavigationTreeService;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Modules\General\Database\Seeders\System\Concerns\EncodesTranslatableAttributes;
@@ -36,6 +37,7 @@ class WorldApplicationsSeeder extends Seeder
                 'sort_order' => 0,
                 'permission_name' => null,
                 'permission_group' => null,
+                'custom_actions' => null,
                 'is_active' => true,
             ],
             [
@@ -48,6 +50,7 @@ class WorldApplicationsSeeder extends Seeder
                 'sort_order' => 1,
                 'permission_name' => null,
                 'permission_group' => null,
+                'custom_actions' => null,
                 'is_active' => true,
             ],
             [
@@ -60,6 +63,7 @@ class WorldApplicationsSeeder extends Seeder
                 'sort_order' => 2,
                 'permission_name' => null,
                 'permission_group' => null,
+                'custom_actions' => null,
                 'is_active' => true,
             ],
             [
@@ -72,6 +76,7 @@ class WorldApplicationsSeeder extends Seeder
                 'sort_order' => 3,
                 'permission_name' => null,
                 'permission_group' => null,
+                'custom_actions' => null,
                 'is_active' => true,
             ],
             [
@@ -84,6 +89,7 @@ class WorldApplicationsSeeder extends Seeder
                 'sort_order' => 4,
                 'permission_name' => null,
                 'permission_group' => null,
+                'custom_actions' => null,
                 'is_active' => true,
             ],
             [
@@ -96,6 +102,7 @@ class WorldApplicationsSeeder extends Seeder
                 'sort_order' => 5,
                 'permission_name' => null,
                 'permission_group' => null,
+                'custom_actions' => null,
                 'is_active' => true,
             ],
             [
@@ -108,6 +115,7 @@ class WorldApplicationsSeeder extends Seeder
                 'sort_order' => 6,
                 'permission_name' => null,
                 'permission_group' => null,
+                'custom_actions' => json_encode(['switch']),
                 'is_active' => true,
             ],
             [
@@ -120,6 +128,7 @@ class WorldApplicationsSeeder extends Seeder
                 'sort_order' => 7,
                 'permission_name' => null,
                 'permission_group' => null,
+                'custom_actions' => null,
                 'is_active' => true,
             ],
         ];
@@ -134,7 +143,10 @@ class WorldApplicationsSeeder extends Seeder
         Application::query()->upsert(
             $applications,
             ['code'],
-            ['name', 'description', 'route', 'icon', 'color', 'sort_order', 'permission_name', 'permission_group', 'is_active', 'submodule_id'],
+            ['name', 'description', 'route', 'icon', 'color', 'sort_order', 'permission_group', 'custom_actions', 'is_active', 'submodule_id'],
         );
+
+        // `upsert` bypasses model events, so the navigation observer never fires for it.
+        app(NavigationTreeService::class)->invalidateCache();
     }
 }

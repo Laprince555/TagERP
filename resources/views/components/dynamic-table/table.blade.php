@@ -65,7 +65,7 @@
                                     @php($value = data_get($row, $column->getValuePath()))
                                     @php($link = $column->getLink($row))
                                     @if ($link)
-                                        <a href="{{ $link }}" class="text-[var(--color-accent)] hover:underline">{{ $column->formatValue($value, $row) }}</a>
+                                        <a wire:navigate href="{{ $link }}" class="text-[var(--color-accent)] hover:underline">{{ $column->formatValue($value, $row) }}</a>
                                     @else
                                         {{ $column->formatValue($value, $row) }}
                                     @endif
@@ -74,7 +74,7 @@
                                 @php($value = data_get($row, $column->getValuePath()))
                                 @php($link = $column->getLink($row))
                                 @if ($link)
-                                    <a href="{{ $link }}" class="text-[var(--color-accent)] hover:underline">{{ $column->formatValue($value, $row) }}</a>
+                                    <a wire:navigate href="{{ $link }}" class="text-[var(--color-accent)] hover:underline">{{ $column->formatValue($value, $row) }}</a>
                                 @else
                                     {{ $column->formatValue($value, $row) }}
                                 @endif

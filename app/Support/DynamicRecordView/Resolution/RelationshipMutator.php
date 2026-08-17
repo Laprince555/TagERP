@@ -63,8 +63,11 @@ class RelationshipMutator
             $candidate = $relatedClass::query()->lockForUpdate()->find($candidateId);
             $this->safeAbortUnless($candidate !== null);
 
+            // Deny by default: a definition that declares Link without saying
+            // who may use it is a mistake, and the safe reading of that
+            // mistake is "nobody" rather than "everybody".
             $authorize = $actions->getLinkAuthorization();
-            $this->safeAbortUnless($authorize === null || $authorize(auth()->user(), $lockedParent, $candidate));
+            $this->safeAbortUnless($authorize !== null && $authorize(auth()->user(), $lockedParent, $candidate));
 
             if ($mutateUsing = $actions->getMutateUsing()) {
                 $mutateUsing($lockedParent, $relation, $candidate, 'link');
@@ -112,8 +115,11 @@ class RelationshipMutator
             $related = $relatedClass::query()->lockForUpdate()->find($relatedId);
             $this->safeAbortUnless($related !== null);
 
+            // Same as link(): an omitted callback denies. Unlink had no gate
+            // at all on the User/roles relation, which made stripping an
+            // admin's roles a request any authenticated user could send.
             $authorize = $actions->getUnlinkAuthorization();
-            $this->safeAbortUnless($authorize === null || $authorize(auth()->user(), $lockedParent, $related));
+            $this->safeAbortUnless($authorize !== null && $authorize(auth()->user(), $lockedParent, $related));
 
             if ($mutateUsing = $actions->getMutateUsing()) {
                 $mutateUsing($lockedParent, $relation, $related, 'unlink');

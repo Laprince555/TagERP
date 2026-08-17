@@ -9,8 +9,12 @@ use App\Support\DynamicRecordView\Core\DynamicRecordView;
 use App\Support\DynamicRecordView\Core\Fields\RelationViewField;
 use App\Support\DynamicRecordView\Core\Fields\TextViewField;
 use App\Support\DynamicRecordView\Core\RecordTab;
+use App\Support\DynamicRecordView\Core\RelationPicker;
+use App\Support\DynamicRecordView\Core\RelationshipActions;
+use App\Support\DynamicRecordView\Core\SubApplication;
 use App\Support\RecordReference\RecordReferenceAccess;
 use Illuminate\Database\Eloquent\Builder;
+use Modules\General\Livewire\Security\Roles\RolesTable;
 
 /**
  * The authorized record show page for a single User (gen-sys-usr
@@ -34,6 +38,11 @@ class UserRecordView extends DynamicRecordView
         }
 
         return User::query();
+    }
+
+    public function applicationCode(): ?string
+    {
+        return 'gen-sys-usr';
     }
 
     public function title(mixed $record): string
@@ -69,6 +78,46 @@ class UserRecordView extends DynamicRecordView
 
     public function subApplications(): array
     {
-        return [];
+        return [
+            SubApplication::make('roles')
+                ->applicationKey('general.system.user.roles')
+                ->label('Roles')
+                ->table(RolesTable::class)
+                ->relation('roles')
+                ->authorization(true)
+                // Link-only, no Unlink: City.country_id is NOT NULL (see
+                // vendor/nnjeim/world .../create_cities_table.php), so a City
+                // can never be "unassigned" and the FK can never be set to
+                // null — plain Unlink is impossible, same reasoning as
+                // SubModuleRecordView::subApplications(). Unlike a genuinely
+                // optional relation, that also means no City is ever a valid
+                // Link candidate by default (none is ever unassigned), so
+                // allowReassignment() is required to make Link do anything:
+                // it lets an admin move a mis-seeded City from one Country to
+                // this one (a real, useful correction against a NOT NULL FK),
+                // not a fabricated "unassign" capability. See
+                // docs/dynamic-record-view/embedded-tables.md for the worked
+                // example.
+                ->relationshipActions(
+                    RelationshipActions::make()
+                        ->linkExisting(
+                            RelationPicker::make()
+                                ->displayUsing('name')
+                                ->searchable(['name'])
+                                ->pageSize(5)
+                                ->maximumLoadedResults(50),
+                        )
+                        // Attaching a role hands the target user everything
+                        // that role can do, super_admin included, and
+                        // detaching one can lock an administrator out of their
+                        // own system — so both sides need the same explicit
+                        // grant, never mere access to this page.
+                        ->linkAuthorization(fn ($user, $parent, $candidate) => (bool) $user?->can('gen-sys-usr.assign'))
+                        ->unlink()
+                        ->unlinkAuthorization(fn ($user, $parent, $related) => (bool) $user?->can('gen-sys-usr.assign'))
+                        ->allowReassignment()
+
+                ),
+        ];
     }
 }

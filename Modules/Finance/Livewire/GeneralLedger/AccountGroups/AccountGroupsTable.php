@@ -6,11 +6,13 @@ use App\Livewire\DynamicTable\Table;
 use App\Services\NavigationTreeService;
 use App\Support\DynamicTable\Core\Columns\BooleanColumn;
 use App\Support\DynamicTable\Core\Columns\EnumColumn;
+use App\Support\DynamicTable\Core\Columns\RecordReferenceColumn;
 use App\Support\DynamicTable\Core\Columns\TextColumn;
 use App\Support\DynamicTable\Core\Filters\EnumFilter;
 use App\Support\DynamicTable\Core\Filters\TextFilter;
 use App\Support\DynamicTable\Core\Sort;
 use App\Support\RecordReference\RecordReferenceAccess;
+use App\Support\RecordReference\RecordReferenceVariant;
 use Illuminate\Database\Eloquent\Builder;
 use Modules\Finance\Models\GeneralLedger\AccountGroup;
 use Modules\Finance\Models\GeneralLedger\AccountGroupPurpose;
@@ -57,7 +59,10 @@ class AccountGroupsTable extends Table
     protected function columns(): array
     {
         return [
-            TextColumn::make('name')->sortable()->searchable()->label('Name'),
+            RecordReferenceColumn::make('name')
+                ->applicationCode('fin-gl-agr')
+                ->variant(RecordReferenceVariant::Tag)
+                ->label('name'),
             EnumColumn::make('purpose')
                 ->enum(AccountGroupPurpose::class)
                 ->sortable()

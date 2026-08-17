@@ -8,10 +8,10 @@ use Modules\HR\Models\OrganizationStructure\JobTitle;
 use Spatie\Permission\Models\Role as SpatieRole;
 
 /**
- * The "Rule" the General → Security & Rules screens manage — a named bundle
+ * The "Role" the General → Security & Roles screens manage — a named bundle
  * of permissions (e.g. "Finance Manager") assignable to a job title
  * (optionally grade-gated, via job_title_grade_roles) or directly to one
- * employee as an exception (via employee_rules). Both are grant *sources*
+ * employee as an exception (via employee_roles). Both are grant *sources*
  * EmployeePermissionSynchronizer reads from — this class adds no write path
  * of its own, so the "one writer" rule for model_has_roles is unaffected.
  *
@@ -29,7 +29,7 @@ class Role extends SpatieRole
 
     public function employees(): BelongsToMany
     {
-        return $this->belongsToMany(Employee::class, 'employee_rules')
+        return $this->belongsToMany(Employee::class, 'employee_roles')
             ->withTimestamps();
     }
 }

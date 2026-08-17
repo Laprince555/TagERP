@@ -95,9 +95,10 @@
             $userEmail = $authUser?->email ?? '';
         @endphp
 
+        @persist('app-header')
         <header class="sticky top-0 z-40 border-b border-[var(--color-border)] bg-[var(--color-card-bg)]/92 backdrop-blur-xl">
             <div class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-                <a href="{{ route('launcher') }}" class="flex items-center gap-3 text-[var(--color-text-main)]">
+                <a wire:navigate href="{{ route('launcher') }}" class="flex items-center gap-3 text-[var(--color-text-main)]">
                     <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--color-primary)] text-sm font-black text-white shadow-lg shadow-[var(--color-primary)]/25">
                         TE
                     </span>
@@ -152,10 +153,10 @@
                         </flux:button>
 
                         <flux:menu>
-                            <flux:menu.item href="{{ route('profile') }}" icon="user">
+                            <flux:menu.item wire:navigate href="{{ route('profile') }}" icon="user">
                                 Profile
                             </flux:menu.item>
-                            <flux:menu.item href="{{ route('settings') }}" icon="cog-6-tooth">
+                            <flux:menu.item wire:navigate href="{{ route('settings') }}" icon="cog-6-tooth">
                                 Settings
                             </flux:menu.item>
                             <flux:menu.separator />
@@ -170,11 +171,14 @@
                 </div>
             </div>
         </header>
+        @endpersist
 
+        @persist('app-overlays')
         <livewire:system.command-palette />
         <livewire:record-reference.preview-host />
+        @endpersist
 
-        <main>
+        <main data-current-route="{{ request()->route()?->getName() }}">
             @if (($showBreadcrumbs ?? true) !== false)
                 <div class="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
                     <livewire:general.breadcrumbs />

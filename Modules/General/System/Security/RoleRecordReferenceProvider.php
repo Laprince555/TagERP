@@ -8,14 +8,14 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Vertical-slice provider for the "gen-sec-rul" Application. Owns every
- * record-reference concern for Rule (Role): title, route, facts, scoping.
+ * Vertical-slice provider for the "gen-sec-rol" Application. Owns every
+ * record-reference concern for Role (Role): title, route, facts, scoping.
  */
-class RuleRecordReferenceProvider implements RecordReferenceProvider
+class RoleRecordReferenceProvider implements RecordReferenceProvider
 {
     public function applicationCode(): string
     {
-        return 'gen-sec-rul';
+        return 'gen-sec-rol';
     }
 
     public function modelClass(): string
@@ -45,7 +45,7 @@ class RuleRecordReferenceProvider implements RecordReferenceProvider
 
     public function url(Model $record): ?string
     {
-        return route('general.security.rules.show', ['recordId' => $record->getKey()]);
+        return route('general.security.roles.show', ['recordId' => $record->getKey()]);
     }
 
     public function cardFacts(Model $record): array

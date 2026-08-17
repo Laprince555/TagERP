@@ -3,13 +3,15 @@
 namespace Modules\General\Livewire\Security\Permissions;
 
 use App\Livewire\DynamicTable\Table;
+use App\Models\Permission;
 use App\Services\NavigationTreeService;
+use App\Support\DynamicTable\Core\Columns\RecordReferenceColumn;
 use App\Support\DynamicTable\Core\Columns\TextColumn;
 use App\Support\DynamicTable\Core\Filters\TextFilter;
 use App\Support\DynamicTable\Core\Sort;
 use App\Support\RecordReference\RecordReferenceAccess;
+use App\Support\RecordReference\RecordReferenceVariant;
 use Illuminate\Database\Eloquent\Builder;
-use Spatie\Permission\Models\Permission;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -18,7 +20,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * module/sub_module/application code prefix it belongs to. Reference only —
  * permissions are system-generated, never created or edited here. Granting
  * one to a department/job title/job title+grade/employee happens on the
- * grantee's own side (e.g. a Rule's Permissions tab, or the HR grant
+ * grantee's own side (e.g. a Role's Permissions tab, or the HR grant
  * tables), not from this catalog.
  */
 class PermissionsTable extends Table
@@ -58,7 +60,17 @@ class PermissionsTable extends Table
     protected function columns(): array
     {
         return [
-            TextColumn::make('name')->sortable()->searchable()->label('Permission'),
+            RecordReferenceColumn::make('name')
+                ->applicationCode('gen-sec-per')
+                ->variant(RecordReferenceVariant::Tag)
+                ->label('Permission'),
+            // Not sortable: the column holds one JSON object per row, so the
+            // database would order every locale by whichever key sorts first
+            // rather than by the text actually on screen. Searching the raw
+            // JSON is fine — it matches either language.
+            TextColumn::make('description')
+                ->searchable()
+                ->label('Description'),
             TextColumn::make('guard_name')->sortable()->label('Guard'),
         ];
     }

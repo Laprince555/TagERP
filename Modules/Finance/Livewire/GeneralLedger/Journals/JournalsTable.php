@@ -62,14 +62,15 @@ class JournalsTable extends Table
     protected function columns(): array
     {
         return [
-            // The number is the way into the grid: an unposted journal has none
-            // yet, so the code stands in until it does.
-            TextColumn::make('number')
+            // The number is the way into the record: an unposted journal has
+            // none yet, so the reference provider's code stands in until it
+            // does. Sorting and searching still run on the real column.
+            RecordReferenceColumn::make('number')
+                ->applicationCode(Journal::APPLICATION_CODE)
+                ->variant(RecordReferenceVariant::Tag)
                 ->sortable()
                 ->searchable()
-                ->label('Number')
-                ->placeholder('—')
-                ->link(fn (mixed $row): string => route('finance.general-ledger.journals.edit', ['recordId' => $row->getKey()])),
+                ->label('Number'),
             DateColumn::make('journal_date')->sortable()->label('Date'),
             RecordReferenceColumn::make('ledger')
                 ->applicationCode(Ledger::APPLICATION_CODE)

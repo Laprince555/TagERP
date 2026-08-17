@@ -56,7 +56,12 @@ class RecordReferenceAccess
         if (! empty($application->permission_name)) {
             try {
                 return (bool) auth()->user()?->can($application->permission_name);
-            } catch (Throwable) {
+            } catch (Throwable $e) {
+                // Denying access is the right answer, but a permission that
+                // cannot even be evaluated is a configuration bug and should
+                // not disappear silently.
+                report($e);
+
                 return false;
             }
         }

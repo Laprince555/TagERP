@@ -5,7 +5,9 @@ namespace Modules\Finance\Models\GeneralLedger;
 use App\Support\Code\RecordCodeBuilder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection;
 use Modules\Finance\Database\Factories\JournalBookFactory;
 
 /**
@@ -30,6 +32,7 @@ class JournalBook extends Model
     protected $fillable = [
         'name',
         'sequence_prefix',
+        'ledger_scope',
         'description',
         'is_active',
     ];
@@ -37,8 +40,52 @@ class JournalBook extends Model
     protected function casts(): array
     {
         return [
+            'ledger_scope' => LedgerScope::class,
             'is_active' => 'boolean',
         ];
+    }
+
+    /**
+     * The secondary ledgers this book is explicitly routed to. Only consulted
+     * when the scope is Selected.
+     */
+    public function ledgers(): BelongsToMany
+    {
+        return $this->belongsToMany(Ledger::class, 'journal_book_ledger');
+    }
+
+    /**
+     * Which secondary ledgers should receive a copy of a journal entered in the
+     * given primary ledger.
+     *
+     * This is where "this entry belongs in the company books but not the tax
+     * books" is actually decided.
+     *
+     * @return Collection<int, Ledger>
+     */
+    public function targetLedgersFor(Ledger $primary): Collection
+    {
+        if (! $primary->is_primary) {
+            // A journal keyed straight into a secondary ledger is an original in
+            // its own right — a tax-only adjustment, say — and is not carried
+            // anywhere else.
+            return new Collection;
+        }
+
+        $secondaries = Ledger::query()
+            ->where('primary_ledger_id', $primary->getKey())
+            ->where('is_active', true)
+            ->get();
+
+        if ($this->ledger_scope === LedgerScope::All) {
+            return $secondaries;
+        }
+
+        $selected = $this->ledgers()->pluck('ledgers.id')->all();
+
+        return $secondaries->filter(
+            fn (Ledger $ledger): bool => in_array($ledger->getKey(), $selected, true)
+        )->values();
     }
 
     protected static function booted(): void

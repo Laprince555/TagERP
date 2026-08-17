@@ -5,7 +5,6 @@ namespace Modules\General\Livewire\World\Timezones;
 use App\Livewire\DynamicTable\Table;
 use App\Services\NavigationTreeService;
 use App\Support\DynamicTable\Core\Columns\RecordReferenceColumn;
-use App\Support\DynamicTable\Core\Columns\TextColumn;
 use App\Support\DynamicTable\Core\Filters\TextFilter;
 use App\Support\DynamicTable\Core\Sort;
 use App\Support\RecordReference\RecordReferenceAccess;
@@ -59,7 +58,12 @@ class TimezonesTable extends Table
     protected function columns(): array
     {
         return [
-            TextColumn::make('name')->sortable()->searchable()->label('Name'),
+            RecordReferenceColumn::make('name')
+                ->sortable()
+                ->searchable()
+                ->applicationCode('gen-wld-tzn')
+                ->variant(RecordReferenceVariant::Tag)
+                ->label('Name'),
             RecordReferenceColumn::make('country')
                 ->applicationCode('gen-wld-ctr')
                 ->relation('country')

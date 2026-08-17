@@ -1,16 +1,49 @@
-<div
-    wire:key="record-view-{{ $definition->getViewKey() }}-{{ $record->getKey() }}"
-    class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 space-y-6"
->
-    <div class="flex items-center gap-2">
+<div wire:key="record-view-{{ $definition->getViewKey() }}-{{ $record->getKey() }}">
+    <div class="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
         <livewire:general.breadcrumbs :trailing="$definition->title($record)" />
     </div>
 
+    {{--
+        The same application header every index page and the journal editor
+        show, so a record page is not the one screen that drops the "which
+        Application am I in" context. Absent when the definition declares no
+        application code (SubModuleRecordView) or the actor cannot reach it.
+    --}}
+    @if ($application)
+        <x-general::workspace.application-header :application="$application" />
+    @endif
+
+    <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 space-y-6">
     <x-dynamic-record-view.header
         :title="$definition->title($record)"
         :subtitle="$definition->subtitle($record)"
         :code="$record->code ?? null"
+        :record="$record"
+        :actions="$actions"
     />
+
+    @if ($actionError)
+        <flux:callout variant="danger" icon="exclamation-triangle">{{ $actionError }}</flux:callout>
+    @endif
+
+    @if ($actionMessage)
+        <flux:callout variant="success" icon="check-circle" x-data x-init="setTimeout(() => $wire.set('actionMessage', null), 4000)">
+            {{ $actionMessage }}
+        </flux:callout>
+    @endif
+
+    @foreach ($formActions as $formAction)
+        @livewire(
+            \App\Livewire\DynamicForm\FormModal::class,
+            [
+                'formKey' => $formAction->getFormKey(),
+                'heading' => $formAction->getLabel(),
+                'recordId' => $record->getKey(),
+                'copy' => $formAction->isCopy(),
+            ],
+            key('form-modal-'.$formAction->getKey().'-'.$formAction->getFormModalKey().'-'.$record->getKey())
+        )
+    @endforeach
 
     <div class="space-y-4">
         <div class="flex gap-2 border-b border-[var(--color-glass-border)]" role="tablist">
@@ -65,4 +98,5 @@
             )
         </div>
     @endif
+    </div>
 </div>

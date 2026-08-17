@@ -7,10 +7,12 @@ use App\Support\DynamicRecordView\Core\RecordViewRegistry;
 use App\Support\RecordReference\RecordReferenceRegistry;
 use Livewire\Livewire;
 use Modules\General\Livewire\ModuleWorkspace;
+use Modules\General\Livewire\Security\Permissions\PermissionRecordView;
+use Modules\General\Livewire\Security\Permissions\PermissionRolesTable;
 use Modules\General\Livewire\Security\Permissions\PermissionsIndex;
 use Modules\General\Livewire\Security\Permissions\PermissionsTable;
-use Modules\General\Livewire\Security\Rules\RulesIndex;
-use Modules\General\Livewire\Security\Rules\RulesTable;
+use Modules\General\Livewire\Security\Roles\RolesIndex;
+use Modules\General\Livewire\Security\Roles\RolesTable;
 use Modules\General\Livewire\SubModuleWorkspace;
 use Modules\General\Livewire\System\Users\UsersIndex;
 use Modules\General\Livewire\System\Users\UsersTable;
@@ -31,9 +33,11 @@ use Modules\General\Livewire\World\States\StatesIndex;
 use Modules\General\Livewire\World\States\StatesTable;
 use Modules\General\Livewire\World\Timezones\TimezonesIndex;
 use Modules\General\Livewire\World\Timezones\TimezonesTable;
-use Modules\General\System\Security\RuleForm;
-use Modules\General\System\Security\RuleRecordReferenceProvider;
-use Modules\General\System\Security\RuleRecordView as RuleRecordViewDefinition;
+use Modules\General\System\Security\PermissionRecordReferenceProvider;
+use Modules\General\System\Security\PermissionRecordView as PermissionRecordViewDefinition;
+use Modules\General\System\Security\RoleForm;
+use Modules\General\System\Security\RoleRecordReferenceProvider;
+use Modules\General\System\Security\RoleRecordView as RoleRecordViewDefinition;
 use Modules\General\System\SubModuleRecordView;
 use Modules\General\System\System\UserForm;
 use Modules\General\System\System\UserRecordReferenceProvider;
@@ -108,10 +112,12 @@ class GeneralServiceProvider extends ModuleServiceProvider
         Livewire::component('general.people-index', PeopleIndex::class);
         Livewire::component('general.people-table', PeopleTable::class);
         Livewire::component('general.person-positions-table', PersonPositionsTable::class);
-        Livewire::component('general.rules-index', RulesIndex::class);
-        Livewire::component('general.rules-table', RulesTable::class);
+        Livewire::component('general.roles-index', RolesIndex::class);
+        Livewire::component('general.roles-table', RolesTable::class);
         Livewire::component('general.permissions-index', PermissionsIndex::class);
         Livewire::component('general.permissions-table', PermissionsTable::class);
+        Livewire::component('general.permission-record-view', PermissionRecordView::class);
+        Livewire::component('general.permission-roles-table', PermissionRolesTable::class);
         Livewire::component('general.users-index', UsersIndex::class);
         Livewire::component('general.users-table', UsersTable::class);
 
@@ -124,7 +130,8 @@ class GeneralServiceProvider extends ModuleServiceProvider
         $recordReferenceRegistry->register(new LanguageRecordReferenceProvider);
         $recordReferenceRegistry->register(new CompanyRecordReferenceProvider);
         $recordReferenceRegistry->register(new PersonRecordReferenceProvider);
-        $recordReferenceRegistry->register(new RuleRecordReferenceProvider);
+        $recordReferenceRegistry->register(new RoleRecordReferenceProvider);
+        $recordReferenceRegistry->register(new PermissionRecordReferenceProvider);
         $recordReferenceRegistry->register(new UserRecordReferenceProvider);
 
         $recordViewRegistry = $this->app->make(RecordViewRegistry::class);
@@ -137,13 +144,14 @@ class GeneralServiceProvider extends ModuleServiceProvider
         $recordViewRegistry->register('general.world.language', LanguageRecordViewDefinition::class);
         $recordViewRegistry->register('general.world.company', CompanyRecordViewDefinition::class);
         $recordViewRegistry->register('general.world.person', PersonRecordViewDefinition::class);
-        $recordViewRegistry->register('general.security.rule', RuleRecordViewDefinition::class);
+        $recordViewRegistry->register('general.security.role', RoleRecordViewDefinition::class);
+        $recordViewRegistry->register('general.security.permission', PermissionRecordViewDefinition::class);
         $recordViewRegistry->register('general.system.user', UserRecordViewDefinition::class);
 
         $formRegistry = $this->app->make(FormDefinitionRegistry::class);
         $formRegistry->register('general.world.company.create', CompanyForm::class);
         $formRegistry->register('general.world.person.create', PersonForm::class);
-        $formRegistry->register('general.security.rule.create', RuleForm::class);
+        $formRegistry->register('general.security.role.create', RoleForm::class);
         $formRegistry->register('general.system.user.create', UserForm::class);
     }
 }

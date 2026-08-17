@@ -31,6 +31,7 @@
     x-on:keydown.window.prevent.enter="executeSelection()"
     x-on:keydown.window.prevent.escape="close()"
     x-on:toggle-command-palette.window="toggle()"
+    x-on:livewire:navigated.window="currentRoute = document.querySelector('main')?.dataset.currentRoute || null"
 >
     <style>
         :root {
@@ -268,7 +269,7 @@
 
 @once
     @push('scripts')
-        <script>
+        <script data-navigate-once>
             document.addEventListener('alpine:init', () => {
                 Alpine.data('commandPalette', ({ tree = [], currentRoute = null }) => ({
                     tree,
@@ -418,7 +419,8 @@
                             return;
                         }
 
-                        window.location.href = route;
+                        this.close();
+                        Livewire.navigate(route);
                     },
                     matches(value, term) {
                         return String(value ?? '').toLowerCase().includes(term);

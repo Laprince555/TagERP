@@ -5,19 +5,61 @@
 @endphp
 
 <div class="min-h-screen">
+    {{--
+        First thing in the page, in the layout's own container — this screen
+        opts out of the layout breadcrumb only to add the record's number to
+        it, so it has to land in exactly the same place the layout would have
+        put it. See layouts/app.blade.php.
+    --}}
+    <div class="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
+        <livewire:general.breadcrumbs :trailing="$journal->number ?? $journal->code" />
+    </div>
+
     <x-general::workspace.application-header
         :application="$application"
         :sub-module="$subModule"
         :module="$module"
     />
 
-    <section class="mx-auto max-w-[100rem] px-4 py-6 sm:px-6 lg:px-8">
+    {{-- max-w-7xl like every other page: the line grid is min-w-[72rem] inside
+         its own overflow-x-auto, so it still fits here and scrolls below it. --}}
+    <section class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
 
         {{-- Identity and status --}}
         <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
             <div>
+                {{--
+                    Whose books this journal lands in, above the number rather
+                    than among the badges on the right: someone keeping several
+                    companies has to see it before they start keying, not after
+                    scanning a badge row that may have wrapped off screen.
+                --}}
+                @if ($journal->entity)
+                    <flux:text class="flex items-center gap-1.5 font-semibold">
+                        <flux:icon name="building-office-2" variant="micro" />
+                        {{ $journal->entity->name }}
+                    </flux:text>
+                @endif
+
                 <flux:heading size="xl">{{ $journal->number ?? __('Unposted journal') }}</flux:heading>
                 <flux:text class="mt-1">{{ $journal->code }}</flux:text>
+
+                {{--
+                    The way back to the document. This screen is only the line
+                    grid; posting, reversing, editing the header and deleting
+                    all live on the record view, so leaving without a link
+                    would mean going through the list to get to any of them.
+                --}}
+                <flux:button
+                    :href="route('finance.general-ledger.journals.show', ['recordId' => $journal->getKey()])"
+                    wire:navigate
+                    size="sm"
+                    variant="ghost"
+                    icon="arrow-left"
+                    class="mt-3"
+                >
+                    {{ __('Back to journal') }}
+                </flux:button>
             </div>
 
             <div class="flex flex-wrap items-center gap-2">
@@ -420,37 +462,22 @@
                         </flux:text>
                     </div>
 
+                    {{--
+                        Saving the grid is the only thing this screen does.
+                        Posting, reversing, editing the header and deleting are
+                        the document's actions, and they live on its record
+                        view where all of them are visible at once.
+                    --}}
                     <div class="flex flex-wrap items-center gap-2">
                         <flux:button
-                            variant="ghost"
+                            variant="primary"
                             x-on:click="$wire.saveDraft().then(() => recalc())"
                             wire:loading.attr="disabled"
                             wire:target="saveDraft"
                         >
                             {{ __('Save draft') }}
                         </flux:button>
-
-                        <flux:button
-                            variant="primary"
-                            icon="check"
-                            x-on:click="$wire.post().then(() => recalc())"
-                            wire:loading.attr="disabled"
-                            wire:target="post"
-                        >
-                            {{ __('Post') }}
-                        </flux:button>
                     </div>
-                </div>
-            @elseif ($journal->status->value === 'posted')
-                <div class="mt-4 flex justify-end">
-                    <flux:button
-                        variant="danger"
-                        icon="arrow-uturn-left"
-                        wire:click="reverse"
-                        wire:confirm="{{ __('Create a reversing journal that cancels this one?') }}"
-                    >
-                        {{ __('Reverse') }}
-                    </flux:button>
                 </div>
             @endif
         </div>

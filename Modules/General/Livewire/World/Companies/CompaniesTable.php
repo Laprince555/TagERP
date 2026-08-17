@@ -59,7 +59,10 @@ class CompaniesTable extends Table
     protected function columns(): array
     {
         return [
-            TextColumn::make('name')->sortable()->searchable()->label('Name'),
+            RecordReferenceColumn::make('name')
+                ->applicationCode('gen-wld-com')
+                ->variant(RecordReferenceVariant::Tag)
+                ->label('Name'),
             TextColumn::make('tax_id')->sortable()->searchable()->label('Tax ID'),
             RecordReferenceColumn::make('city')
                 ->applicationCode('gen-wld-cty')

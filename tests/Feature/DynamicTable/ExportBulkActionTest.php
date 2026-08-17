@@ -39,6 +39,11 @@ class BulkActionTestTable extends Table
     {
         return true;
     }
+
+    public function canExport(): bool
+    {
+        return true;
+    }
 }
 
 class ExportExcludesColumnTestTable extends Table
@@ -58,6 +63,11 @@ class ExportExcludesColumnTestTable extends Table
     protected function filters(): array
     {
         return [];
+    }
+
+    public function canExport(): bool
+    {
+        return true;
     }
 }
 
@@ -108,6 +118,8 @@ test('bulk delete is refused when the table has not opted in', function () {
 });
 
 test('bulk delete skips rows the policy denies', function () {
+    // Deliberately not a super_admin: Gate::before short-circuits every
+    // policy for that role, so the denial under test would never be reached.
     $actor = User::factory()->create();
     $users = User::factory()->count(3)->create();
 
@@ -126,7 +138,7 @@ test('bulk delete skips rows the policy denies', function () {
 test('export queues a job for the acting user instead of streaming', function () {
     Queue::fake();
 
-    $actor = User::factory()->create();
+    $actor = superAdmin();
     $users = User::factory()->count(3)->create();
 
     Livewire::actingAs($actor)

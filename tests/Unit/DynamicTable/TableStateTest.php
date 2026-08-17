@@ -121,9 +121,35 @@ test('enum filter rejects stale/unknown values', function () {
     expect($state->filters)->toBe([]);
 });
 
-test('enum filter accepts a known value', function () {
+test('enum filter accepts a list of known values and drops the unknown ones', function () {
+    $state = TableState::normalize(
+        ['filters' => ['status' => ['operator' => 'in', 'value' => ['active', 'deleted-enum-case', 'inactive']]]],
+        makeTestDefinition(),
+    );
+
+    expect($state->filters)->toBe(['status' => ['operator' => 'in', 'value' => ['active', 'inactive']]]);
+});
+
+/**
+ * A saved view stored before the filter became multi-select still carries a
+ * bare value; wrapping it keeps that view filtering instead of silently
+ * showing every row.
+ */
+test('enum filter wraps a single stored value now that it is multi-select', function () {
     $state = TableState::normalize(['filters' => ['status' => ['operator' => 'equals', 'value' => 'active']]], makeTestDefinition());
-    expect($state->filters)->toBe(['status' => ['operator' => 'equals', 'value' => 'active']]);
+    expect($state->filters)->toBe(['status' => ['operator' => 'in', 'value' => ['active']]]);
+});
+
+test('a single-choice enum filter still normalises to one value', function () {
+    $definition = new TableDefinition(
+        tableKey: 'users',
+        columns: [TextColumn::make('name')],
+        filters: [EnumFilter::make('status')->enum(StateTestStatus::class)->multiple(false)],
+        query: fn () => Mockery::mock(Builder::class),
+    );
+
+    expect(TableState::normalize(['filters' => ['status' => ['operator' => 'equals', 'value' => 'active']]], $definition)->filters)
+        ->toBe(['status' => ['operator' => 'equals', 'value' => 'active']]);
 });
 
 test('non toggleable columns are always visible regardless of input', function () {

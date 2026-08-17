@@ -61,7 +61,7 @@
                         'hover:bg-[var(--color-canvas-bg)]' => ! $isUnread,
                     ])
                 >
-                    @php($isFailure = ($data['type'] ?? null) === 'export-failed')
+                    @php($isFailure = in_array($data['type'] ?? null, ['export-failed', 'import-failed'], true))
 
                     <span @class([
                         'mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl',
@@ -87,6 +87,15 @@
                                     class="text-xs font-bold text-[var(--color-primary)]"
                                 >
                                     {{ __('Download') }}
+                                </flux:link>
+                            @elseif (filled($data['url'] ?? null))
+                                {{-- Generic follow-up link for any notification that carries one. --}}
+                                <flux:link
+                                    wire:navigate
+                                    href="{{ $data['url'] }}"
+                                    class="text-xs font-bold text-[var(--color-primary)]"
+                                >
+                                    {{ $data['action'] ?? __('Open') }}
                                 </flux:link>
                             @endif
 

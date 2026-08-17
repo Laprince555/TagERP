@@ -3,6 +3,7 @@
 namespace Modules\General\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\General\Models\World\City;
 use Modules\General\Models\World\People\Gender;
 use Modules\General\Models\World\People\Person;
 
@@ -23,7 +24,10 @@ class PersonFactory extends Factory
             'nickname' => fake()->firstName(),
             'passport_number' => fake()->unique()->numerify('P########'),
             'national_id' => fake()->unique()->numerify('##############'),
-            'city_id' => null,
+            // There is no City factory; cities come from the world seeder. A
+            // test that has not seeded them gets a person without a city
+            // rather than a fatal on a null row.
+            'city_id' => City::query()->inRandomOrder()->value('id'),
             'address' => fake()->address(),
             'phone' => fake()->phoneNumber(),
             'email' => fake()->unique()->safeEmail(),

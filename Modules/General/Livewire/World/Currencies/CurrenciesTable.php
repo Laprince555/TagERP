@@ -59,7 +59,11 @@ class CurrenciesTable extends Table
     protected function columns(): array
     {
         return [
-            TextColumn::make('name')->sortable()->searchable()->label('Name'),
+            RecordReferenceColumn::make('name')
+                ->applicationCode('gen-wld-cur')
+                ->variant(RecordReferenceVariant::Tag)
+                ->label('Name')
+                ->sortable(),
             TextColumn::make('code')->sortable()->searchable()->label('Code'),
             TextColumn::make('symbol')->sortable()->label('Symbol'),
             RecordReferenceColumn::make('country')

@@ -2,6 +2,7 @@
 
 namespace Modules\Finance\Database\Seeders\GeneralLedger;
 
+use App\Services\NavigationTreeService;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Modules\General\System\Application;
@@ -77,7 +78,7 @@ class ApplicationsSeeder extends Seeder
                 'sort_order' => 3,
                 'permission_name' => null,
                 'permission_group' => null,
-                'custom_actions' => null,
+                'custom_actions' => json_encode(['fetch']),
                 'is_active' => true,
             ],
             [
@@ -91,7 +92,7 @@ class ApplicationsSeeder extends Seeder
                 'sort_order' => 4,
                 'permission_name' => null,
                 'permission_group' => null,
-                'custom_actions' => null,
+                'custom_actions' => json_encode(['open', 'close']),
                 'is_active' => true,
             ],
             [
@@ -105,7 +106,7 @@ class ApplicationsSeeder extends Seeder
                 'sort_order' => 5,
                 'permission_name' => null,
                 'permission_group' => null,
-                'custom_actions' => null,
+                'custom_actions' => json_encode(['close-period', 'rebuild']),
                 'is_active' => true,
             ],
             [
@@ -134,7 +135,7 @@ class ApplicationsSeeder extends Seeder
                 'sort_order' => 7,
                 'permission_name' => null,
                 'permission_group' => null,
-                'custom_actions' => null,
+                'custom_actions' => json_encode(['post', 'reverse', 'approve']),
                 'is_active' => true,
             ],
             [
@@ -177,8 +178,11 @@ class ApplicationsSeeder extends Seeder
         Application::query()->upsert(
             $prepared,
             ['code'],
-            ['name', 'description', 'route', 'icon', 'color', 'application_group', 'sort_order', 'permission_name', 'permission_group', 'custom_actions', 'is_active', 'submodule_id'],
+            ['name', 'description', 'route', 'icon', 'color', 'application_group', 'sort_order', 'permission_group', 'custom_actions', 'is_active', 'submodule_id'],
         );
+
+        // `upsert` bypasses model events, so the navigation observer never fires for it.
+        app(NavigationTreeService::class)->invalidateCache();
     }
 
     /**

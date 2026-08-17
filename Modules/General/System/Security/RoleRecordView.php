@@ -11,20 +11,20 @@ use App\Support\DynamicRecordView\Core\RecordTab;
 use App\Support\DynamicRecordView\Core\SubApplication;
 use App\Support\RecordReference\RecordReferenceAccess;
 use Illuminate\Database\Eloquent\Builder;
-use Modules\General\Livewire\Security\Rules\RuleEmployeesTable;
-use Modules\General\Livewire\Security\Rules\RuleJobTitlesTable;
-use Modules\General\Livewire\Security\Rules\RulePermissionsTable;
+use Modules\General\Livewire\Security\Roles\RoleEmployeesTable;
+use Modules\General\Livewire\Security\Roles\RoleJobTitlesTable;
+use Modules\General\Livewire\Security\Roles\RolePermissionsTable;
 
 /**
- * The authorized record show page for a single Rule (gen-sec-rul
+ * The authorized record show page for a single Role (gen-sec-rol
  * Application) — a Spatie Role under a business-facing name. Read-only tabs
  * for now: attaching permissions/job-titles/employees is done via code/
  * tinker until a dedicated attach UI exists (same known gap already
  * documented for Department↔Entity and JobTitle↔JobGrade).
  */
-class RuleRecordView extends DynamicRecordView
+class RoleRecordView extends DynamicRecordView
 {
-    protected string $viewKey = 'general.security.rule';
+    protected string $viewKey = 'general.security.role';
 
     public function model(): string
     {
@@ -33,13 +33,18 @@ class RuleRecordView extends DynamicRecordView
 
     public function query(): Builder
     {
-        $application = app(NavigationTreeService::class)->getApplicationByCode('gen-sec-rul');
+        $application = app(NavigationTreeService::class)->getApplicationByCode('gen-sec-rol');
 
         if (! app(RecordReferenceAccess::class)->applicationAccessible($application)) {
             return Role::query()->whereRaw('1 = 0');
         }
 
         return Role::query();
+    }
+
+    public function applicationCode(): ?string
+    {
+        return 'gen-sec-rol';
     }
 
     public function title(mixed $record): string
@@ -62,7 +67,7 @@ class RuleRecordView extends DynamicRecordView
                     FieldsContent::make('basic-information')
                         ->heading('Basic Information')
                         ->fields([
-                            TextViewField::make('name')->label('Rule Name'),
+                            TextViewField::make('name')->label('Role Name'),
                         ]),
                 ]),
         ];
@@ -72,21 +77,21 @@ class RuleRecordView extends DynamicRecordView
     {
         return [
             SubApplication::make('permissions')
-                ->applicationKey('general.security.rule.permissions')
+                ->applicationKey('general.security.role.permissions')
                 ->label('Permissions')
-                ->table(RulePermissionsTable::class)
+                ->table(RolePermissionsTable::class)
                 ->relation('permissions')
                 ->authorization(true),
             SubApplication::make('job-titles')
-                ->applicationKey('general.security.rule.job-titles')
+                ->applicationKey('general.security.role.job-titles')
                 ->label('Job Titles')
-                ->table(RuleJobTitlesTable::class)
+                ->table(RoleJobTitlesTable::class)
                 ->relation('jobTitles')
                 ->authorization(true),
             SubApplication::make('employees')
-                ->applicationKey('general.security.rule.employees')
+                ->applicationKey('general.security.role.employees')
                 ->label('Employees')
-                ->table(RuleEmployeesTable::class)
+                ->table(RoleEmployeesTable::class)
                 ->relation('employees')
                 ->authorization(true),
         ];

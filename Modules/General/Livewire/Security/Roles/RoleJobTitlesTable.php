@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\General\Livewire\Security\Rules;
+namespace Modules\General\Livewire\Security\Roles;
 
 use App\Livewire\DynamicTable\Table;
 use App\Support\DynamicTable\Core\Columns\TextColumn;
@@ -9,13 +9,13 @@ use Illuminate\Database\Eloquent\Builder;
 use Modules\HR\Models\OrganizationStructure\JobTitle;
 
 /**
- * Embedded-only: which job titles (job_title_grade_roles) this Rule is
- * attached to — the "Job Titles" tab on a Rule's record view. Never a
+ * Embedded-only: which job titles (job_title_grade_roles) this Role is
+ * attached to — the "Job Titles" tab on a Role's record view. Never a
  * standalone Application route.
  */
-class RuleJobTitlesTable extends Table
+class RoleJobTitlesTable extends Table
 {
-    protected string $tableKey = 'general-security-rule-job-titles';
+    protected string $tableKey = 'general-security-role-job-titles';
 
     protected ?string $model = JobTitle::class;
 

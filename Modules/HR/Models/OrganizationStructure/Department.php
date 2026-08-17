@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Modules\HR\Database\Factories\DepartmentFactory;
 
 /**
@@ -108,18 +110,44 @@ class Department extends Model
 
         static::updating(function (Department $department): void {
             if ($department->isDirty('parent_department_id')) {
+                $department->assertParentIsNotDescendant();
                 $department->refreshPath();
             }
         });
 
         static::updated(function (Department $department): void {
             if ($department->wasChanged('path')) {
-                $department->cascadePathToDescendants();
+                // All or nothing: a cascade that stops halfway leaves part of
+                // the subtree pointing at the old branch of the tree.
+                DB::transaction(fn () => $department->cascadePathToDescendants());
             }
         });
 
         static::saved(fn (): mixed => app(OrganizationVersion::class)->bump());
         static::deleted(fn (): mixed => app(OrganizationVersion::class)->bump());
+    }
+
+    /**
+     * A node cannot be moved under itself or under one of its own descendants:
+     * the cascade below would recurse forever and the paths it wrote would
+     * describe a tree that has no root.
+     *
+     * @throws ValidationException
+     */
+    protected function assertParentIsNotDescendant(): void
+    {
+        if ($this->parent_department_id === null) {
+            return;
+        }
+
+        $parent = self::withTrashed()->find($this->parent_department_id);
+
+        if ($this->parent_department_id === $this->getKey()
+            || ($parent && str_contains($parent->path, '/'.$this->getKey().'/'))) {
+            throw ValidationException::withMessages([
+                'parent_department_id' => 'A department cannot be placed under itself or under one of its own descendants.',
+            ]);
+        }
     }
 
     /**

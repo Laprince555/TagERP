@@ -30,6 +30,12 @@ class UserForm extends DynamicForm
         return User::class;
     }
 
+    /** App\Models\User carries no APPLICATION_CODE constant to derive this from. */
+    public function applicationCode(): ?string
+    {
+        return 'gen-sys-usr';
+    }
+
     public function fields(): array
     {
         return [

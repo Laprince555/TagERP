@@ -2,6 +2,7 @@
     <section class="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
         @if ($module['route'] !== '#')
             <flux:button
+                wire:navigate
                 :href="$module['route']"
                 variant="ghost"
                 size="sm"
@@ -135,7 +136,7 @@
 
                 @if ($module['route'] !== '#')
                     <div class="mt-6 flex justify-center">
-                        <flux:button :href="$module['route']" variant="primary" icon="rectangle-group">
+                        <flux:button wire:navigate :href="$module['route']" variant="primary" icon="rectangle-group">
                             {{ __('messages.workspace.back_to_module', ['name' => $module['name']]) }}
                         </flux:button>
                     </div>

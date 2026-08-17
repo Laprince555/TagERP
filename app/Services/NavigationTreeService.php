@@ -132,8 +132,16 @@ class NavigationTreeService
      * users (no permission filtering baked in) since it returns the raw
      * model — callers apply their own access checks.
      *
-     * Rehydrates a fresh, unpersisted model from cached plain-array
-     * attributes on every call. The cached payload is a plain array, never
+     * Rehydrates a model from cached plain-array attributes on every call
+     * via newFromBuilder(), never fill()/forceFill(): those route through
+     * setAttribute(), and spatie/laravel-translatable overrides it to store
+     * any non-array value as the CURRENT locale's translation — which turns
+     * the raw `name` JSON into a single translation and makes $app->name
+     * render the whole JSON blob. newFromBuilder() sets the attributes raw,
+     * exactly as Eloquent hydration does, so casts and the translatable
+     * getter behave normally.
+     *
+     * The cached payload is a plain array, never
      * a Collection or model: config('cache.serializable_classes') is false
      * in this app, so the cache unserializes with allowed_classes = false
      * and silently turns ANY cached object (including a bare Collection)
@@ -145,7 +153,7 @@ class NavigationTreeService
     {
         $attributes = $this->getApplicationAttributesByCode()[$code] ?? null;
 
-        return $attributes ? (new Application)->forceFill($attributes) : null;
+        return $attributes ? (new Application)->newFromBuilder($attributes) : null;
     }
 
     /**

@@ -263,6 +263,17 @@ class TableState
             return ['operator' => $operator, 'value' => null];
         }
 
+        // An operator with no value is not a filter. Every table seeds a
+        // default operator for its text/number/date filters (so an implicit
+        // operator is never silently dropped), which means an untouched
+        // filter arrives here as e.g. contains + null. Cast to string that
+        // became `LIKE '%%'` — which is NULL, not true, for any row whose
+        // column is NULL, quietly hiding every unposted journal from a list
+        // the user only meant to filter by status.
+        if ($value === null || $value === '') {
+            return null;
+        }
+
         $normalizedValue = $valueNormalizer($value);
 
         return $normalizedValue === null ? null : ['operator' => $operator, 'value' => $normalizedValue];
@@ -463,9 +474,11 @@ class TableState
         $validValues = array_map(fn ($case) => $case->value, $enumClass::cases());
 
         if ($filter->isMultiple()) {
-            if (! is_array($value)) {
-                return null;
-            }
+            // A scalar is accepted and wrapped: a saved view stored before
+            // this filter became multi-select still carries one bare value,
+            // and dropping it would silently un-filter the saved view.
+            $value = is_array($value) ? $value : ($value === null || $value === '' ? [] : [$value]);
+
             $values = array_slice(array_values(array_intersect($value, $validValues)), 0, self::MAX_MULTI_SELECT);
 
             return $values === [] ? null : ['operator' => 'in', 'value' => $values];

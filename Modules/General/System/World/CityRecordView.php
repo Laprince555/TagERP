@@ -39,6 +39,11 @@ class CityRecordView extends DynamicRecordView
         return City::query();
     }
 
+    public function applicationCode(): ?string
+    {
+        return 'gen-wld-cty';
+    }
+
     public function title(mixed $record): string
     {
         return (string) $record->name;

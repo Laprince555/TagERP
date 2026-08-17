@@ -59,7 +59,12 @@ class StatesTable extends Table
     protected function columns(): array
     {
         return [
-            TextColumn::make('name')->sortable()->searchable()->label('Name'),
+            RecordReferenceColumn::make('name')
+                ->applicationCode('gen-wld-sta')
+                ->variant(RecordReferenceVariant::Tag)
+                ->sortable()
+                ->searchable()
+                ->label('Name'),
             RecordReferenceColumn::make('country')
                 ->applicationCode('gen-wld-ctr')
                 ->relation('country')

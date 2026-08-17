@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Validation\ValidationException;
 use Modules\HR\Models\EmployeeManagement\Employee;
 use Modules\HR\Models\OrganizationStructure\Branch;
 use Modules\HR\Models\OrganizationStructure\Department;
@@ -321,4 +322,26 @@ test('reinstating a terminated employee restores visibility on the very next que
     $viewer->update(['status' => 'active']);
 
     expect(Employee::pluck('id'))->toContain($peer->id);
+});
+
+test('an entity cannot be moved under one of its own descendants', function () {
+    $tree = makeOrgTree();
+
+    expect(fn () => $tree['a']->update(['parent_entity_id' => $tree['c']->id]))
+        ->toThrow(ValidationException::class)
+        ->and(fn () => $tree['a']->update(['parent_entity_id' => $tree['a']->id]))
+        ->toThrow(ValidationException::class);
+
+    // The legitimate move still works: C is not an ancestor of itself's sibling.
+    $d = Entity::factory()->childOf($tree['a'])->create(['name' => 'Sub D']);
+    $d->update(['parent_entity_id' => $tree['c']->id]);
+
+    expect($d->fresh()->path)->toBe($tree['c']->path.$tree['c']->id.'/');
+});
+
+test('a department cannot be moved under one of its own descendants', function () {
+    $tree = makeOrgTree();
+
+    expect(fn () => $tree['finance']->update(['parent_department_id' => $tree['payroll']->id]))
+        ->toThrow(ValidationException::class);
 });

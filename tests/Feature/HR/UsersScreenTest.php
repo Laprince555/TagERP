@@ -11,7 +11,7 @@ beforeEach(function () {
 });
 
 test('the users index and show pages render', function () {
-    $admin = User::factory()->create();
+    $admin = superAdmin();
     $admin->assignRole(SpatieRoleBase::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']));
 
     $target = User::factory()->create();
@@ -21,7 +21,7 @@ test('the users index and show pages render', function () {
 });
 
 test('a user with no employee record is a valid, fully functional admin account', function () {
-    $admin = User::factory()->create();
+    $admin = superAdmin();
     $admin->assignRole(SpatieRoleBase::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']));
 
     expect($admin->employee)->toBeNull()
@@ -30,9 +30,9 @@ test('a user with no employee record is a valid, fully functional admin account'
 
 test('User::employee() resolves the linked Employee row, and stays null until one is linked', function () {
     // Employee carries ScopedToOrganization, so resolving it needs a scope
-    // to resolve against — acting as super_admin bypasses that scope
+    // to resolve against â€” acting as super_admin bypasses that scope
     // entirely, isolating this assertion to the relation itself.
-    $admin = User::factory()->create();
+    $admin = superAdmin();
     $admin->assignRole(Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']));
     $this->actingAs($admin);
 

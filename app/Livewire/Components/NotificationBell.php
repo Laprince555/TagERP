@@ -29,6 +29,7 @@ class NotificationBell extends Component
 
     /** Cheap refresh hook for anything that just queued work. */
     #[On('export-queued')]
+    #[On('import-queued')]
     public function refreshNotifications(): void {}
 
     protected function notification(string $id): ?object

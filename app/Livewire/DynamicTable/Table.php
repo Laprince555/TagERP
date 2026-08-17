@@ -3,6 +3,11 @@
 namespace App\Livewire\DynamicTable;
 
 use App\Jobs\ExportTableJob;
+use App\Jobs\ImportTableJob;
+use App\Models\Import;
+use App\Notifications\ImportQueued;
+use App\Support\DynamicForm\Core\Field;
+use App\Support\DynamicForm\Core\FormDefinitionRegistry;
 use App\Support\DynamicRecordView\Core\RelationshipActions;
 use App\Support\DynamicRecordView\Resolution\EmbeddedTableContext;
 use App\Support\DynamicRecordView\Resolution\RelationshipMutator;
@@ -13,6 +18,7 @@ use App\Support\DynamicTable\Core\Exceptions\MissingTableKeyException;
 use App\Support\DynamicTable\Core\Filter;
 use App\Support\DynamicTable\Core\Filters\BelongsToFilter;
 use App\Support\DynamicTable\Core\Filters\DateFilter;
+use App\Support\DynamicTable\Core\Filters\EnumFilter;
 use App\Support\DynamicTable\Core\Filters\NumberFilter;
 use App\Support\DynamicTable\Core\Filters\TextFilter;
 use App\Support\DynamicTable\Core\SavedTableViewStore;
@@ -23,6 +29,7 @@ use App\Support\DynamicTable\Core\TablePreferences;
 use App\Support\DynamicTable\Core\TablePreferenceStore;
 use App\Support\DynamicTable\Core\TableState;
 use App\Support\DynamicTable\Query\TableQueryBuilder;
+use App\Support\Import\FormRowImporter;
 use App\Support\RecordReference\RecordReferenceAccess;
 use App\Support\RecordReference\RecordReferenceRegistry;
 use App\Support\RecordReference\RecordReferenceResolver;
@@ -37,6 +44,8 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
+use Livewire\WithFileUploads;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Base class for one Dynamic Table instance. Public properties are primitives
@@ -48,6 +57,8 @@ use Livewire\Component;
  */
 abstract class Table extends Component
 {
+    use WithFileUploads;
+
     /**
      * Namespaces query-string state so multiple table instances on one page
      * don't collide. Required — mount() throws MissingTableKeyException if unset.
@@ -119,6 +130,13 @@ abstract class Table extends Component
     public array $selectedIds = [];
 
     public bool $selectAllMatching = false;
+
+    /**
+     * The pending spreadsheet upload behind the toolbar's Import button.
+     * Untyped because Livewire hydrates it as a TemporaryUploadedFile — only
+     * ever read by startImport(), and only when canImport() allows it.
+     */
+    public $importFile = null;
 
     public int $perPage = TableState::DEFAULT_PER_PAGE;
 
@@ -648,6 +666,17 @@ abstract class Table extends Component
                 continue;
             }
 
+            // A multi-select enum needs its value to *start* as an array:
+            // Livewire decides whether a group of checkboxes sharing one
+            // wire:model collects into a list or toggles a single boolean by
+            // looking at the bound property's current type. Seeded as null,
+            // the first click replaces the whole thing with `true`.
+            if ($filter instanceof EnumFilter && $filter->isMultiple()) {
+                $this->filters[$key] = ['operator' => 'in', 'value' => []];
+
+                continue;
+            }
+
             $operator = match (true) {
                 $filter instanceof TextFilter, $filter instanceof NumberFilter, $filter instanceof DateFilter => $filter->getOperators()[0]->value,
                 default => null,
@@ -1051,6 +1080,8 @@ abstract class Table extends Component
      */
     public function export(): void
     {
+        abort_unless($this->canExport(), 403);
+
         ExportTableJob::dispatch(
             static::class,
             $this->exportContext(),
@@ -1064,6 +1095,134 @@ abstract class Table extends Component
             heading: __('Export queued'),
             variant: 'success',
         );
+    }
+
+    /**
+     * Whether the toolbar Export button renders, and the gate the queued job
+     * is dispatched behind. An export hands the whole authorized result set
+     * over as a file, which is a different question from being allowed to
+     * page through it on screen — `permissions:sync` already generates an
+     * `export` action for every Application.
+     *
+     * Fails closed for a table whose model declares no APPLICATION_CODE:
+     * there is no permission namespace to ask about, and that must not read
+     * as "everyone".
+     */
+    public function canExport(): bool
+    {
+        $constant = $this->query()->getModel()::class.'::APPLICATION_CODE';
+
+        if (! defined($constant)) {
+            return false;
+        }
+
+        return (bool) auth()->user()?->can(constant($constant).'.export');
+    }
+
+    /**
+     * Whether the toolbar Import button renders. On for every table that has a
+     * create form, because importing runs through that exact form — same
+     * fields, same rules, same create() (see App\Support\Import\FormRowImporter).
+     * A table with no create form has nothing to import into and stays off.
+     *
+     * Override to `false` on a table where bulk creation is wrong regardless
+     * of the form being sound.
+     */
+    public function canImport(): bool
+    {
+        return $this->importForm() !== null;
+    }
+
+    /**
+     * The Dynamic Form whose fields become the template's columns and whose
+     * rules validate every imported line. Defaults to this table's own create
+     * form, so an importable table can never validate imports differently from
+     * the form its users already know.
+     */
+    protected function importForm(): ?string
+    {
+        return $this->createForm();
+    }
+
+    /**
+     * Queued, not processed inline: a spreadsheet can outlive any request
+     * timeout. The file is stored, staged row by row and worked through by
+     * ImportTableJob, with progress visible on the import page.
+     */
+    public function startImport(): void
+    {
+        $formKey = $this->importForm();
+
+        abort_unless($this->canImport() && $formKey !== null && auth()->check(), 403);
+
+        $this->validate([
+            'importFile' => ['required', 'file', 'mimes:csv,txt,xlsx', 'max:10240'],
+        ]);
+
+        $import = Import::create([
+            'user_id' => auth()->id(),
+            'table_class' => static::class,
+            'form_key' => $formKey,
+            'filename' => $this->importFile->getClientOriginalName(),
+            'path' => $this->importFile->store('imports/'.auth()->id(), 'local'),
+            'status' => Import::STATUS_QUEUED,
+        ]);
+
+        ImportTableJob::dispatch($import->id);
+
+        auth()->user()->notify(new ImportQueued($import));
+
+        $this->reset('importFile');
+        $this->dispatch('import-queued');
+
+        Flux::toast(
+            text: __('We will notify you when the rows have been imported.'),
+            heading: __('Import queued'),
+            variant: 'success',
+        );
+    }
+
+    /**
+     * The blank file a user fills in: one header row of the import form's
+     * field keys. Generated from the live definition rather than a committed
+     * fixture, so a new field can never be missing from the template.
+     */
+    public function downloadTemplate(): StreamedResponse
+    {
+        $formKey = $this->importForm();
+
+        abort_unless($this->canImport() && $formKey !== null, 403);
+
+        $headers = (new FormRowImporter(
+            app(FormDefinitionRegistry::class)->resolve($formKey),
+        ))->headers();
+
+        return response()->streamDownload(function () use ($headers): void {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, $headers);
+            fclose($handle);
+        }, $this->storageKey().'-template.csv');
+    }
+
+    /**
+     * Human-readable template columns for the import modal, so a user knows
+     * what to fill in without opening the file first.
+     *
+     * @return array<int, array{key: string, label: string, required: bool}>
+     */
+    public function importTemplateColumns(): array
+    {
+        $formKey = $this->importForm();
+
+        if (! $this->canImport() || $formKey === null) {
+            return [];
+        }
+
+        return array_map(fn (Field $field): array => [
+            'key' => $field->getKey(),
+            'label' => $field->getLabel(),
+            'required' => $field->isRequired(),
+        ], app(FormDefinitionRegistry::class)->resolve($formKey)->fields());
     }
 
     /**
@@ -1412,7 +1571,14 @@ abstract class Table extends Component
     {
         $chips = [];
 
-        foreach ($this->appliedFilters as $key => $entry) {
+        // Chips describe what the query actually did, so they are built from
+        // the normalised state rather than the raw draft — otherwise every
+        // table with a seeded default operator shows a chip ("Number:",
+        // "Journal Date:") for a filter the user never filled in and the
+        // query correctly ignored.
+        $applied = TableState::normalize(['filters' => $this->appliedFilters], $definition)->filters;
+
+        foreach ($applied as $key => $entry) {
             $filter = $definition->filter($key);
 
             if (! $filter) {
@@ -1445,6 +1611,14 @@ abstract class Table extends Component
             $labels = collect($this->resolveBelongsToLabels($filter->getKey(), $value))->pluck('label');
 
             return $labels->isEmpty() ? '…' : $labels->implode(', ');
+        }
+
+        // A list of chosen enum cases is a set, not a range: "Draft, Reversed",
+        // never "draft – reversed". Ranges (between, not_between) stay dashed.
+        if ($filter instanceof EnumFilter && is_array($value)) {
+            return collect($value)
+                ->map(fn ($v): string => str(($filter->getEnumClass())::tryFrom($v)?->name ?? $v)->headline()->toString())
+                ->implode(', ');
         }
 
         if (is_array($value)) {

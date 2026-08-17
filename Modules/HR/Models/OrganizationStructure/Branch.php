@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 use Modules\General\Models\World\City;
 use Modules\HR\Database\Factories\BranchFactory;
 
@@ -78,6 +79,16 @@ class Branch extends Model
 
         static::saved(fn (): mixed => app(OrganizationVersion::class)->bump());
         static::deleted(fn (): mixed => app(OrganizationVersion::class)->bump());
+    }
+
+    /**
+     * The `saving` hook above demotes the previous main branch before this row
+     * is written. Holding both in one transaction is what stops a failed save
+     * from leaving an entity with no main branch at all.
+     */
+    public function save(array $options = []): bool
+    {
+        return DB::transaction(fn (): bool => parent::save($options));
     }
 
     protected static function newFactory(): BranchFactory

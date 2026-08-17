@@ -10,7 +10,7 @@
                     </p>
                 </div>
 
-                <flux:button href="{{ route('profile') }}" variant="ghost" icon="user">
+                <flux:button wire:navigate href="{{ route('profile') }}" variant="ghost" icon="user">
                     Back to Profile
                 </flux:button>
             </div>

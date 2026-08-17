@@ -2,6 +2,13 @@
 
 namespace Modules\General\Models\World;
 
-use Nnjeim\World\Models\Country as BaseCountry;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Modules\General\Models\World\People\Person;
 
-class Country extends BaseCountry {}
+class Country extends \Nnjeim\World\Models\Country
+{
+    public function persons(): HasManyThrough
+    {
+        return $this->hasManyThrough(Person::class, City::class);
+    }
+}

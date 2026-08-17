@@ -3,6 +3,7 @@
 use App\Livewire\Account\ProfilePage;
 use App\Livewire\Account\SettingsPage;
 use App\Livewire\AppLauncher;
+use App\Livewire\Imports\ImportPage;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
@@ -30,4 +31,6 @@ Route::middleware(['auth'])->group(function (): void {
 
         return Storage::disk('local')->download($path, $record->data['filename'] ?? 'export.csv');
     })->name('exports.download');
+
+    Route::get('/imports/{import}', ImportPage::class)->name('imports.show');
 });

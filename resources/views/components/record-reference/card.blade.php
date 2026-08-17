@@ -8,7 +8,7 @@
     $tag = $identity->url ? 'a' : 'div';
 @endphp
 <{{ $tag }}
-    @if ($identity->url) href="{{ $identity->url }}" @endif
+    @if ($identity->url) wire:navigate href="{{ $identity->url }}" @endif
     {{ $attributes->class(['flex flex-col gap-2 rounded-lg border p-3 transition', $identity->url ? 'hover:shadow-sm' : '', $tokens['border'], $tokens['bg'], $tokens['darkBg']]) }}
 >
     <div class="flex items-center gap-2">

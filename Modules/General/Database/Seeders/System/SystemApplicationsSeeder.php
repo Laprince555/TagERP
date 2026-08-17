@@ -2,6 +2,7 @@
 
 namespace Modules\General\Database\Seeders\System;
 
+use App\Services\NavigationTreeService;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Modules\General\Database\Seeders\System\Concerns\EncodesTranslatableAttributes;
@@ -36,6 +37,12 @@ class SystemApplicationsSeeder extends Seeder
                 'sort_order' => 0,
                 'permission_name' => null,
                 'permission_group' => null,
+                // `assign` is what gates attaching/detaching roles on a user —
+                // deliberately separate from `update`, because granting a role
+                // is granting everything that role can do, and an operator who
+                // may fix a name is not automatically an operator who may hand
+                // out super_admin.
+                'custom_actions' => json_encode(['impersonate', 'reset-password', 'block', 'assign']),
                 'is_active' => true,
             ],
         ];
@@ -50,7 +57,10 @@ class SystemApplicationsSeeder extends Seeder
         Application::query()->upsert(
             $prepared,
             ['code'],
-            ['name', 'description', 'route', 'icon', 'color', 'sort_order', 'permission_name', 'permission_group', 'is_active', 'submodule_id'],
+            ['name', 'description', 'route', 'icon', 'color', 'sort_order', 'permission_group', 'custom_actions', 'is_active', 'submodule_id'],
         );
+
+        // `upsert` bypasses model events, so the navigation observer never fires for it.
+        app(NavigationTreeService::class)->invalidateCache();
     }
 }

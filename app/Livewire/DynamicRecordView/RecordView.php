@@ -2,6 +2,7 @@
 
 namespace App\Livewire\DynamicRecordView;
 
+use App\Services\NavigationTreeService;
 use App\Support\DynamicRecordView\Core\Content\FieldsContent;
 use App\Support\DynamicRecordView\Core\DynamicRecordView;
 use App\Support\DynamicRecordView\Core\Fields\RecordReferenceViewField;
@@ -16,6 +17,8 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
+use RuntimeException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Renders the Primary section (header + Basic Information tabs) for one
@@ -38,6 +41,11 @@ abstract class RecordView extends Component
     public int|string $recordId;
 
     public string $activeTab = '';
+
+    /** Result of the last header action — a flash line above the record. */
+    public ?string $actionMessage = null;
+
+    public ?string $actionError = null;
 
     /**
      * The stable RecordViewRegistry key for this record type.
@@ -64,6 +72,95 @@ abstract class RecordView extends Component
         $this->activeTab = $this->primarySection()->normalizeActiveTabKey($key, $record);
     }
 
+    /**
+     * Runs one header action. The key is the only thing the client supplies,
+     * and it is resolved against authorizedActions() — the permission and the
+     * definition's visibility rule are re-checked here on the write path, not
+     * merely honoured when the button was rendered.
+     *
+     * A handler that returns a string is a redirect target: that is how
+     * `reverse` lands on the reversal it just created, and how `delete`
+     * leaves a page whose record no longer exists.
+     */
+    public function runAction(string $key): void
+    {
+        $this->actionMessage = null;
+        $this->actionError = null;
+
+        $definition = $this->definition();
+        $record = app(RecordResolver::class)->resolveFresh($definition, $this->recordId);
+        $action = $definition->findAuthorizedAction($key, $record);
+
+        if ($action === null || $action->isLink() || $action->isForm()) {
+            throw new NotFoundHttpException;
+        }
+
+        $handler = $action->getHandler();
+
+        if (! method_exists($definition, $handler)) {
+            throw new NotFoundHttpException;
+        }
+
+        try {
+            $result = $definition->{$handler}($record);
+        } catch (RuntimeException $exception) {
+            $this->actionError = $exception->getMessage();
+
+            return;
+        }
+
+        if (is_string($result) && $result !== '') {
+            $this->redirect($result, navigate: true);
+
+            return;
+        }
+
+        // The handler just changed the record, and the render that follows in
+        // this same request would otherwise reuse the copy resolved above —
+        // leaving a posted journal still showing Post and Delete.
+        app(RecordResolver::class)->resolveFresh($definition, $this->recordId);
+
+        $this->actionMessage = $action->getSuccessMessage() ?? __('Done.');
+    }
+
+    /**
+     * The edit modal's saved event carries a key only known at runtime, so it
+     * is wired here rather than with an #[On] attribute.
+     *
+     * @return array<string, string>
+     */
+    protected function getListeners(): array
+    {
+        $formKey = $this->editFormKey();
+
+        return $formKey === null ? [] : ['dynamic-form-saved.'.$formKey => 'refreshAfterEdit'];
+    }
+
+    /**
+     * Re-renders the record after its header form saved, so the fields on
+     * screen show what was just written rather than what was loaded.
+     */
+    public function refreshAfterEdit(): void
+    {
+        $this->actionError = null;
+        $this->actionMessage = __('Saved.');
+    }
+
+    /**
+     * The form key of the single `form()` action, if the definition declares
+     * one — used to host its modal and to name the saved-event listener.
+     */
+    public function editFormKey(): ?string
+    {
+        foreach ($this->definition()->actions() as $action) {
+            if ($action->isForm()) {
+                return $action->getFormKey();
+            }
+        }
+
+        return null;
+    }
+
     protected function definition(): DynamicRecordView
     {
         $class = app(RecordViewRegistry::class)->resolve($this->recordViewKey());
@@ -85,6 +182,26 @@ abstract class RecordView extends Component
     protected function resolveRecord(): Model
     {
         return app(RecordResolver::class)->resolve($this->definition(), $this->recordId);
+    }
+
+    /**
+     * The Application this record belongs to, so the page can carry the same
+     * header every index page shows. Null when the definition declares no
+     * application code, or when the actor cannot reach it — the record itself
+     * is already gated by the definition's own query(), so a missing header
+     * withholds context, never access.
+     */
+    protected function application(DynamicRecordView $definition): ?object
+    {
+        $code = $definition->applicationCode();
+
+        if ($code === null) {
+            return null;
+        }
+
+        $application = app(NavigationTreeService::class)->getApplicationByCode($code);
+
+        return app(RecordReferenceAccess::class)->applicationAccessible($application) ? $application : null;
     }
 
     public function render(): View
@@ -168,6 +285,12 @@ abstract class RecordView extends Component
             'tabs' => $tabs,
             'currentTab' => $currentTab,
             'referenceFields' => $referenceFields,
+            'application' => $this->application($definition),
+            'actions' => $actions = $definition->authorizedActions($record),
+            // A modal is hosted only for a button that survived the permission
+            // and visibility filter — otherwise a posted journal still ships an
+            // edit dialog nothing is allowed to open.
+            'formActions' => array_values(array_filter($actions, fn ($action) => $action->isForm())),
         ]);
     }
 }

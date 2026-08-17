@@ -67,11 +67,34 @@
                                 <flux:select.option value="0">{{ __('No') }}</flux:select.option>
                             </flux:select>
                         @elseif ($filter instanceof \App\Support\DynamicTable\Core\Filters\EnumFilter)
-                            <flux:select wire:model="filters.{{ $key }}.value" size="sm" multiple="{{ $filter->isMultiple() }}">
-                                @foreach ($filter->getEnumClass()::cases() as $case)
-                                    <flux:select.option value="{{ $case->value }}">{{ str($case->name)->headline() }}</flux:select.option>
-                                @endforeach
-                            </flux:select>
+                            {{--
+                                `multiple` is a boolean attribute: interpolating
+                                it made every enum filter a multi-select even
+                                when it declared single choice, and the array
+                                that produced then failed single-value
+                                normalisation and was dropped without a word.
+                                Bound, not interpolated, and a checkbox group
+                                rather than a scrolling list box.
+                            --}}
+                            @if ($filter->isMultiple())
+                                <div class="flex flex-wrap gap-x-4 gap-y-2 pt-1">
+                                    @foreach ($filter->getEnumClass()::cases() as $case)
+                                        <flux:checkbox
+                                            wire:key="filter-{{ $key }}-{{ $case->value }}"
+                                            wire:model="filters.{{ $key }}.value"
+                                            value="{{ $case->value }}"
+                                            label="{{ str($case->name)->headline() }}"
+                                        />
+                                    @endforeach
+                                </div>
+                            @else
+                                <flux:select wire:model="filters.{{ $key }}.value" size="sm">
+                                    <flux:select.option value="">{{ __('Any') }}</flux:select.option>
+                                    @foreach ($filter->getEnumClass()::cases() as $case)
+                                        <flux:select.option value="{{ $case->value }}">{{ str($case->name)->headline() }}</flux:select.option>
+                                    @endforeach
+                                </flux:select>
+                            @endif
                         @elseif ($filter instanceof \App\Support\DynamicTable\Core\Filters\BelongsToFilter)
                             <div x-data="{ open: false }" class="relative">
                                 @php($selected = $belongsToSelectedLabels[$key] ?? [])

@@ -1,7 +1,6 @@
 <?php
 
 use App\Livewire\DynamicForm\Form;
-use App\Models\User;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
 use Modules\General\Database\Seeders\System\ModulesSeeder;
@@ -13,14 +12,14 @@ use Nnjeim\World\Models\Country;
 use Nnjeim\World\Models\State;
 
 /**
- * The Country|State|City picker. Only city_id is ever persisted — the two
+ * The Country|State|City picker. Only city_id is ever persisted â€” the two
  * upper levels exist purely to make a 150k-row City table pickable.
  */
 beforeEach(function (): void {
     (new ModulesSeeder)->run();
     (new SubModulesSeeder)->run();
     (new WorldApplicationsSeeder)->run();
-    $this->actingAs(User::factory()->create());
+    $this->actingAs(superAdmin());
 
     $this->egypt = Country::create(['name' => 'Egypt', 'iso2' => 'EG', 'iso3' => 'EGY', 'phone_code' => '20', 'region' => 'Africa', 'subregion' => 'Northern Africa', 'status' => 1]);
     $this->saudi = Country::create(['name' => 'Saudi Arabia', 'iso2' => 'SA', 'iso3' => 'SAU', 'phone_code' => '966', 'region' => 'Asia', 'subregion' => 'Western Asia', 'status' => 1]);
@@ -63,7 +62,7 @@ it('labels the trigger button with the level names, then with the chosen path', 
  * panel is genuinely rendered, which is what actually failed before.
  */
 /**
- * Blade does NOT compile @js() inside a *component* attribute — on a
+ * Blade does NOT compile @js() inside a *component* attribute â€” on a
  * <flux:button> it renders as the literal string "@js($fieldKey)", so
  * Livewire cannot parse the call and the click silently does nothing.
  * Asserting the compiled attribute is the only thing that catches it;
@@ -80,7 +79,7 @@ it('renders the picker panel only after the trigger is clicked', function (): vo
     $component = personForm();
 
     expect($component->get('openCascadeField'))->toBe('');
-    $component->assertDontSee('Search Country…');
+    $component->assertDontSee('Search Countryâ€¦');
 
     $component->call('toggleCascadePicker', 'city');
 

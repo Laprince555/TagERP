@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\General\Livewire\Security\Rules;
+namespace Modules\General\Livewire\Security\Roles;
 
 use App\Livewire\DynamicTable\Table;
 use App\Support\DynamicTable\Core\Columns\RecordReferenceColumn;
@@ -11,13 +11,13 @@ use Illuminate\Database\Eloquent\Builder;
 use Modules\HR\Models\EmployeeManagement\Employee;
 
 /**
- * Embedded-only: which employees (employee_rules) this Rule is granted to
+ * Embedded-only: which employees (employee_roles) this Role is granted to
  * directly, as an exception on top of their job title — the "Employees" tab
- * on a Rule's record view. Never a standalone Application route.
+ * on a Role's record view. Never a standalone Application route.
  */
-class RuleEmployeesTable extends Table
+class RoleEmployeesTable extends Table
 {
-    protected string $tableKey = 'general-security-rule-employees';
+    protected string $tableKey = 'general-security-role-employees';
 
     protected ?string $model = Employee::class;
 

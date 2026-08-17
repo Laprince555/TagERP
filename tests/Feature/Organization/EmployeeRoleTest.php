@@ -10,17 +10,17 @@ use Modules\HR\Models\OrganizationStructure\JobTitle;
 use Spatie\Permission\Models\Permission;
 
 /**
- * A Rule (App\Models\Role) assigned directly to one employee — an exception
+ * A Role (App\Models\Role) assigned directly to one employee — an exception
  * on top of whatever their job title already grants, not a replacement for
  * it and not a bypass of EmployeePermissionSynchronizer as the single writer.
  */
-test('a rule granted directly to an employee is applied alongside their job-title-derived roles', function () {
+test('a role granted directly to an employee is applied alongside their job-title-derived roles', function () {
     $department = Department::factory()->create(['name' => 'Sales']);
     $jobTitle = JobTitle::factory()->for($department)->create(['name' => 'Sales Rep']);
     $grade = JobGrade::factory()->create();
     $jobTitle->jobGrades()->attach($grade->id);
 
-    $rule = Role::create(['name' => 'special_project_lead', 'guard_name' => 'web']);
+    $role = Role::create(['name' => 'special_project_lead', 'guard_name' => 'web']);
 
     $user = User::factory()->create();
     $employee = Employee::factory()->create([
@@ -30,9 +30,9 @@ test('a rule granted directly to an employee is applied alongside their job-titl
         'job_grade_id' => $grade->id,
     ]);
 
-    DB::table('employee_rules')->insert([
+    DB::table('employee_roles')->insert([
         'employee_id' => $employee->id,
-        'role_id' => $rule->id,
+        'role_id' => $role->id,
         'created_at' => now(),
         'updated_at' => now(),
     ]);
@@ -43,13 +43,13 @@ test('a rule granted directly to an employee is applied alongside their job-titl
     expect($user->fresh()->hasRole('special_project_lead'))->toBeTrue();
 });
 
-test('a direct employee rule does not leak to another employee holding the same job title', function () {
+test('a direct employee role does not leak to another employee holding the same job title', function () {
     $department = Department::factory()->create(['name' => 'Sales']);
     $jobTitle = JobTitle::factory()->for($department)->create(['name' => 'Sales Rep']);
     $grade = JobGrade::factory()->create();
     $jobTitle->jobGrades()->attach($grade->id);
 
-    $rule = Role::create(['name' => 'special_project_lead', 'guard_name' => 'web']);
+    $role = Role::create(['name' => 'special_project_lead', 'guard_name' => 'web']);
 
     $leadUser = User::factory()->create();
     $leadEmployee = Employee::factory()->create([
@@ -67,9 +67,9 @@ test('a direct employee rule does not leak to another employee holding the same 
         'job_grade_id' => $grade->id,
     ]);
 
-    DB::table('employee_rules')->insert([
+    DB::table('employee_roles')->insert([
         'employee_id' => $leadEmployee->id,
-        'role_id' => $rule->id,
+        'role_id' => $role->id,
         'created_at' => now(),
         'updated_at' => now(),
     ]);
@@ -78,14 +78,14 @@ test('a direct employee rule does not leak to another employee holding the same 
     expect($peerUser->fresh()->hasRole('special_project_lead'))->toBeFalse();
 });
 
-test('a rule bundles multiple permissions and grants them all through role assignment', function () {
+test('a role bundles multiple permissions and grants them all through role assignment', function () {
     $department = Department::factory()->create(['name' => 'Finance']);
     $jobTitle = JobTitle::factory()->for($department)->create(['name' => 'Finance Manager']);
     $grade = JobGrade::factory()->create();
     $jobTitle->jobGrades()->attach($grade->id);
 
-    $rule = Role::create(['name' => 'finance_manager_rule', 'guard_name' => 'web']);
-    $rule->givePermissionTo([
+    $role = Role::create(['name' => 'finance_manager_role', 'guard_name' => 'web']);
+    $role->givePermissionTo([
         Permission::firstOrCreate(['name' => 'fin-gl-jou.view', 'guard_name' => 'web']),
         Permission::firstOrCreate(['name' => 'fin-ap-inv.view', 'guard_name' => 'web']),
     ]);
@@ -93,7 +93,7 @@ test('a rule bundles multiple permissions and grants them all through role assig
     DB::table('job_title_grade_roles')->insert([
         'job_title_id' => $jobTitle->id,
         'job_grade_id' => null,
-        'role_id' => $rule->id,
+        'role_id' => $role->id,
         'created_at' => now(),
         'updated_at' => now(),
     ]);

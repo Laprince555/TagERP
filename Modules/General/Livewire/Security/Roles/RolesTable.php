@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\General\Livewire\Security\Rules;
+namespace Modules\General\Livewire\Security\Roles;
 
 use App\Livewire\DynamicTable\Table;
 use App\Models\Role;
@@ -14,12 +14,12 @@ use Illuminate\Database\Eloquent\Builder;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * Real production Rules index for the "gen-sec-rul" Application
- * (general.security.rules), reusing the Dynamic Table engine.
+ * Real production Roles index for the "gen-sec-rol" Application
+ * (general.security.roles), reusing the Dynamic Table engine.
  */
-class RulesTable extends Table
+class RolesTable extends Table
 {
-    protected string $tableKey = 'general-security-rules';
+    protected string $tableKey = 'general-security-roles';
 
     public function boot(): void
     {
@@ -33,7 +33,7 @@ class RulesTable extends Table
 
     protected function checkAccess(): void
     {
-        $application = app(NavigationTreeService::class)->getApplicationByCode('gen-sec-rul');
+        $application = app(NavigationTreeService::class)->getApplicationByCode('gen-sec-rol');
 
         if (! app(RecordReferenceAccess::class)->applicationAccessible($application)) {
             throw new NotFoundHttpException;
@@ -42,7 +42,7 @@ class RulesTable extends Table
 
     protected function query(): Builder
     {
-        $application = app(NavigationTreeService::class)->getApplicationByCode('gen-sec-rul');
+        $application = app(NavigationTreeService::class)->getApplicationByCode('gen-sec-rol');
 
         if (! app(RecordReferenceAccess::class)->applicationAccessible($application)) {
             return Role::query()->whereRaw('1 = 0');
@@ -55,7 +55,7 @@ class RulesTable extends Table
     {
         return [
             RecordReferenceColumn::make('name')
-                ->applicationCode('gen-sec-rul')       // كود التطبيق المرجعي الخاص بالدول
+                ->applicationCode('gen-sec-rol')       // كود التطبيق المرجعي الخاص بالدول
                 ->variant(RecordReferenceVariant::Tag) // اختيار الشكل: Tag
                 ->sortable()
                 ->searchable(),
@@ -76,11 +76,11 @@ class RulesTable extends Table
 
     protected function createForm(): ?string
     {
-        return 'general.security.rule.create';
+        return 'general.security.role.create';
     }
 
     protected function createFormLabel(): string
     {
-        return __('Add Rule');
+        return __('Add Role');
     }
 }

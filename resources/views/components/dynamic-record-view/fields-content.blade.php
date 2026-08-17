@@ -52,12 +52,31 @@
                         @if ($field->isCopyable() && $value !== null && $value !== '')
                             <button
                                 type="button"
-                                x-data
-                                x-on:click="navigator.clipboard.writeText('{{ addslashes((string) $value) }}')"
+                                x-data="{ copied: false }"
+                                data-value="{{ (string) $value }}"
+                                {{-- ponytail: navigator.clipboard is undefined on plain http (Herd .test), so keep the execCommand fallback until the app is served over https --}}
+                                x-on:click="
+                                    const text = $el.dataset.value;
+                                    if (navigator.clipboard?.writeText) {
+                                        navigator.clipboard.writeText(text);
+                                    } else {
+                                        const area = document.createElement('textarea');
+                                        area.value = text;
+                                        area.style.position = 'fixed';
+                                        area.style.opacity = '0';
+                                        document.body.appendChild(area);
+                                        area.select();
+                                        document.execCommand('copy');
+                                        area.remove();
+                                    }
+                                    copied = true;
+                                    setTimeout(() => copied = false, 1500);
+                                "
                                 class="text-[var(--color-soft-text)] hover:text-[var(--color-primary)] transition"
                                 aria-label="{{ __('Copy :label', ['label' => $field->getLabel()]) }}"
                             >
-                                <flux:icon name="clipboard" class="size-3.5" />
+                                <flux:icon name="clipboard" class="size-3.5" x-show="! copied" />
+                                <flux:icon name="check" class="size-3.5 text-[var(--color-primary)]" x-show="copied" x-cloak />
                             </button>
                         @endif
                     </dd>

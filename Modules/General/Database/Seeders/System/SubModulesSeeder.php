@@ -2,6 +2,7 @@
 
 namespace Modules\General\Database\Seeders\System;
 
+use App\Services\NavigationTreeService;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Modules\General\Database\Seeders\System\Concerns\EncodesTranslatableAttributes;
@@ -47,8 +48,8 @@ class SubModulesSeeder extends Seeder
                 'is_active' => true,
             ],
             [
-                'name' => ['ar' => 'الأمان والقواعد', 'en' => 'Security & Rules'],
-                'description' => ['ar' => 'التحكم في السياسات والصلاحيات وقواعد الحماية العامة.', 'en' => 'Control policies, permissions, and general security rules.'],
+                'name' => ['ar' => 'الأمان والأدوار', 'en' => 'Security & Roles'],
+                'description' => ['ar' => 'التحكم في السياسات والصلاحيات وأدوار الحماية العامة.', 'en' => 'Control policies, permissions, and general security roles.'],
                 'code' => 'gen-sec',
                 'route' => 'general.security',
                 'icon' => 'shield-check',
@@ -120,5 +121,8 @@ class SubModulesSeeder extends Seeder
             ['code'],
             ['name', 'description', 'route', 'icon', 'sort_order', 'permission_group', 'is_active', 'module_id'],
         );
+
+        // `upsert` bypasses model events, so the navigation observer never fires for it.
+        app(NavigationTreeService::class)->invalidateCache();
     }
 }

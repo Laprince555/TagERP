@@ -4,6 +4,7 @@
 >
     <section class="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
         <flux:button
+            wire:navigate
             href="{{ route('launcher') }}"
             variant="ghost"
             size="sm"
@@ -118,7 +119,7 @@
                 </p>
 
                 <div class="mt-6 flex justify-center">
-                    <flux:button href="{{ route('launcher') }}" variant="primary" icon="squares-2x2">
+                    <flux:button wire:navigate href="{{ route('launcher') }}" variant="primary" icon="squares-2x2">
                         {{ __('messages.workspace.back_to_launcher') }}
                     </flux:button>
                 </div>

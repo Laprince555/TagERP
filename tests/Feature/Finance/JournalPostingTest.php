@@ -235,6 +235,20 @@ it('reverses a posted journal into a mirror that cancels it', function () {
         ->and((float) $reversedLine->base_debit)->toBe(0.0);
 });
 
+it('carries the cost centre across to the reversal', function () {
+    $fx = glFixture();
+    $centre = CostCenter::factory()->create();
+
+    $journal = balancedJournal($fx);
+    $journal->lines()->update(['cost_center_id' => $centre->id]);
+
+    $reversal = app(JournalPoster::class)->reverse(
+        app(JournalPoster::class)->post($journal->refresh())
+    );
+
+    expect($reversal->lines->pluck('cost_center_id')->unique()->all())->toBe([$centre->id]);
+});
+
 it('refuses to reverse a draft or an already reversed journal', function () {
     $fx = glFixture();
     $draft = balancedJournal($fx);

@@ -13,6 +13,7 @@ use App\Support\DynamicTable\PreferenceStores\EloquentSavedTableViewStore;
 use App\Support\DynamicTable\PreferenceStores\EloquentTablePreferenceStore;
 use App\Support\RecordReference\RecordReferenceRegistry;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Telescope\TelescopeServiceProvider as BaseTelescopeServiceProvider;
 use Livewire\Livewire;
@@ -51,6 +52,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if (request()->server('HTTP_X_FORWARDED_PROTO') == 'https') {
+            URL::forceScheme('https');
+        }
         // Unconditional bypass for super admins; returning null (not false) for
         // everyone else lets every other Gate::define/Policy check run normally.
         Gate::before(fn ($user) => $user->hasRole('super_admin') ? true : null);

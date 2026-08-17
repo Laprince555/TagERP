@@ -1,21 +1,21 @@
 <?php
 
-namespace Modules\General\Livewire\Security\Rules;
+namespace Modules\General\Livewire\Security\Roles;
 
 use App\Livewire\DynamicTable\Table;
+use App\Models\Permission;
 use App\Support\DynamicTable\Core\Columns\TextColumn;
 use App\Support\DynamicTable\Core\Sort;
 use Illuminate\Database\Eloquent\Builder;
-use Spatie\Permission\Models\Permission;
 
 /**
  * Embedded-only: which permissions (role_has_permissions, via Spatie's own
- * Role::permissions() relation) this Rule grants — the "Permissions" tab on
- * a Rule's record view. Never a standalone Application route.
+ * Role::permissions() relation) this Role grants — the "Permissions" tab on
+ * a Role's record view. Never a standalone Application route.
  */
-class RulePermissionsTable extends Table
+class RolePermissionsTable extends Table
 {
-    protected string $tableKey = 'general-security-rule-permissions';
+    protected string $tableKey = 'general-security-role-permissions';
 
     protected ?string $model = Permission::class;
 
