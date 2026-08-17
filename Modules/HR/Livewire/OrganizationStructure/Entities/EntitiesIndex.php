@@ -2,13 +2,12 @@
 
 namespace Modules\HR\Livewire\OrganizationStructure\Entities;
 
+use App\Livewire\Concerns\ChecksApplicationAccess;
 use App\Services\NavigationTreeService;
-use App\Support\RecordReference\RecordReferenceAccess;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Modules\HR\Models\OrganizationStructure\Entity;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Reachable page for the seeded "hr-org-ent" Application route
@@ -18,23 +17,11 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 #[Layout('layouts.app')]
 class EntitiesIndex extends Component
 {
-    public function boot(): void
-    {
-        $this->checkAccess();
-    }
+    use ChecksApplicationAccess;
 
-    public function hydrate(): void
+    protected function applicationCode(): string
     {
-        $this->checkAccess();
-    }
-
-    protected function checkAccess(): void
-    {
-        $application = app(NavigationTreeService::class)->getApplicationByCode(Entity::APPLICATION_CODE);
-
-        if (! app(RecordReferenceAccess::class)->applicationAccessible($application)) {
-            throw new NotFoundHttpException;
-        }
+        return Entity::APPLICATION_CODE;
     }
 
     public function render(): View

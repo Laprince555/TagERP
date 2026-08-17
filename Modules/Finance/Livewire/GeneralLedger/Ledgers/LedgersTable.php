@@ -2,6 +2,7 @@
 
 namespace Modules\Finance\Livewire\GeneralLedger\Ledgers;
 
+use App\Livewire\Concerns\ChecksApplicationAccess;
 use App\Livewire\DynamicTable\Table;
 use App\Services\NavigationTreeService;
 use App\Support\DynamicTable\Core\Columns\BooleanColumn;
@@ -16,7 +17,6 @@ use App\Support\RecordReference\RecordReferenceVariant;
 use Illuminate\Database\Eloquent\Builder;
 use Modules\Finance\Models\GeneralLedger\Chart;
 use Modules\Finance\Models\GeneralLedger\Ledger;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Ledgers index for the "fin-gl-led" Application
@@ -26,23 +26,11 @@ class LedgersTable extends Table
 {
     protected string $tableKey = 'finance-general-ledger-ledgers';
 
-    public function boot(): void
-    {
-        $this->checkAccess();
-    }
+    use ChecksApplicationAccess;
 
-    public function hydrate(): void
+    protected function applicationCode(): string
     {
-        $this->checkAccess();
-    }
-
-    protected function checkAccess(): void
-    {
-        $application = app(NavigationTreeService::class)->getApplicationByCode(Ledger::APPLICATION_CODE);
-
-        if (! app(RecordReferenceAccess::class)->applicationAccessible($application)) {
-            throw new NotFoundHttpException;
-        }
+        return Ledger::APPLICATION_CODE;
     }
 
     protected function query(): Builder
@@ -50,7 +38,7 @@ class LedgersTable extends Table
         $application = app(NavigationTreeService::class)->getApplicationByCode(Ledger::APPLICATION_CODE);
 
         if (! app(RecordReferenceAccess::class)->applicationAccessible($application)) {
-            return Ledger::query()->whereRaw('1 = 0');
+            return Ledger::query()->whereKey(-1);
         }
 
         return Ledger::query()->with(['entity', 'chart', 'baseCurrency']);

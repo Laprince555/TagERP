@@ -2,6 +2,7 @@
 
 namespace Modules\HR\Livewire\OrganizationStructure\Branches;
 
+use App\Livewire\Concerns\ChecksApplicationAccess;
 use App\Livewire\DynamicTable\Table;
 use App\Services\NavigationTreeService;
 use App\Support\DynamicTable\Core\Columns\BooleanColumn;
@@ -13,7 +14,6 @@ use App\Support\RecordReference\RecordReferenceAccess;
 use App\Support\RecordReference\RecordReferenceVariant;
 use Illuminate\Database\Eloquent\Builder;
 use Modules\HR\Models\OrganizationStructure\Branch;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Real production Branches index for the "hr-org-brn" Application
@@ -23,23 +23,11 @@ class BranchesTable extends Table
 {
     protected string $tableKey = 'hr-organization-structure-branches';
 
-    public function boot(): void
-    {
-        $this->checkAccess();
-    }
+    use ChecksApplicationAccess;
 
-    public function hydrate(): void
+    protected function applicationCode(): string
     {
-        $this->checkAccess();
-    }
-
-    protected function checkAccess(): void
-    {
-        $application = app(NavigationTreeService::class)->getApplicationByCode(Branch::APPLICATION_CODE);
-
-        if (! app(RecordReferenceAccess::class)->applicationAccessible($application)) {
-            throw new NotFoundHttpException;
-        }
+        return Branch::APPLICATION_CODE;
     }
 
     protected function query(): Builder
@@ -47,7 +35,7 @@ class BranchesTable extends Table
         $application = app(NavigationTreeService::class)->getApplicationByCode(Branch::APPLICATION_CODE);
 
         if (! app(RecordReferenceAccess::class)->applicationAccessible($application)) {
-            return Branch::query()->whereRaw('1 = 0');
+            return Branch::query()->whereKey(-1);
         }
 
         return Branch::query()->with('entity');

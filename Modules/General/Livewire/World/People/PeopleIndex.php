@@ -2,13 +2,12 @@
 
 namespace Modules\General\Livewire\World\People;
 
+use App\Livewire\Concerns\ChecksApplicationAccess;
 use App\Services\NavigationTreeService;
-use App\Support\RecordReference\RecordReferenceAccess;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Modules\General\Models\World\People\Person;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Reachable page for the seeded "gen-wld-per" Application route
@@ -18,23 +17,11 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 #[Layout('layouts.app')]
 class PeopleIndex extends Component
 {
-    public function boot(): void
-    {
-        $this->checkAccess();
-    }
+    use ChecksApplicationAccess;
 
-    public function hydrate(): void
+    protected function applicationCode(): string
     {
-        $this->checkAccess();
-    }
-
-    protected function checkAccess(): void
-    {
-        $application = app(NavigationTreeService::class)->getApplicationByCode(Person::APPLICATION_CODE);
-
-        if (! app(RecordReferenceAccess::class)->applicationAccessible($application)) {
-            throw new NotFoundHttpException;
-        }
+        return Person::APPLICATION_CODE;
     }
 
     public function render(): View

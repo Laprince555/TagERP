@@ -2,6 +2,7 @@
 
 namespace Modules\Finance\Livewire\GeneralLedger\JournalBooks;
 
+use App\Livewire\Concerns\ChecksApplicationAccess;
 use App\Livewire\DynamicTable\Table;
 use App\Services\NavigationTreeService;
 use App\Support\DynamicTable\Core\Columns\BooleanColumn;
@@ -13,7 +14,6 @@ use App\Support\RecordReference\RecordReferenceAccess;
 use App\Support\RecordReference\RecordReferenceVariant;
 use Illuminate\Database\Eloquent\Builder;
 use Modules\Finance\Models\GeneralLedger\JournalBook;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Journal Books index for the "fin-gl-bok" Application
@@ -23,23 +23,11 @@ class JournalBooksTable extends Table
 {
     protected string $tableKey = 'finance-general-ledger-journal-books';
 
-    public function boot(): void
-    {
-        $this->checkAccess();
-    }
+    use ChecksApplicationAccess;
 
-    public function hydrate(): void
+    protected function applicationCode(): string
     {
-        $this->checkAccess();
-    }
-
-    protected function checkAccess(): void
-    {
-        $application = app(NavigationTreeService::class)->getApplicationByCode(JournalBook::APPLICATION_CODE);
-
-        if (! app(RecordReferenceAccess::class)->applicationAccessible($application)) {
-            throw new NotFoundHttpException;
-        }
+        return JournalBook::APPLICATION_CODE;
     }
 
     protected function query(): Builder
@@ -47,7 +35,7 @@ class JournalBooksTable extends Table
         $application = app(NavigationTreeService::class)->getApplicationByCode(JournalBook::APPLICATION_CODE);
 
         if (! app(RecordReferenceAccess::class)->applicationAccessible($application)) {
-            return JournalBook::query()->whereRaw('1 = 0');
+            return JournalBook::query()->whereKey(-1);
         }
 
         return JournalBook::query();

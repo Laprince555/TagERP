@@ -2,6 +2,7 @@
 
 namespace Modules\HR\Livewire\OrganizationStructure\Departments;
 
+use App\Livewire\Concerns\ChecksApplicationAccess;
 use App\Livewire\DynamicTable\Table;
 use App\Services\NavigationTreeService;
 use App\Support\DynamicTable\Core\Columns\BooleanColumn;
@@ -13,7 +14,6 @@ use App\Support\RecordReference\RecordReferenceAccess;
 use App\Support\RecordReference\RecordReferenceVariant;
 use Illuminate\Database\Eloquent\Builder;
 use Modules\HR\Models\OrganizationStructure\Department;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Real production Departments index for the "hr-org-dep" Application
@@ -23,23 +23,11 @@ class DepartmentsTable extends Table
 {
     protected string $tableKey = 'hr-organization-structure-departments';
 
-    public function boot(): void
-    {
-        $this->checkAccess();
-    }
+    use ChecksApplicationAccess;
 
-    public function hydrate(): void
+    protected function applicationCode(): string
     {
-        $this->checkAccess();
-    }
-
-    protected function checkAccess(): void
-    {
-        $application = app(NavigationTreeService::class)->getApplicationByCode(Department::APPLICATION_CODE);
-
-        if (! app(RecordReferenceAccess::class)->applicationAccessible($application)) {
-            throw new NotFoundHttpException;
-        }
+        return Department::APPLICATION_CODE;
     }
 
     protected function query(): Builder
@@ -47,7 +35,7 @@ class DepartmentsTable extends Table
         $application = app(NavigationTreeService::class)->getApplicationByCode(Department::APPLICATION_CODE);
 
         if (! app(RecordReferenceAccess::class)->applicationAccessible($application)) {
-            return Department::query()->whereRaw('1 = 0');
+            return Department::query()->whereKey(-1);
         }
 
         return Department::query()->with('parent');

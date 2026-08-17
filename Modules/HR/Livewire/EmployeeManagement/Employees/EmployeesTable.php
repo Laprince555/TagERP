@@ -2,6 +2,7 @@
 
 namespace Modules\HR\Livewire\EmployeeManagement\Employees;
 
+use App\Livewire\Concerns\ChecksApplicationAccess;
 use App\Livewire\DynamicTable\Table;
 use App\Services\NavigationTreeService;
 use App\Support\DynamicTable\Core\Columns\RecordReferenceColumn;
@@ -12,7 +13,6 @@ use App\Support\RecordReference\RecordReferenceAccess;
 use App\Support\RecordReference\RecordReferenceVariant;
 use Illuminate\Database\Eloquent\Builder;
 use Modules\HR\Models\EmployeeManagement\Employee;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Real production Employees index for the "hr-emp-emp" Application
@@ -22,23 +22,11 @@ class EmployeesTable extends Table
 {
     protected string $tableKey = 'hr-employee-management-employees';
 
-    public function boot(): void
-    {
-        $this->checkAccess();
-    }
+    use ChecksApplicationAccess;
 
-    public function hydrate(): void
+    protected function applicationCode(): string
     {
-        $this->checkAccess();
-    }
-
-    protected function checkAccess(): void
-    {
-        $application = app(NavigationTreeService::class)->getApplicationByCode(Employee::APPLICATION_CODE);
-
-        if (! app(RecordReferenceAccess::class)->applicationAccessible($application)) {
-            throw new NotFoundHttpException;
-        }
+        return Employee::APPLICATION_CODE;
     }
 
     protected function query(): Builder
@@ -46,7 +34,7 @@ class EmployeesTable extends Table
         $application = app(NavigationTreeService::class)->getApplicationByCode(Employee::APPLICATION_CODE);
 
         if (! app(RecordReferenceAccess::class)->applicationAccessible($application)) {
-            return Employee::query()->whereRaw('1 = 0');
+            return Employee::query()->whereKey(-1);
         }
 
         // One query per relation instead of one per relation per row — the

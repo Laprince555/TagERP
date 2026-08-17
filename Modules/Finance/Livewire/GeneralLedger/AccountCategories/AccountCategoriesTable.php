@@ -2,6 +2,7 @@
 
 namespace Modules\Finance\Livewire\GeneralLedger\AccountCategories;
 
+use App\Livewire\Concerns\ChecksApplicationAccess;
 use App\Livewire\DynamicTable\Table;
 use App\Services\NavigationTreeService;
 use App\Support\DynamicTable\Core\Columns\BooleanColumn;
@@ -16,7 +17,6 @@ use App\Support\RecordReference\RecordReferenceAccess;
 use Illuminate\Database\Eloquent\Builder;
 use Modules\Finance\Models\GeneralLedger\AccountCategory;
 use Modules\Finance\Models\GeneralLedger\AccountNature;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Account Categories index for the "fin-gl-cat" Application
@@ -26,23 +26,11 @@ class AccountCategoriesTable extends Table
 {
     protected string $tableKey = 'finance-general-ledger-account-categories';
 
-    public function boot(): void
-    {
-        $this->checkAccess();
-    }
+    use ChecksApplicationAccess;
 
-    public function hydrate(): void
+    protected function applicationCode(): string
     {
-        $this->checkAccess();
-    }
-
-    protected function checkAccess(): void
-    {
-        $application = app(NavigationTreeService::class)->getApplicationByCode(AccountCategory::APPLICATION_CODE);
-
-        if (! app(RecordReferenceAccess::class)->applicationAccessible($application)) {
-            throw new NotFoundHttpException;
-        }
+        return AccountCategory::APPLICATION_CODE;
     }
 
     protected function query(): Builder
@@ -50,7 +38,7 @@ class AccountCategoriesTable extends Table
         $application = app(NavigationTreeService::class)->getApplicationByCode(AccountCategory::APPLICATION_CODE);
 
         if (! app(RecordReferenceAccess::class)->applicationAccessible($application)) {
-            return AccountCategory::query()->whereRaw('1 = 0');
+            return AccountCategory::query()->whereKey(-1);
         }
 
         return AccountCategory::query();

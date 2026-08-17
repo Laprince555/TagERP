@@ -2,6 +2,7 @@
 
 namespace Modules\HR\Livewire\OrganizationStructure\Entities;
 
+use App\Livewire\Concerns\ChecksApplicationAccess;
 use App\Livewire\DynamicTable\Table;
 use App\Services\NavigationTreeService;
 use App\Support\DynamicTable\Core\Columns\BooleanColumn;
@@ -13,7 +14,6 @@ use App\Support\RecordReference\RecordReferenceAccess;
 use App\Support\RecordReference\RecordReferenceVariant;
 use Illuminate\Database\Eloquent\Builder;
 use Modules\HR\Models\OrganizationStructure\Entity;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Real production Entities index for the "hr-org-ent" Application
@@ -23,23 +23,11 @@ class EntitiesTable extends Table
 {
     protected string $tableKey = 'hr-organization-structure-entities';
 
-    public function boot(): void
-    {
-        $this->checkAccess();
-    }
+    use ChecksApplicationAccess;
 
-    public function hydrate(): void
+    protected function applicationCode(): string
     {
-        $this->checkAccess();
-    }
-
-    protected function checkAccess(): void
-    {
-        $application = app(NavigationTreeService::class)->getApplicationByCode(Entity::APPLICATION_CODE);
-
-        if (! app(RecordReferenceAccess::class)->applicationAccessible($application)) {
-            throw new NotFoundHttpException;
-        }
+        return Entity::APPLICATION_CODE;
     }
 
     protected function query(): Builder
@@ -47,7 +35,7 @@ class EntitiesTable extends Table
         $application = app(NavigationTreeService::class)->getApplicationByCode(Entity::APPLICATION_CODE);
 
         if (! app(RecordReferenceAccess::class)->applicationAccessible($application)) {
-            return Entity::query()->whereRaw('1 = 0');
+            return Entity::query()->whereKey(-1);
         }
 
         return Entity::query();

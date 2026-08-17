@@ -2,13 +2,12 @@
 
 namespace Modules\HR\Livewire\OrganizationStructure\Branches;
 
+use App\Livewire\Concerns\ChecksApplicationAccess;
 use App\Services\NavigationTreeService;
-use App\Support\RecordReference\RecordReferenceAccess;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Modules\HR\Models\OrganizationStructure\Branch;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Reachable page for the seeded "hr-org-brn" Application route
@@ -18,23 +17,11 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 #[Layout('layouts.app')]
 class BranchesIndex extends Component
 {
-    public function boot(): void
-    {
-        $this->checkAccess();
-    }
+    use ChecksApplicationAccess;
 
-    public function hydrate(): void
+    protected function applicationCode(): string
     {
-        $this->checkAccess();
-    }
-
-    protected function checkAccess(): void
-    {
-        $application = app(NavigationTreeService::class)->getApplicationByCode(Branch::APPLICATION_CODE);
-
-        if (! app(RecordReferenceAccess::class)->applicationAccessible($application)) {
-            throw new NotFoundHttpException;
-        }
+        return Branch::APPLICATION_CODE;
     }
 
     public function render(): View

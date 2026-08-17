@@ -2,6 +2,7 @@
 
 namespace Modules\Finance\Livewire\GeneralLedger\CostCenters;
 
+use App\Livewire\Concerns\ChecksApplicationAccess;
 use App\Livewire\DynamicTable\Table;
 use App\Services\NavigationTreeService;
 use App\Support\DynamicTable\Core\Columns\BooleanColumn;
@@ -13,7 +14,6 @@ use App\Support\RecordReference\RecordReferenceAccess;
 use App\Support\RecordReference\RecordReferenceVariant;
 use Illuminate\Database\Eloquent\Builder;
 use Modules\Finance\Models\GeneralLedger\CostCenter;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Cost Centres index for the "fin-gl-cct" Application
@@ -23,23 +23,11 @@ class CostCentersTable extends Table
 {
     protected string $tableKey = 'finance-general-ledger-cost-centers';
 
-    public function boot(): void
-    {
-        $this->checkAccess();
-    }
+    use ChecksApplicationAccess;
 
-    public function hydrate(): void
+    protected function applicationCode(): string
     {
-        $this->checkAccess();
-    }
-
-    protected function checkAccess(): void
-    {
-        $application = app(NavigationTreeService::class)->getApplicationByCode(CostCenter::APPLICATION_CODE);
-
-        if (! app(RecordReferenceAccess::class)->applicationAccessible($application)) {
-            throw new NotFoundHttpException;
-        }
+        return CostCenter::APPLICATION_CODE;
     }
 
     protected function query(): Builder
@@ -47,7 +35,7 @@ class CostCentersTable extends Table
         $application = app(NavigationTreeService::class)->getApplicationByCode(CostCenter::APPLICATION_CODE);
 
         if (! app(RecordReferenceAccess::class)->applicationAccessible($application)) {
-            return CostCenter::query()->whereRaw('1 = 0');
+            return CostCenter::query()->whereKey(-1);
         }
 
         return CostCenter::query()->with('parent');

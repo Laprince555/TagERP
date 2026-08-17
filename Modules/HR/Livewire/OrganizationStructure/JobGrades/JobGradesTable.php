@@ -2,6 +2,7 @@
 
 namespace Modules\HR\Livewire\OrganizationStructure\JobGrades;
 
+use App\Livewire\Concerns\ChecksApplicationAccess;
 use App\Livewire\DynamicTable\Table;
 use App\Services\NavigationTreeService;
 use App\Support\DynamicTable\Core\Columns\BooleanColumn;
@@ -12,7 +13,6 @@ use App\Support\DynamicTable\Core\Sort;
 use App\Support\RecordReference\RecordReferenceAccess;
 use Illuminate\Database\Eloquent\Builder;
 use Modules\HR\Models\OrganizationStructure\JobGrade;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Real production Job Grades index for the "hr-org-jbg" Application
@@ -22,23 +22,11 @@ class JobGradesTable extends Table
 {
     protected string $tableKey = 'hr-organization-structure-job-grades';
 
-    public function boot(): void
-    {
-        $this->checkAccess();
-    }
+    use ChecksApplicationAccess;
 
-    public function hydrate(): void
+    protected function applicationCode(): string
     {
-        $this->checkAccess();
-    }
-
-    protected function checkAccess(): void
-    {
-        $application = app(NavigationTreeService::class)->getApplicationByCode(JobGrade::APPLICATION_CODE);
-
-        if (! app(RecordReferenceAccess::class)->applicationAccessible($application)) {
-            throw new NotFoundHttpException;
-        }
+        return JobGrade::APPLICATION_CODE;
     }
 
     protected function query(): Builder
@@ -46,7 +34,7 @@ class JobGradesTable extends Table
         $application = app(NavigationTreeService::class)->getApplicationByCode(JobGrade::APPLICATION_CODE);
 
         if (! app(RecordReferenceAccess::class)->applicationAccessible($application)) {
-            return JobGrade::query()->whereRaw('1 = 0');
+            return JobGrade::query()->whereKey(-1);
         }
 
         return JobGrade::query();

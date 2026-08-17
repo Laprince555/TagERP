@@ -2,6 +2,7 @@
 
 namespace Modules\Finance\Livewire\GeneralLedger\Charts;
 
+use App\Livewire\Concerns\ChecksApplicationAccess;
 use App\Livewire\DynamicTable\Table;
 use App\Services\NavigationTreeService;
 use App\Support\DynamicTable\Core\Columns\BooleanColumn;
@@ -12,7 +13,6 @@ use App\Support\DynamicTable\Core\Sort;
 use App\Support\RecordReference\RecordReferenceAccess;
 use Illuminate\Database\Eloquent\Builder;
 use Modules\Finance\Models\GeneralLedger\Chart;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Charts of Accounts index for the "fin-gl-coa" Application
@@ -22,23 +22,11 @@ class ChartsTable extends Table
 {
     protected string $tableKey = 'finance-general-ledger-charts';
 
-    public function boot(): void
-    {
-        $this->checkAccess();
-    }
+    use ChecksApplicationAccess;
 
-    public function hydrate(): void
+    protected function applicationCode(): string
     {
-        $this->checkAccess();
-    }
-
-    protected function checkAccess(): void
-    {
-        $application = app(NavigationTreeService::class)->getApplicationByCode(Chart::APPLICATION_CODE);
-
-        if (! app(RecordReferenceAccess::class)->applicationAccessible($application)) {
-            throw new NotFoundHttpException;
-        }
+        return Chart::APPLICATION_CODE;
     }
 
     protected function query(): Builder
@@ -46,7 +34,7 @@ class ChartsTable extends Table
         $application = app(NavigationTreeService::class)->getApplicationByCode(Chart::APPLICATION_CODE);
 
         if (! app(RecordReferenceAccess::class)->applicationAccessible($application)) {
-            return Chart::query()->whereRaw('1 = 0');
+            return Chart::query()->whereKey(-1);
         }
 
         return Chart::query();

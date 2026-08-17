@@ -2,6 +2,7 @@
 
 namespace Modules\General\Livewire\World\Companies;
 
+use App\Livewire\Concerns\ChecksApplicationAccess;
 use App\Livewire\DynamicTable\Table;
 use App\Services\NavigationTreeService;
 use App\Support\DynamicTable\Core\Columns\BooleanColumn;
@@ -13,7 +14,6 @@ use App\Support\RecordReference\RecordReferenceAccess;
 use App\Support\RecordReference\RecordReferenceVariant;
 use Illuminate\Database\Eloquent\Builder;
 use Modules\General\Models\World\Companies\Company;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Real production Companies index for the "gen-wld-com" Application
@@ -23,23 +23,11 @@ class CompaniesTable extends Table
 {
     protected string $tableKey = 'general-world-companies';
 
-    public function boot(): void
-    {
-        $this->checkAccess();
-    }
+    use ChecksApplicationAccess;
 
-    public function hydrate(): void
+    protected function applicationCode(): string
     {
-        $this->checkAccess();
-    }
-
-    protected function checkAccess(): void
-    {
-        $application = app(NavigationTreeService::class)->getApplicationByCode(Company::APPLICATION_CODE);
-
-        if (! app(RecordReferenceAccess::class)->applicationAccessible($application)) {
-            throw new NotFoundHttpException;
-        }
+        return Company::APPLICATION_CODE;
     }
 
     protected function query(): Builder
@@ -50,7 +38,7 @@ class CompaniesTable extends Table
         $application = app(NavigationTreeService::class)->getApplicationByCode(Company::APPLICATION_CODE);
 
         if (! app(RecordReferenceAccess::class)->applicationAccessible($application)) {
-            return Company::query()->whereRaw('1 = 0');
+            return Company::query()->whereKey(-1);
         }
 
         return Company::query()->with('city');

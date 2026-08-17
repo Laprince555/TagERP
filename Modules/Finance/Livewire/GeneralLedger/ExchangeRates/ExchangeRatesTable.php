@@ -2,6 +2,7 @@
 
 namespace Modules\Finance\Livewire\GeneralLedger\ExchangeRates;
 
+use App\Livewire\Concerns\ChecksApplicationAccess;
 use App\Livewire\DynamicTable\Table;
 use App\Services\NavigationTreeService;
 use App\Support\DynamicTable\Core\Columns\DateColumn;
@@ -15,7 +16,6 @@ use App\Support\RecordReference\RecordReferenceAccess;
 use Illuminate\Database\Eloquent\Builder;
 use Modules\Finance\Models\GeneralLedger\ExchangeRate;
 use Modules\Finance\Models\GeneralLedger\RateType;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Exchange Rates index for the "fin-gl-rat" Application
@@ -25,23 +25,11 @@ class ExchangeRatesTable extends Table
 {
     protected string $tableKey = 'finance-general-ledger-exchange-rates';
 
-    public function boot(): void
-    {
-        $this->checkAccess();
-    }
+    use ChecksApplicationAccess;
 
-    public function hydrate(): void
+    protected function applicationCode(): string
     {
-        $this->checkAccess();
-    }
-
-    protected function checkAccess(): void
-    {
-        $application = app(NavigationTreeService::class)->getApplicationByCode(ExchangeRate::APPLICATION_CODE);
-
-        if (! app(RecordReferenceAccess::class)->applicationAccessible($application)) {
-            throw new NotFoundHttpException;
-        }
+        return ExchangeRate::APPLICATION_CODE;
     }
 
     protected function query(): Builder
@@ -49,7 +37,7 @@ class ExchangeRatesTable extends Table
         $application = app(NavigationTreeService::class)->getApplicationByCode(ExchangeRate::APPLICATION_CODE);
 
         if (! app(RecordReferenceAccess::class)->applicationAccessible($application)) {
-            return ExchangeRate::query()->whereRaw('1 = 0');
+            return ExchangeRate::query()->whereKey(-1);
         }
 
         return ExchangeRate::query()->with(['fromCurrency', 'toCurrency']);
