@@ -7,6 +7,7 @@ use App\Support\RecordReference\ApplicationColor;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Modules\General\Database\Factories\ApplicationFactory;
 use Spatie\Translatable\Attributes\Translatable;
 use Spatie\Translatable\HasTranslations;
@@ -56,6 +57,11 @@ class Application extends Model
     public function subModule(): BelongsTo
     {
         return $this->belongsTo(SubModule::class, 'submodule_id');
+    }
+
+    public function subApplications(): HasMany
+    {
+        return $this->hasMany(SubApplication::class);
     }
 
     protected static function booted(): void

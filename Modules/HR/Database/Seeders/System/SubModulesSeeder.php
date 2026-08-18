@@ -95,6 +95,16 @@ class SubModulesSeeder extends Seeder
                 'permission_group' => null,
                 'is_active' => true,
             ],
+            [
+                'name' => ['ar' => 'دورات الاعتماد', 'en' => 'Cycles'],
+                'description' => ['ar' => 'محرك عام لسير عمليات الاعتماد عبر الوحدات.', 'en' => 'A generic, cross-module approval-workflow engine.'],
+                'code' => 'hr-cyc',
+                'route' => 'hr.cycles',
+                'icon' => 'arrow-path',
+                'sort_order' => 7,
+                'permission_group' => null,
+                'is_active' => true,
+            ],
         ];
 
         $subModules = array_map(function (array $subModule) use ($hrModule): array {

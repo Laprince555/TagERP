@@ -9,7 +9,7 @@ class ApplicationsSeeder extends Seeder
 {
     public function run(): void
     {
-        $subModuleId = DB::table('sub_modules')->where('code', 'fin-cbn')->value('id');
+        $subModuleId = DB::table('sub_modules')->where('code', 'fin-csh')->value('id');
 
         DB::table('applications')->insertOrIgnore([
             [
@@ -40,7 +40,7 @@ class ApplicationsSeeder extends Seeder
                 'name' => json_encode(['ar' => 'الخزائن', 'en' => 'Safes']),
                 'description' => json_encode(['ar' => 'إدارة الخزائن والنقد', 'en' => 'Manage safes and cash']),
                 'route' => 'finance.cash-and-banks.safes',
-                'icon' => 'vault',
+                'icon' => 'bolt',
                 'sort_order' => 3,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -51,7 +51,7 @@ class ApplicationsSeeder extends Seeder
                 'name' => json_encode(['ar' => 'التحويلات الداخلية', 'en' => 'Internal Adjustments']),
                 'description' => json_encode(['ar' => 'تحويلات بين البنوك والخزائن', 'en' => 'Transfers between banks and safes']),
                 'route' => 'finance.cash-and-banks.internal-adjust',
-                'icon' => 'arrow-right-left',
+                'icon' => 'arrows-right-left',
                 'sort_order' => 4,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -62,7 +62,7 @@ class ApplicationsSeeder extends Seeder
                 'name' => json_encode(['ar' => 'مصاريف البنوك', 'en' => 'Bank Expenses']),
                 'description' => json_encode(['ar' => 'الرسوم والفوائد والعمولات', 'en' => 'Fees, interest, and commissions']),
                 'route' => 'finance.cash-and-banks.bank-expenses',
-                'icon' => 'receipt',
+                'icon' => 'receipt-percent',
                 'sort_order' => 5,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -73,7 +73,7 @@ class ApplicationsSeeder extends Seeder
                 'name' => json_encode(['ar' => 'طلبات الصرف', 'en' => 'Payment Disbursements']),
                 'description' => json_encode(['ar' => 'إدارة طلبات صرف الأموال', 'en' => 'Manage payment disbursement requests']),
                 'route' => 'finance.cash-and-banks.payment-disbursements',
-                'icon' => 'money',
+                'icon' => 'currency-dollar',
                 'sort_order' => 6,
                 'created_at' => now(),
                 'updated_at' => now(),

@@ -21,20 +21,20 @@
                     </div>
 
                     <div class="flex flex-wrap items-center gap-3">
-                        <flux:badge color="lime" size="sm">
+                        <div class="badge badge-ledger-in">
                             <span>{{ $visibleModuleCount }}</span>
                             <span class="ml-1">visible modules</span>
-                        </flux:badge>
+                        </div>
 
-                        <flux:badge color="zinc" size="sm">
+                        <div class="badge badge-neutral">
                             <span>{{ $applicationTotal }}</span>
                             <span class="ml-1">applications</span>
-                        </flux:badge>
+                        </div>
 
-                        <flux:badge color="amber" size="sm">
+                        <div class="badge badge-allocated">
                             <span>{{ $enabledModules }}</span>
                             <span class="ml-1">enabled</span>
-                        </flux:badge>
+                        </div>
                     </div>
                 </div>
 

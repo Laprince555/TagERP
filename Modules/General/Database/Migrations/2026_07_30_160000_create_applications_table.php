@@ -28,6 +28,9 @@ return new class extends Migration
                 ->on('sub_modules')
                 ->onDelete('restrict')
                 ->onUpdate('cascade');
+            $table->foreignId('parent_application_id')->nullable()
+                ->constrained('applications', indexName: 'app_parent_app_fk')
+                ->restrictOnDelete();
             $table->timestamps();
         });
     }

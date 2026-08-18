@@ -2,13 +2,14 @@
 
 namespace Modules\Finance\Models\GeneralLedger;
 
-use App\Support\Code\RecordCodeBuilder;
+use App\Support\Code\HasAutoLineCode;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Modules\Finance\Database\Factories\JournalLineFactory;
 use Modules\General\Models\World\Currency;
+use Modules\General\System\SubApplication;
 use RuntimeException;
 
 /**
@@ -21,12 +22,13 @@ use RuntimeException;
  */
 class JournalLine extends Model
 {
-    use HasFactory;
+    use HasAutoLineCode, HasFactory;
 
     protected $table = 'journal_lines';
 
     protected $fillable = [
         'journal_id',
+        'sub_application_id',
         'line_number',
         'account_id',
         'cost_center_id',
@@ -58,6 +60,11 @@ class JournalLine extends Model
     public function journal(): BelongsTo
     {
         return $this->belongsTo(Journal::class, 'journal_id');
+    }
+
+    public function subApplication(): BelongsTo
+    {
+        return $this->belongsTo(SubApplication::class);
     }
 
     public function account(): BelongsTo
@@ -94,18 +101,16 @@ class JournalLine extends Model
                 throw new RuntimeException('A journal line cannot carry a negative amount; use the opposite side instead.');
             }
         });
+    }
 
-        static::creating(function (JournalLine $line): void {
-            if (blank($line->code)) {
-                $journal = $line->journal ?? Journal::find($line->journal_id);
+    protected function lineParentRelationName(): string
+    {
+        return 'journal';
+    }
 
-                $line->code = app(RecordCodeBuilder::class)->subApplicationRecordCode(
-                    (string) $journal?->code,
-                    'lin',
-                    (string) $line->line_number,
-                );
-            }
-        });
+    protected function lineCodeSlug(): string
+    {
+        return 'lin';
     }
 
     protected static function newFactory(): JournalLineFactory

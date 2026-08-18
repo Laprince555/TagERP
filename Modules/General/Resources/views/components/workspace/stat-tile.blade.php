@@ -18,7 +18,7 @@
     <p class="mt-2 text-2xl font-black tracking-[-0.02em] text-[var(--color-text-main)]">{{ $value }}</p>
 
     @if ($comingSoon)
-        <flux:badge color="zinc" size="sm" class="mt-2">{{ __('messages.workspace.coming_soon') }}</flux:badge>
+        <div class="badge badge-neutral mt-2">{{ __('messages.workspace.coming_soon') }}</div>
     @elseif ($hint)
         <p class="mt-2 truncate text-xs text-[var(--color-soft-text)]">{{ $hint }}</p>
     @endif

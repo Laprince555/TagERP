@@ -4,5 +4,6 @@
     "HR": true,
     "CRM": true,
     "Procurement": true,
-    "Projects": true
+    "Projects": true,
+    "Inventory": true
 }

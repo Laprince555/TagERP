@@ -9,6 +9,9 @@
             'icon' => 'flag',
             'style' => 'background: linear-gradient(90deg, #CE1126 0 40%, transparent 40%), linear-gradient(180deg, #0A0A0A 0 33.33%, #FFFFFF 33.33% 66.66%, #007A3D 66.66%);',
         ],
+        'forest-acid' => ['label' => 'Forest Acid', 'swatch' => 'bg-[#B7FF72]', 'icon' => 'moon'],
+        'violet-mist' => ['label' => 'Violet Mist', 'swatch' => 'bg-[#7A35FF]', 'icon' => 'sun'],
+        'inkberry-peach' => ['label' => 'Inkberry Peach', 'swatch' => 'bg-[#FFB7A5]', 'icon' => 'moon'],
     ];
     $activeTheme = $themeMeta[$currentTheme] ?? $themeMeta['orange-onyx'];
 @endphp

@@ -30,12 +30,12 @@
         </div>
 
         <div class="flex flex-col items-end gap-2">
-            <flux:badge color="zinc" size="sm">
+            <div class="badge badge-neutral">
                 {{ trans_choice('messages.workspace.application_count', $subModule['application_count'], ['count' => $subModule['application_count']]) }}
-            </flux:badge>
+            </div>
 
             @unless ($isAvailable)
-                <flux:badge color="amber" size="sm">{{ __('messages.workspace.coming_soon') }}</flux:badge>
+                <div class="badge badge-allocated">{{ __('messages.workspace.coming_soon') }}</div>
             @endunless
         </div>
     </div>

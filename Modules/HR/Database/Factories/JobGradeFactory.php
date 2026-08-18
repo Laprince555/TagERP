@@ -24,7 +24,7 @@ class JobGradeFactory extends Factory
             // ...]), which bypasses Faker's own uniqueness bookkeeping — a
             // narrow default range risks the *unrelated* random pick landing
             // on the same value a test hardcoded elsewhere in the same run.
-            'level' => fake()->unique()->numberBetween(1000, 100000),
+            'level' => fake()->unique()->numberBetween(1000, 30000),
             'is_active' => true,
         ];
     }

@@ -35,17 +35,10 @@
     --color-text-muted: #64748B;      /* Slate-500 */
 
     /* Double-Entry Stock Ledger Semantic Tokens */
+    /* Double-Entry Stock Ledger Semantic Tokens */
     --color-ledger-in: #10B981;       /* Emerald-500 (Stock IN / Credit) */
-    --color-ledger-in-bg: #ECFDF5;    /* Emerald-50 */
-    --color-ledger-in-text: #047857;  /* Emerald-700 */
-
     --color-ledger-out: #EF4444;      /* Rose-500 (Stock OUT / Debit) */
-    --color-ledger-out-bg: #FEF2F2;   /* Rose-50 */
-    --color-ledger-out-text: #B91C1C; /* Rose-700 */
-
     --color-ledger-allocated: #F59E0B;   /* Amber-500 (Allocated / Reserved) */
-    --color-ledger-allocated-bg: #FFFBEB;/* Amber-50 */
-    --color-ledger-allocated-text: #B45309;/* Amber-700 */
 }
 
 /* --------------------------------------------------------------------------
@@ -88,8 +81,8 @@
     --color-card-bg: #182127;         /* Lifted dark surface */
     --color-border: #33424B;          /* Clearer dark border */
 
-    --color-text-main: #F8FAFC;       /* Slate-50 */
-    --color-text-muted: #C7D2DA;      /* Brighter muted copy */
+    --color-text-main: #FFFFFF;       /* Pure White for better contrast */
+    --color-text-muted: #A0B2C0;      /* Improved muted copy */
 }
 
 /* Theme: Palestine (Flag Palette - Black / White / Green / Red) */
@@ -113,12 +106,67 @@
 
     /* Flag Red drives the OUT/negative semantic */
     --color-ledger-out: #CE1126;      /* Flag Red */
-    --color-ledger-out-bg: #FDECEE;
-    --color-ledger-out-text: #A00E1E;
-
     --color-ledger-in: #007A3D;       /* Flag Green */
-    --color-ledger-in-bg: #E8F5EE;
-    --color-ledger-in-text: #00602F;
+}
+
+/* Theme: Forest Acid */
+.theme-forest-acid,
+[data-theme="forest-acid"] {
+    --color-primary: #B7FF72;         /* Acid Mint */
+    --color-primary-hover: #9EE65D;
+    --color-primary-light: #2C4231;
+
+    --color-sidebar-bg: #121C16;
+    --color-sidebar-border: #1E2E24;
+    --color-sidebar-text: #B7FF72;
+    --color-sidebar-hover: #1E2E24;
+
+    --color-canvas-bg: #18251D;       /* Forest Graphite */
+    --color-card-bg: #1F2E24;
+    --color-border: #2A3D30;
+
+    --color-text-main: #E8F5E9;
+    --color-text-muted: #9AAFA1;
+}
+
+/* Theme: Violet Mist */
+.theme-violet-mist,
+[data-theme="violet-mist"] {
+    --color-primary: #7A35FF;         /* Signal Violet */
+    --color-primary-hover: #6020E0;
+    --color-primary-light: #F3E8FF;
+
+    --color-sidebar-bg: #1C1333;
+    --color-sidebar-border: #2D1F4F;
+    --color-sidebar-text: #F0F2F5;
+    --color-sidebar-hover: #2D1F4F;
+
+    --color-canvas-bg: #F0F2F5;       /* Mist Gray */
+    --color-card-bg: #FFFFFF;
+    --color-border: #E2E5EA;
+
+    --color-text-main: #1A1A24;
+    --color-text-muted: #6B7280;
+}
+
+/* Theme: Inkberry Peach */
+.theme-inkberry-peach,
+[data-theme="inkberry-peach"] {
+    --color-primary: #FFB7A5;         /* Peach */
+    --color-primary-hover: #FF9A80;
+    --color-primary-light: #3D2235;
+
+    --color-sidebar-bg: #110720;
+    --color-sidebar-border: #251440;
+    --color-sidebar-text: #FFB7A5;
+    --color-sidebar-hover: #251440;
+
+    --color-canvas-bg: #1A0B2E;       /* Inkberry */
+    --color-card-bg: #241140;
+    --color-border: #351C5C;
+
+    --color-text-main: #FDF2F0;
+    --color-text-muted: #B39EC6;
 }
 
 /* --------------------------------------------------------------------------
@@ -152,6 +200,16 @@
     --color-soft-text: color-mix(in srgb, var(--color-text-main) 82%, transparent);
     --color-muted-text: color-mix(in srgb, var(--color-text-main) 64%, transparent);
     --color-panel-strong: color-mix(in srgb, var(--color-card-bg) 78%, var(--color-sidebar-bg) 22%);
+    
+    /* Auto-computing badge colors for Ledger */
+    --color-ledger-in-bg: color-mix(in srgb, var(--color-ledger-in) 15%, transparent);
+    --color-ledger-in-text: var(--color-ledger-in);
+    
+    --color-ledger-out-bg: color-mix(in srgb, var(--color-ledger-out) 15%, transparent);
+    --color-ledger-out-text: var(--color-ledger-out);
+    
+    --color-ledger-allocated-bg: color-mix(in srgb, var(--color-ledger-allocated) 15%, transparent);
+    --color-ledger-allocated-text: var(--color-ledger-allocated);
 }
 
 /* --------------------------------------------------------------------------
@@ -317,8 +375,8 @@
 
     /* Neutral / Muted Badge */
     .badge-neutral {
-        background-color: #F1F5F9;
-        color: #475569;
-        border: 1px solid #E2E8F0;
+        background-color: var(--color-surface-2);
+        color: var(--color-text-main);
+        border: 1px solid var(--color-border);
     }
 }

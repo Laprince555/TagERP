@@ -17,5 +17,8 @@
     },
     "optionalDependencies": {
         "@laravel/multiplex": "^0.4.1"
+    },
+    "dependencies": {
+        "monitor": "^0.6.10"
     }
 }

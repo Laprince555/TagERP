@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Modules\Finance\Livewire\Concerns\HasLineRows;
 use Modules\Finance\Models\GeneralLedger\Account;
 use Modules\Finance\Models\GeneralLedger\CostCenter;
 use Modules\Finance\Models\GeneralLedger\Journal;
@@ -34,6 +35,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 #[Layout('layouts.app', ['showBreadcrumbs' => false])]
 class JournalEditor extends Component
 {
+    use HasLineRows;
+
     public int $recordId;
 
     /** @var array<string, mixed> */
@@ -42,14 +45,6 @@ class JournalEditor extends Component
         'description' => '',
         'source_reference' => '',
     ];
-
-    /**
-     * The grid, one entry per line. Kept as a plain array rather than as models
-     * so a half-typed row costs nothing until it is saved.
-     *
-     * @var array<int, array<string, mixed>>
-     */
-    public array $rows = [];
 
     public ?string $postingError = null;
 
@@ -244,25 +239,20 @@ class JournalEditor extends Component
                 'source_reference' => $this->header['source_reference'] ?: null,
             ])->save();
 
-            $keptIds = [];
             $lineNumber = 0;
 
-            foreach ($this->rows as $row) {
-                if ($this->isBlankRow($row)) {
-                    continue;
-                }
+            // Rows the user deleted, and rows they emptied out, both disappear
+            // (syncLineRows deletes whatever id isn't kept below).
+            $this->syncLineRows(
+                $journal->lines(),
+                $this->rows,
+                fn (array $row): bool => $this->isBlankRow($row),
+                function (array $row) use (&$lineNumber): array {
+                    $lineNumber++;
 
-                $lineNumber++;
-                $line = $journal->lines()->updateOrCreate(
-                    ['id' => $row['id']],
-                    $this->lineAttributes($row, $lineNumber),
-                );
-
-                $keptIds[] = $line->id;
-            }
-
-            // Rows the user deleted, and rows they emptied out, both disappear.
-            $journal->lines()->whereNotIn('id', $keptIds ?: [0])->delete();
+                    return $this->lineAttributes($row, $lineNumber);
+                },
+            );
 
             $journal->forceFill([
                 'total_debit' => $journal->lines()->sum('base_debit'),

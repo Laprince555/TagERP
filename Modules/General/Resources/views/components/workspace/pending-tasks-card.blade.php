@@ -16,7 +16,7 @@
             </div>
         </div>
 
-        <flux:badge color="zinc" size="sm">{{ __('messages.workspace.coming_soon') }}</flux:badge>
+        <div class="badge badge-neutral">{{ __('messages.workspace.coming_soon') }}</div>
     </div>
 
     <flux:skeleton.group animate="pulse" class="mt-4 space-y-3" aria-hidden="true">

@@ -9,6 +9,8 @@ use Modules\General\Livewire\Security\Roles\RoleRecordView;
 use Modules\General\Livewire\Security\Roles\RolesIndex;
 use Modules\General\Livewire\SubModuleRecordView;
 use Modules\General\Livewire\SubModuleWorkspace;
+use Modules\General\Livewire\System\Backups\BackupManager;
+use Modules\General\Livewire\System\Backups\BackupRecordView;
 use Modules\General\Livewire\System\Users\UserRecordView;
 use Modules\General\Livewire\System\Users\UsersIndex;
 use Modules\General\Livewire\World\Cities\CitiesIndex;
@@ -122,6 +124,14 @@ Route::middleware(['auth'])
 Route::middleware(['auth'])
     ->get('/general/system/users/{recordId}/view', UserRecordView::class)
     ->name('general.system.users.show');
+
+Route::middleware(['auth'])
+    ->get('/general/system/backups', BackupManager::class)
+    ->name('general.system.backups');
+
+Route::middleware(['auth'])
+    ->get('/general/system/backups/{recordId}/view', BackupRecordView::class)
+    ->name('general.system.backups.show');
 
 Route::middleware(['auth'])
     ->get('/docs/{path?}', function (?string $path = null) {

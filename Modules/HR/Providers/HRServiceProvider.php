@@ -7,6 +7,16 @@ use App\Support\DynamicRecordView\Core\RecordViewRegistry;
 use App\Support\RecordReference\RecordReferenceRegistry;
 use Illuminate\Console\Scheduling\Schedule;
 use Livewire\Livewire;
+use Modules\HR\Livewire\Cycles\Cycles\CycleLinesEditor;
+use Modules\HR\Livewire\Cycles\Cycles\CycleLinesTable;
+use Modules\HR\Livewire\Cycles\Cycles\CyclesIndex;
+use Modules\HR\Livewire\Cycles\Cycles\CyclesTable;
+use Modules\HR\Livewire\Cycles\CycleTypes\CycleTypesIndex;
+use Modules\HR\Livewire\Cycles\CycleTypes\CycleTypesTable;
+use Modules\HR\Livewire\Cycles\Transactions\CycleTransactionLinesTable;
+use Modules\HR\Livewire\Cycles\Transactions\CycleTransactionReview;
+use Modules\HR\Livewire\Cycles\Transactions\CycleTransactionsIndex;
+use Modules\HR\Livewire\Cycles\Transactions\CycleTransactionsTable;
 use Modules\HR\Livewire\EmployeeManagement\Employees\EmployeesIndex;
 use Modules\HR\Livewire\EmployeeManagement\Employees\EmployeesTable;
 use Modules\HR\Livewire\OrganizationStructure\Branches\BranchesIndex;
@@ -21,6 +31,13 @@ use Modules\HR\Livewire\OrganizationStructure\JobGrades\JobGradesTable;
 use Modules\HR\Livewire\OrganizationStructure\JobTitles\JobTitleGradesTable;
 use Modules\HR\Livewire\OrganizationStructure\JobTitles\JobTitlesIndex;
 use Modules\HR\Livewire\OrganizationStructure\JobTitles\JobTitlesTable;
+use Modules\HR\System\Cycles\CycleForm;
+use Modules\HR\System\Cycles\CycleRecordReferenceProvider;
+use Modules\HR\System\Cycles\CycleRecordView as CycleRecordViewDefinition;
+use Modules\HR\System\Cycles\CycleTransactionRecordView as CycleTransactionRecordViewDefinition;
+use Modules\HR\System\Cycles\CycleTypeForm;
+use Modules\HR\System\Cycles\CycleTypeRecordReferenceProvider;
+use Modules\HR\System\Cycles\CycleTypeRecordView as CycleTypeRecordViewDefinition;
 use Modules\HR\System\EmployeeManagement\EmployeeForm;
 use Modules\HR\System\EmployeeManagement\EmployeeRecordReferenceProvider;
 use Modules\HR\System\EmployeeManagement\EmployeeRecordView as EmployeeRecordViewDefinition;
@@ -99,6 +116,17 @@ class HRServiceProvider extends ModuleServiceProvider
         Livewire::component('hr.employees-index', EmployeesIndex::class);
         Livewire::component('hr.employees-table', EmployeesTable::class);
 
+        Livewire::component('hr.cycle-types-index', CycleTypesIndex::class);
+        Livewire::component('hr.cycle-types-table', CycleTypesTable::class);
+        Livewire::component('hr.cycles-index', CyclesIndex::class);
+        Livewire::component('hr.cycles-table', CyclesTable::class);
+        Livewire::component('hr.cycle-lines-table', CycleLinesTable::class);
+        Livewire::component('hr.cycle-lines-editor', CycleLinesEditor::class);
+        Livewire::component('hr.cycle-transactions-index', CycleTransactionsIndex::class);
+        Livewire::component('hr.cycle-transactions-table', CycleTransactionsTable::class);
+        Livewire::component('hr.cycle-transaction-lines-table', CycleTransactionLinesTable::class);
+        Livewire::component('hr.cycle-transaction-review', CycleTransactionReview::class);
+
         $recordReferenceRegistry = $this->app->make(RecordReferenceRegistry::class);
         $recordReferenceRegistry->register(new EntityRecordReferenceProvider);
         $recordReferenceRegistry->register(new BranchRecordReferenceProvider);
@@ -106,6 +134,8 @@ class HRServiceProvider extends ModuleServiceProvider
         $recordReferenceRegistry->register(new JobGradeRecordReferenceProvider);
         $recordReferenceRegistry->register(new JobTitleRecordReferenceProvider);
         $recordReferenceRegistry->register(new EmployeeRecordReferenceProvider);
+        $recordReferenceRegistry->register(new CycleTypeRecordReferenceProvider);
+        $recordReferenceRegistry->register(new CycleRecordReferenceProvider);
 
         $recordViewRegistry = $this->app->make(RecordViewRegistry::class);
         $recordViewRegistry->register('hr.organization-structure.entity', EntityRecordViewDefinition::class);
@@ -114,6 +144,9 @@ class HRServiceProvider extends ModuleServiceProvider
         $recordViewRegistry->register('hr.organization-structure.job-grade', JobGradeRecordViewDefinition::class);
         $recordViewRegistry->register('hr.organization-structure.job-title', JobTitleRecordViewDefinition::class);
         $recordViewRegistry->register('hr.employee-management.employee', EmployeeRecordViewDefinition::class);
+        $recordViewRegistry->register('hr.cycles.cycle-type', CycleTypeRecordViewDefinition::class);
+        $recordViewRegistry->register('hr.cycles.cycle', CycleRecordViewDefinition::class);
+        $recordViewRegistry->register('hr.cycles.transaction', CycleTransactionRecordViewDefinition::class);
 
         $formRegistry = $this->app->make(FormDefinitionRegistry::class);
         $formRegistry->register('hr.organization-structure.entity.create', EntityForm::class);
@@ -122,5 +155,7 @@ class HRServiceProvider extends ModuleServiceProvider
         $formRegistry->register('hr.organization-structure.job-grade.create', JobGradeForm::class);
         $formRegistry->register('hr.organization-structure.job-title.create', JobTitleForm::class);
         $formRegistry->register('hr.employee-management.employee.create', EmployeeForm::class);
+        $formRegistry->register('hr.cycles.cycle-type.create', CycleTypeForm::class);
+        $formRegistry->register('hr.cycles.cycle.create', CycleForm::class);
     }
 }

@@ -18,6 +18,9 @@ class ThemeSwitcher extends Component
         'navy-blue',
         'emerald-dark',
         'palestine',
+        'forest-acid',
+        'violet-mist',
+        'inkberry-peach',
     ];
 
     public function mount(): void

@@ -19,6 +19,8 @@ abstract class Field
     /** @var string[] additional Laravel validation rules, beyond required(). */
     protected array $rules = [];
 
+    protected mixed $default = null;
+
     protected function __construct(protected string $key) {}
 
     public static function make(string $key): static
@@ -62,6 +64,14 @@ abstract class Field
         return $this;
     }
 
+    /** Value a create form pre-fills this field with; ignored when editing. */
+    public function default(mixed $value): static
+    {
+        $this->default = $value;
+
+        return $this;
+    }
+
     public function getKey(): string
     {
         return $this->key;
@@ -85,6 +95,11 @@ abstract class Field
     public function getHelpText(): ?string
     {
         return $this->helpText;
+    }
+
+    public function getDefault(): mixed
+    {
+        return $this->default;
     }
 
     /** @return string[] full validation rule set for this field (required + custom). */

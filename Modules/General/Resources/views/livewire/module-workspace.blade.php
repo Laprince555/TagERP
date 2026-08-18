@@ -24,9 +24,9 @@
                     <div class="flex flex-wrap items-center gap-2">
                         <flux:heading size="xl" class="truncate">{{ $module['name'] }}</flux:heading>
 
-                        <flux:badge :color="$module['is_active'] ? 'lime' : 'rose'" size="sm">
+                        <div class="badge {{ $module['is_active'] ? 'badge-ledger-in' : 'badge-ledger-out' }}">
                             {{ $module['is_active'] ? __('messages.workspace.active') : __('messages.workspace.inactive') }}
-                        </flux:badge>
+                        </div>
                     </div>
 
                     <p class="line-clamp-2 max-w-2xl text-sm leading-6 text-[var(--color-soft-text)]">
@@ -38,15 +38,15 @@
             </div>
 
             <div class="flex shrink-0 flex-wrap items-center gap-2">
-                <flux:badge color="zinc" size="sm">
+                <div class="badge badge-neutral">
                     <span>{{ $statistics['sub_module_count'] }}</span>
                     <span class="ms-1">{{ __('messages.workspace.sub_modules') }}</span>
-                </flux:badge>
+                </div>
 
-                <flux:badge color="zinc" size="sm">
+                <div class="badge badge-neutral">
                     <span>{{ $statistics['application_count'] }}</span>
                     <span class="ms-1">{{ __('messages.workspace.applications') }}</span>
-                </flux:badge>
+                </div>
             </div>
         </div>
     </section>

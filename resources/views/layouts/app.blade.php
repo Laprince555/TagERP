@@ -36,6 +36,32 @@
                 color: var(--flux-text) !important;
             }
 
+            [data-flux-heading] {
+                color: var(--color-text-main) !important;
+            }
+
+            .breadcrumb-theme-fix,
+            .breadcrumb-theme-fix a,
+            .breadcrumb-theme-fix svg,
+            .breadcrumb-theme-fix span {
+                color: var(--color-primary) !important;
+                opacity: 0.7;
+                transition: all 0.2s ease-in-out;
+            }
+
+            .breadcrumb-theme-fix a:hover,
+            .breadcrumb-theme-fix a:hover svg,
+            .breadcrumb-theme-fix a:hover span {
+                color: var(--color-primary-hover) !important;
+                opacity: 1;
+            }
+
+            .breadcrumb-theme-fix [aria-current="page"],
+            .breadcrumb-theme-fix [data-current] {
+                color: var(--color-primary) !important;
+                opacity: 1;
+            }
+
             [data-flux-menu] [data-flux-menu-item]:hover,
             [data-flux-menu] [data-flux-menu-item][data-active] {
                 background-color: var(--flux-active) !important;
@@ -61,29 +87,29 @@
                 background-color: var(--flux-border) !important;
             }
 
-            [data-theme='emerald-dark'] header {
+            :is([data-theme='emerald-dark'], [data-theme='forest-acid'], [data-theme='inkberry-peach']) header {
                 background-color: color-mix(in srgb, var(--color-card-bg) 94%, var(--color-canvas-bg) 6%) !important;
             }
 
-            [data-theme='emerald-dark'] header [data-flux-button],
-            [data-theme='emerald-dark'] header [data-flux-avatar],
-            [data-theme='emerald-dark'] header a,
-            [data-theme='emerald-dark'] header p,
-            [data-theme='emerald-dark'] header span {
+            :is([data-theme='emerald-dark'], [data-theme='forest-acid'], [data-theme='inkberry-peach']) header [data-flux-button],
+            :is([data-theme='emerald-dark'], [data-theme='forest-acid'], [data-theme='inkberry-peach']) header [data-flux-avatar],
+            :is([data-theme='emerald-dark'], [data-theme='forest-acid'], [data-theme='inkberry-peach']) header a,
+            :is([data-theme='emerald-dark'], [data-theme='forest-acid'], [data-theme='inkberry-peach']) header p,
+            :is([data-theme='emerald-dark'], [data-theme='forest-acid'], [data-theme='inkberry-peach']) header span {
                 color: var(--color-text-main);
             }
 
-            [data-theme='emerald-dark'] header [data-flux-button] {
+            :is([data-theme='emerald-dark'], [data-theme='forest-acid'], [data-theme='inkberry-peach']) header [data-flux-button] {
                 background-color: color-mix(in srgb, var(--color-card-bg) 96%, var(--color-canvas-bg) 4%) !important;
                 border-color: color-mix(in srgb, var(--color-border) 92%, var(--color-text-main) 8%) !important;
             }
 
-            [data-theme='emerald-dark'] header [data-flux-button]:hover {
+            :is([data-theme='emerald-dark'], [data-theme='forest-acid'], [data-theme='inkberry-peach']) header [data-flux-button]:hover {
                 border-color: var(--color-primary) !important;
             }
 
-            [data-theme='emerald-dark'] header .text-\[var\(--color-text-main\)\]\/50,
-            [data-theme='emerald-dark'] header .text-\[var\(--color-text-main\)\]\/55 {
+            :is([data-theme='emerald-dark'], [data-theme='forest-acid'], [data-theme='inkberry-peach']) header .text-\[var\(--color-text-main\)\]\/50,
+            :is([data-theme='emerald-dark'], [data-theme='forest-acid'], [data-theme='inkberry-peach']) header .text-\[var\(--color-text-main\)\]\/55 {
                 color: color-mix(in srgb, var(--color-text-main) 78%, transparent) !important;
             }
         </style>

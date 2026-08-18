@@ -1,4 +1,4 @@
-<flux:breadcrumbs aria-label="{{ __('messages.workspace.breadcrumb') }}" class="flex-wrap gap-y-1">
+<flux:breadcrumbs aria-label="{{ __('messages.workspace.breadcrumb') }}" class="flex-wrap gap-y-1 breadcrumb-theme-fix">
     <flux:breadcrumbs.item wire:navigate :href="url('/')" icon="home" />
 
     @foreach ($breadcrumbs as $breadcrumb)

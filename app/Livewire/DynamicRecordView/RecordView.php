@@ -109,6 +109,15 @@ abstract class RecordView extends Component
             return;
         }
 
+        // Every custom action (post, approve, activate, suspend, ...) across
+        // every Application flows through here, so this is the one place
+        // that needs to log rather than every individual handler.
+        activity($definition->applicationCode() ?? $record::class)
+            ->causedBy(auth()->user())
+            ->performedOn($record)
+            ->withProperties(['action' => $key])
+            ->log($action->getLabel());
+
         if (is_string($result) && $result !== '') {
             $this->redirect($result, navigate: true);
 

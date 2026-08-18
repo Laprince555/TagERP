@@ -2,7 +2,16 @@
 
 namespace Modules\CRM\Providers;
 
+use App\Support\DynamicForm\Core\FormDefinitionRegistry;
+use App\Support\DynamicRecordView\Core\RecordViewRegistry;
+use App\Support\RecordReference\RecordReferenceRegistry;
 use Illuminate\Console\Scheduling\Schedule;
+use Livewire\Livewire;
+use Modules\CRM\Livewire\Customers\CustomersIndex;
+use Modules\CRM\Livewire\Customers\CustomersTable;
+use Modules\CRM\System\Customers\CustomerForm;
+use Modules\CRM\System\Customers\CustomerRecordReferenceProvider;
+use Modules\CRM\System\Customers\CustomerRecordView as CustomerRecordViewDefinition;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 
 class CRMServiceProvider extends ModuleServiceProvider
@@ -33,6 +42,23 @@ class CRMServiceProvider extends ModuleServiceProvider
         EventServiceProvider::class,
         RouteServiceProvider::class,
     ];
+
+    public function boot(): void
+    {
+        parent::boot();
+
+        Livewire::component('crm.customers-index', CustomersIndex::class);
+        Livewire::component('crm.customers-table', CustomersTable::class);
+
+        $recordReferenceRegistry = $this->app->make(RecordReferenceRegistry::class);
+        $recordReferenceRegistry->register(new CustomerRecordReferenceProvider);
+
+        $recordViewRegistry = $this->app->make(RecordViewRegistry::class);
+        $recordViewRegistry->register('crm.customer-management.customer', CustomerRecordViewDefinition::class);
+
+        $formRegistry = $this->app->make(FormDefinitionRegistry::class);
+        $formRegistry->register('crm.customer-management.customer.create', CustomerForm::class);
+    }
 
     /**
      * Define module schedules.

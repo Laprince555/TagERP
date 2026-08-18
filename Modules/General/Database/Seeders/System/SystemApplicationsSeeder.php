@@ -45,6 +45,19 @@ class SystemApplicationsSeeder extends Seeder
                 'custom_actions' => json_encode(['impersonate', 'reset-password', 'block', 'assign']),
                 'is_active' => true,
             ],
+            [
+                'name' => ['ar' => 'النسخ الاحتياطية', 'en' => 'Backups'],
+                'description' => ['ar' => 'إدارة النسخ الاحتياطية للنظام وقاعدة البيانات والملفات.', 'en' => 'Manage system backups, database backups, and file backups.'],
+                'code' => 'gen-sys-bkp',
+                'route' => 'general.system.backups',
+                'icon' => 'archive-box',
+                'color' => 'blue',
+                'sort_order' => 1,
+                'permission_name' => null,
+                'permission_group' => null,
+                'custom_actions' => json_encode(['create', 'download', 'delete']),
+                'is_active' => true,
+            ],
         ];
 
         $prepared = array_map(function (array $application) use ($systemSubModule): array {

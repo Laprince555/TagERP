@@ -23,7 +23,7 @@
                     <div class="flex flex-wrap items-center gap-2">
                         <flux:heading size="xl" level="1" class="truncate">{{ $subModule['name'] }}</flux:heading>
 
-                        <flux:badge color="zinc" size="sm">{{ __('messages.workspace.sub_module') }}</flux:badge>
+                        <div class="badge badge-neutral">{{ __('messages.workspace.sub_module') }}</div>
                     </div>
 
                     <p class="line-clamp-2 max-w-2xl text-sm leading-6 text-[var(--color-soft-text)]">
@@ -35,15 +35,15 @@
             </div>
 
             <div class="flex shrink-0 flex-wrap items-center gap-2">
-                <flux:badge color="zinc" size="sm">
+                <div class="badge badge-neutral">
                     <span>{{ $statistics['application_count'] }}</span>
                     <span class="ms-1">{{ __('messages.workspace.applications') }}</span>
-                </flux:badge>
+                </div>
 
-                <flux:badge color="lime" size="sm">
+                <div class="badge badge-ledger-in">
                     <span>{{ $statistics['available_count'] }}</span>
                     <span class="ms-1">{{ __('messages.workspace.available') }}</span>
-                </flux:badge>
+                </div>
             </div>
         </div>
     </section>
@@ -105,7 +105,7 @@
                             <div class="mb-4 flex items-center gap-3">
                                 <flux:heading size="base" level="3" class="shrink-0">{{ $group['label'] }}</flux:heading>
 
-                                <flux:badge color="zinc" size="sm">{{ count($group['applications']) }}</flux:badge>
+                                <div class="badge badge-neutral">{{ count($group['applications']) }}</div>
 
                                 <span class="h-px flex-1 bg-[var(--color-glass-border)]"></span>
                             </div>

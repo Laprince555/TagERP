@@ -4,6 +4,14 @@ use App\Support\ModuleRoute;
 use Illuminate\Support\Facades\Route;
 use Modules\General\Livewire\ModuleWorkspace;
 use Modules\General\Livewire\SubModuleWorkspace;
+use Modules\HR\Livewire\Cycles\Cycles\CycleLinesEditor;
+use Modules\HR\Livewire\Cycles\Cycles\CycleRecordView;
+use Modules\HR\Livewire\Cycles\Cycles\CyclesIndex;
+use Modules\HR\Livewire\Cycles\CycleTypes\CycleTypeRecordView;
+use Modules\HR\Livewire\Cycles\CycleTypes\CycleTypesIndex;
+use Modules\HR\Livewire\Cycles\Transactions\CycleTransactionRecordView;
+use Modules\HR\Livewire\Cycles\Transactions\CycleTransactionReview;
+use Modules\HR\Livewire\Cycles\Transactions\CycleTransactionsIndex;
 use Modules\HR\Livewire\EmployeeManagement\Employees\EmployeeRecordView;
 use Modules\HR\Livewire\EmployeeManagement\Employees\EmployeesIndex;
 use Modules\HR\Livewire\OrganizationStructure\Branches\BranchesIndex;
@@ -67,3 +75,35 @@ Route::middleware(['auth'])
 Route::middleware(['auth'])
     ->get('/hr/employee-management/employees/{recordId}/view', EmployeeRecordView::class)
     ->name('hr.employee-management.employees.show');
+
+Route::middleware(['auth'])
+    ->get('/hr/cycles/cycle-types', CycleTypesIndex::class)
+    ->name('hr.cycles.cycle-types');
+
+Route::middleware(['auth'])
+    ->get('/hr/cycles/cycle-types/{recordId}/view', CycleTypeRecordView::class)
+    ->name('hr.cycles.cycle-types.show');
+
+Route::middleware(['auth'])
+    ->get('/hr/cycles/cycles', CyclesIndex::class)
+    ->name('hr.cycles.cycles');
+
+Route::middleware(['auth'])
+    ->get('/hr/cycles/cycles/{recordId}/view', CycleRecordView::class)
+    ->name('hr.cycles.cycles.show');
+
+Route::middleware(['auth'])
+    ->get('/hr/cycles/cycles/{recordId}/lines', CycleLinesEditor::class)
+    ->name('hr.cycles.cycles.edit-lines');
+
+Route::middleware(['auth'])
+    ->get('/hr/cycles/transactions', CycleTransactionsIndex::class)
+    ->name('hr.cycles.transactions');
+
+Route::middleware(['auth'])
+    ->get('/hr/cycles/transactions/{recordId}/view', CycleTransactionRecordView::class)
+    ->name('hr.cycles.transactions.show');
+
+Route::middleware(['auth'])
+    ->get('/hr/cycles/transactions/{recordId}/review', CycleTransactionReview::class)
+    ->name('hr.cycles.transactions.review');

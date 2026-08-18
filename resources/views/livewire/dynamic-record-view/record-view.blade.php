@@ -22,6 +22,8 @@
         :actions="$actions"
     />
 
+    <x-dynamic-record-view.cycle-approval-status :record="$record" />
+
     @if ($actionError)
         <flux:callout variant="danger" icon="exclamation-triangle">{{ $actionError }}</flux:callout>
     @endif

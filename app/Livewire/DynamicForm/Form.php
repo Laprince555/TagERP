@@ -130,6 +130,8 @@ class Form extends Component
 
         if ($recordId !== null) {
             $this->fillFromRecord();
+        } else {
+            $this->fillDefaults();
         }
 
         if ($copy) {
@@ -141,6 +143,16 @@ class Form extends Component
     public function isEditing(): bool
     {
         return $this->recordId !== null;
+    }
+
+    /** Seeds $data with each field's declared default() before the user types anything. */
+    protected function fillDefaults(): void
+    {
+        foreach ($this->definition()->fields() as $field) {
+            if ($field->getDefault() !== null) {
+                $this->data[$field->getKey()] = $field->getDefault();
+            }
+        }
     }
 
     /**

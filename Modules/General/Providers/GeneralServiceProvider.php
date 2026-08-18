@@ -14,6 +14,7 @@ use Modules\General\Livewire\Security\Permissions\PermissionsTable;
 use Modules\General\Livewire\Security\Roles\RolesIndex;
 use Modules\General\Livewire\Security\Roles\RolesTable;
 use Modules\General\Livewire\SubModuleWorkspace;
+use Modules\General\Livewire\System\Backups\BackupsTable;
 use Modules\General\Livewire\System\Users\UsersIndex;
 use Modules\General\Livewire\System\Users\UsersTable;
 use Modules\General\Livewire\World\Cities\CitiesIndex;
@@ -39,6 +40,8 @@ use Modules\General\System\Security\RoleForm;
 use Modules\General\System\Security\RoleRecordReferenceProvider;
 use Modules\General\System\Security\RoleRecordView as RoleRecordViewDefinition;
 use Modules\General\System\SubModuleRecordView;
+use Modules\General\System\System\BackupRecordReferenceProvider;
+use Modules\General\System\System\BackupRecordView as BackupRecordViewDefinition;
 use Modules\General\System\System\UserForm;
 use Modules\General\System\System\UserRecordReferenceProvider;
 use Modules\General\System\System\UserRecordView as UserRecordViewDefinition;
@@ -120,6 +123,7 @@ class GeneralServiceProvider extends ModuleServiceProvider
         Livewire::component('general.permission-roles-table', PermissionRolesTable::class);
         Livewire::component('general.users-index', UsersIndex::class);
         Livewire::component('general.users-table', UsersTable::class);
+        Livewire::component('backups-table', BackupsTable::class);
 
         $recordReferenceRegistry = $this->app->make(RecordReferenceRegistry::class);
         $recordReferenceRegistry->register(new CountryRecordReferenceProvider);
@@ -133,6 +137,7 @@ class GeneralServiceProvider extends ModuleServiceProvider
         $recordReferenceRegistry->register(new RoleRecordReferenceProvider);
         $recordReferenceRegistry->register(new PermissionRecordReferenceProvider);
         $recordReferenceRegistry->register(new UserRecordReferenceProvider);
+        $recordReferenceRegistry->register(new BackupRecordReferenceProvider);
 
         $recordViewRegistry = $this->app->make(RecordViewRegistry::class);
         $recordViewRegistry->register('general.sub-module', SubModuleRecordView::class);
@@ -147,6 +152,7 @@ class GeneralServiceProvider extends ModuleServiceProvider
         $recordViewRegistry->register('general.security.role', RoleRecordViewDefinition::class);
         $recordViewRegistry->register('general.security.permission', PermissionRecordViewDefinition::class);
         $recordViewRegistry->register('general.system.user', UserRecordViewDefinition::class);
+        $recordViewRegistry->register('general.system.backup', BackupRecordViewDefinition::class);
 
         $formRegistry = $this->app->make(FormDefinitionRegistry::class);
         $formRegistry->register('general.world.company.create', CompanyForm::class);

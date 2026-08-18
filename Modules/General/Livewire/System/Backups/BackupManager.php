@@ -50,7 +50,7 @@ class BackupManager extends Component
 
     public function render()
     {
-        $context = app(NavigationTreeService::class)->locateApplication('gen-sys-bkp');
+        $context = app(NavigationTreeService::class)->locateApplication(BackupLog::APPLICATION_CODE);
 
         return view('general::livewire.system.backups.backup-manager', [
             'application' => $context['application'] ?? null,
